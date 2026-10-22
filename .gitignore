@@ -1,0 +1,12 @@
+.*
+!.gitignore
+!.gitkeep
+!.mvn
+!.github
+!.editorconfig
+!.git-blame-ignore-revs
+target
+*.log
+*.iml
+# Which local-repository prefix this checkout installs under - one agent's, never committed.
+.mvn/maven.config

@@ -18,16 +18,27 @@ archive named with its SHA-512 in a manifest; feedback at https://github.com/goo
 
 **Authentication.** A Gemini API key, or a Google sign-in tied to a Google AI plan.
 
-**Can it be brokered?** On the API-key path, yes, measured on 1.4.5 without network: with
-`{"modelProvider":"gemini"}` in `~/.gemini/antigravity-cli/settings.json`, `GEMINI_API_KEY` and
-`GOOGLE_GEMINI_BASE_URL`, `agy -p` sends `POST /v1beta/models/<model>:streamGenerateContent?alt=sse` to that
-address over plain http, the key in `x-goog-api-key`, which the broker swaps. Without the setting it ignores
-both variables and asks for the sign-in (`accounts.google.com`, redirected to `antigravity.google/oauth-callback`).
-The signed-in path reads `CLOUD_CODE_URL` for its endpoint; read in the binary, not measured.
+**Can it be brokered?** On both paths, yes, measured on 1.4.5:
+- **API-key path:** with `{"modelProvider":"gemini"}` in `~/.gemini/antigravity-cli/settings.json`,
+  `GEMINI_API_KEY` and `GOOGLE_GEMINI_BASE_URL`, `agy -p` sends
+  `POST /v1beta/models/<model>:streamGenerateContent?alt=sse` to that address over plain http, the key in
+  `x-goog-api-key`, which the broker swaps. Without the setting it ignores both variables and asks for the
+  sign-in (`accounts.google.com`, redirected to `antigravity.google/oauth-callback`).
+- **Signed-in path:** `CLOUD_CODE_URL` redirects all Cloud Code Assist calls (`/v1internal:loadCodeAssist`,
+  `/v1internal:fetchAdminControls`, `/v1internal:fetchUserInfo`, `/v1internal:retrieveUserQuotaSummary`,
+  `/v1internal:fetchAvailableModels`, `/v1internal:listExperiments`, `/v1internal:streamGenerateContent?alt=sse`,
+  `/v1internal:writeTrajectoryAcls`) from `https://daily-cloudcode-pa.googleapis.com` to the given URL over plain
+  http with `Authorization: Bearer <access_token>`. At startup `keyring.go:93` also calls
+  `https://www.googleapis.com/oauth2/v2/userinfo`; when `www.googleapis.com` is unreachable at the container
+  firewall, `agy` treats that network error as non-fatal and proceeds with the phantom token in
+  `~/.gemini/antigravity-cli/antigravity-oauth-token`.
 
-**Where the sign-in is kept.** Read, not measured: a D-Bus Secret Service client (`auth.keyringAuth`). A run
-without a sign-in leaves `~/.gemini/config/` and `~/.gemini/antigravity-cli/` (installation id, conversation
-database, built-in skills) and no token.
+**Where the sign-in is kept.** Measured on 1.4.5 without a desktop keyring (`composite_token_storage.go`): when
+no D-Bus Secret Service collection is available, `agy` falls back to `~/.gemini/antigravity-cli/antigravity-oauth-token`
+(mode `0600`), storing `{"auth_method":"consumer","id_token":"<jwt>","token":{"access_token":"...","token_type":"Bearer","refresh_token":"...","expiry":"<RFC3339>","expires_in":3599}}`.
+When `expiry` is in the past, `agy` refreshes via `https://oauth2.googleapis.com/token` (`grant_type=refresh_token`,
+`client_id` `1071006060591-tmhssin2h21lcre235vtolojh4g403ep.apps.googleusercontent.com`). Post-login interactive
+prompts (theme, terms/data-use) record their completion in `~/.gemini/antigravity-cli/jetski_state.pbtxt`.
 
 **Licence and terms.** Proprietary; no copy may be shipped, so the package fetches the pinned binary at the
 image build, by URL and digest, as Claude Code's does. Google's terms call it a breach to use third-party
@@ -71,7 +82,3 @@ even when `"enableTelemetry": false` is set in `settings.json`).
 - A task authenticates with an API key and with a sign-in without anyone signing in inside the container.
 - The real credential is never in the container, seen by searching the container for it, on both paths.
 - The CLI does not update itself in a task.
-
-## To be checked
-
-- Where the sign-in is kept without a keyring, and whether `CLOUD_CODE_URL` redirects the signed-in path. - Agent AGY's to measure, with the operator's sign-in.

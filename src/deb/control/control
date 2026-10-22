@@ -1,0 +1,28 @@
+Package: [[name]]
+# Not [[version]]: that is the raw Maven version, and apt compares on this line. This is the
+# agent module's version with -SNAPSHOT rewritten to ~snapshot.<run>, which sorts below the release
+# rather than above it.
+Version: [[agent.package.version]]
+Section: utils
+Priority: optional
+Architecture: amd64
+Maintainer: fuin.org <info@fuin.org>
+Homepage: https://github.com/porelo-ai/porelo
+# The native binary links against both; jdeb does not read it to find out. NativeLinkageCheck
+# holds these floors to the binary.
+Depends: porelo, libc6 (>= [[package.glibc.floor]]), zlib1g (>= 1:[[package.zlib.floor]])
+# What the setup script and Tasks1.Installable() list: every package providing it is an agent a
+# person can choose. The name is Porelo's.
+Provides: porelo-agent
+Description: [[description]] [[agent.cli.version]]
+ Installs into /usr/libexec/porelo/agents, where the porelo binary looks for
+ agents. Nothing needs to be registered: porelo scans that directory and asks
+ whatever it finds to describe itself, so installing this package is enough.
+ .
+ Antigravity CLI is https://github.com/google-antigravity/antigravity-cli,
+ invoked as "agy". Its image installs the CLI from a verified pinned archive.
+ .
+ The package version is this agent's own version, independent of Porelo's release
+ line. The agent CLI version it installs is on the Description line above, so
+ "dpkg -s porelo-agent-agy" answers which Antigravity CLI this package fetches,
+ without consulting the definition.

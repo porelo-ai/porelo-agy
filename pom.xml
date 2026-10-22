@@ -1,0 +1,533 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+         child.project.url.inherit.append.path="false">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.fuin.porelo</groupId>
+        <artifactId>porelo-parent</artifactId>
+        <version>0.2.1-SNAPSHOT</version>
+        <relativePath/>
+    </parent>
+
+    <groupId>org.fuin.porelo</groupId>
+    <artifactId>porelo-agent-agy</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+    <name>Porelo Agent Antigravity CLI</name>
+    <description>Porelo agent for Antigravity CLI</description>
+
+    <url>https://github.com/porelo-ai/porelo-agy/</url>
+
+    <scm child.scm.url.inherit.append.path="false"
+         child.scm.connection.inherit.append.path="false"
+         child.scm.developerConnection.inherit.append.path="false">
+        <url>https://github.com/porelo-ai/porelo-agy/</url>
+        <connection>scm:git:git://github.com/porelo-ai/porelo-agy.git</connection>
+        <developerConnection>scm:git:git@github.com:porelo-ai/porelo-agy.git</developerConnection>
+    </scm>
+
+    <issueManagement>
+        <system>GitHub Issues</system>
+        <url>https://github.com/porelo-ai/porelo-agy/issues</url>
+    </issueManagement>
+
+    <properties>
+
+        <agent.snapshot.run>0</agent.snapshot.run>
+
+        <agent.cli.version>1.4.5</agent.cli.version>
+        <agent.cli.sha256>90cc1894b6862510869ad4cf1a6f4c043b7ae7c095bad8d5c355788a0ca935c7</agent.cli.sha256>
+        <porelo.release.pin.agy.label>Antigravity CLI</porelo.release.pin.agy.label>
+        <porelo.release.pin.agy.property>agent.cli.version</porelo.release.pin.agy.property>
+        <porelo.release.pin.agy.upstream>github-latest https://api.github.com/repos/google-antigravity/antigravity-cli/releases/latest</porelo.release.pin.agy.upstream>
+        <porelo.release.pin.agy.digest>github-asset https://api.github.com/repos/google-antigravity/antigravity-cli/releases/tags/{version} ^agy_cli_linux_x64[.]tar[.]gz$</porelo.release.pin.agy.digest>
+        <porelo.release.pin.agy.sha256>agent.cli.sha256</porelo.release.pin.agy.sha256>
+
+        <porelo.version>0.5.1-SNAPSHOT</porelo.version>
+
+        <porelo.kit.version>0.5.1-SNAPSHOT</porelo.kit.version>
+
+        <agent.install.dir>/usr/libexec/porelo/agents</agent.install.dir>
+        <sbom.install.dir>/usr/share/porelo/sbom</sbom.install.dir>
+
+        <rpm.sign.skip>true</rpm.sign.skip>
+
+        <package.glibc.floor>2.34</package.glibc.floor>
+        <package.zlib.floor>1.2.2</package.zlib.floor>
+    </properties>
+
+    <dependencyManagement>
+
+        <dependencies>
+
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${junit.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.fuin.porelo</groupId>
+                <artifactId>porelo-bom</artifactId>
+                <version>${porelo.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.fuin</groupId>
+                <artifactId>bom</artifactId>
+                <version>${fuin-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+        </dependencies>
+
+    </dependencyManagement>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.fuin.porelo</groupId>
+            <artifactId>porelo-agent-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.fuin.porelo</groupId>
+            <artifactId>porelo-wire</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jspecify</groupId>
+            <artifactId>jspecify</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+
+        <plugins>
+
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+            </plugin>
+
+            <plugin>
+                <groupId>org.cyclonedx</groupId>
+                <artifactId>cyclonedx-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>cyclonedx</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>makeBom</goal>
+                        </goals>
+                        <configuration>
+                            <projectType>application</projectType>
+                            <schemaVersion>1.6</schemaVersion>
+                            <outputFormat>json</outputFormat>
+                            <outputName>${project.artifactId}.cdx</outputName>
+                            <skipNotDeployed>false</skipNotDeployed>
+                            <skipAttach>true</skipAttach>
+                            <includeTestScope>false</includeTestScope>
+                            <includeProvidedScope>false</includeProvidedScope>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>agent/*.yaml</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>agent/*.yaml</exclude>
+                </excludes>
+            </resource>
+        </resources>
+
+    </build>
+
+    <profiles>
+
+        <profile>
+            <id>documents</id>
+            <properties>
+                <groups>documents</groups>
+            </properties>
+        </profile>
+
+        <profile>
+            <id>native</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.graalvm.buildtools</groupId>
+                        <artifactId>native-maven-plugin</artifactId>
+                        <extensions>true</extensions>
+                        <executions>
+                            <execution>
+                                <id>build-porelo-agent-agy</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>compile-no-fork</goal>
+                                </goals>
+                                <configuration>
+                                    <imageName>porelo-agent-agy</imageName>
+                                    <mainClass>org.fuin.porelo.agent.impl.agy.AgyAgent</mainClass>
+
+                                    <buildArgs>
+                                        <buildArg>-march=x86-64</buildArg>
+                                    </buildArgs>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>dist</id>
+            <build>
+                <plugins>
+
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>record-the-fetched-agy</id>
+                                <phase>package</phase>
+                                <goals><goal>exec</goal></goals>
+                                <configuration>
+                                    <executable>${java.home}/bin/java</executable>
+                                    <includePluginDependencies>true</includePluginDependencies>
+                                    <arguments>
+                                        <argument>-classpath</argument>
+                                        <classpath/>
+                                        <argument>org.fuin.porelo.release.Main</argument>
+                                        <argument>add-fetched-cli</argument>
+                                        <argument>${project.build.directory}/${project.artifactId}.cdx.json</argument>
+                                        <argument>${project.build.outputDirectory}/agent/agy.yaml</argument>
+                                        <argument>agy</argument>
+                                        <argument>--pin</argument>
+                                        <argument>agy</argument>
+                                        <argument>--pom</argument>
+                                        <argument>${project.basedir}/pom.xml</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.fuin.porelo</groupId>
+                                <artifactId>porelo-release</artifactId>
+                                <version>${porelo.buildtools.version}</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>package-revision</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>regex-property</goal>
+                                </goals>
+                                <configuration>
+
+                                    <name>agent.package.version</name>
+                                    <value>${project.version}</value>
+                                    <regex>-SNAPSHOT$</regex>
+                                    <replacement>~snapshot.${agent.snapshot.run}</replacement>
+                                    <failIfNoMatch>false</failIfNoMatch>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>native-linkage</id>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                                <configuration>
+                                    <includes>
+                                        <include>**/NativeLinkageCheck.java</include>
+                                        <include>**/NativeProtocolCheck.java</include>
+                                    </includes>
+                                    <systemPropertyVariables>
+                                        <porelo.native.binary>${project.build.directory}/${project.artifactId}</porelo.native.binary>
+                                        <package.glibc.floor>${package.glibc.floor}</package.glibc.floor>
+                                        <package.zlib.floor>${package.zlib.floor}</package.zlib.floor>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.vafer</groupId>
+                        <artifactId>jdeb</artifactId>
+                        <executions>
+                            <execution>
+                                <id>deb</id>
+
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>jdeb</goal>
+                                </goals>
+                                <configuration>
+                                    <name>${project.artifactId}</name>
+                                    <deb>${project.build.directory}/${project.artifactId}_${agent.package.version}_amd64.deb</deb>
+                                    <controlDir>${project.basedir}/src/deb/control</controlDir>
+                                    <dataSet>
+                                        <data>
+                                            <src>${project.build.directory}/${project.artifactId}</src>
+                                            <type>file</type>
+                                            <mapper>
+                                                <type>perm</type>
+                                                <prefix>${agent.install.dir}</prefix>
+                                                <filemode>755</filemode>
+                                                <user>root</user>
+                                                <group>root</group>
+                                            </mapper>
+                                        </data>
+                                        <data>
+                                            <src>${project.build.directory}/${project.artifactId}.cdx.json</src>
+                                            <type>file</type>
+                                            <mapper>
+                                                <type>perm</type>
+                                                <prefix>${sbom.install.dir}</prefix>
+                                                <filemode>644</filemode>
+                                                <user>root</user>
+                                                <group>root</group>
+                                            </mapper>
+                                        </data>
+
+                                        <data>
+                                            <src>${project.basedir}/src/deb/copyright/copyright</src>
+                                            <type>file</type>
+                                            <mapper>
+                                                <type>perm</type>
+                                                <prefix>/usr/share/doc/${project.artifactId}</prefix>
+                                                <filemode>644</filemode>
+                                                <user>root</user>
+                                                <group>root</group>
+                                            </mapper>
+                                        </data>
+                                    </dataSet>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>de.dentrassi.maven</groupId>
+                        <artifactId>rpm</artifactId>
+                        <executions>
+                            <execution>
+                                <id>rpm</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>rpm</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <packageName>${project.artifactId}</packageName>
+                            <version>${agent.package.version}</version>
+                            <snapshotVersion>${agent.package.version}</snapshotVersion>
+                            <release>1</release>
+                            <summary>${project.description}</summary>
+                            <description>${project.description} ${agent.cli.version}. Installs into /usr/libexec/porelo/agents, where the porelo binary scans for agents.</description>
+
+                            <forceRelease>true</forceRelease>
+                            <architecture>x86_64</architecture>
+                            <group>Applications/System</group>
+                            <license>GPL-3.0-or-later</license>
+                            <packager>fuin.org</packager>
+                            <requires>
+                                <require>porelo</require>
+
+                                <require>libc.so.6(GLIBC_${package.glibc.floor})(64bit)</require>
+                                <require>libz.so.1(ZLIB_${package.zlib.floor})(64bit)</require>
+                            </requires>
+
+                            <provides>
+                                <provide>porelo-agent</provide>
+                            </provides>
+                            <signature>
+                                <skip>${rpm.sign.skip}</skip>
+                            </signature>
+                            <entries>
+                                <entry>
+                                    <name>${agent.install.dir}/${project.artifactId}</name>
+                                    <file>${project.build.directory}/${project.artifactId}</file>
+                                    <mode>0755</mode>
+                                    <user>root</user>
+                                    <group>root</group>
+                                </entry>
+                                <entry>
+                                    <name>${sbom.install.dir}/${project.artifactId}.cdx.json</name>
+                                    <file>${project.build.directory}/${project.artifactId}.cdx.json</file>
+                                    <mode>0644</mode>
+                                    <user>root</user>
+                                    <group>root</group>
+                                </entry>
+
+                                <entry>
+                                    <name>/usr/share/licenses/${project.artifactId}/LICENSE</name>
+                                    <file>${project.basedir}/LICENSE</file>
+                                    <mode>0644</mode>
+                                    <user>root</user>
+                                    <group>root</group>
+                                    <license>true</license>
+                                </entry>
+                            </entries>
+                        </configuration>
+                    </plugin>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>package-version</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>test</goal>
+                                </goals>
+                                <configuration>
+                                    <includes>
+                                        <include>**/PackageVersionCheck.java</include>
+                                        <include>**/FetchedArtifactsCheck.java</include>
+                                    </includes>
+                                    <reportsDirectory>${project.build.directory}/surefire-reports-package-version</reportsDirectory>
+                                    <systemPropertyVariables>
+                                        <porelo.target>${project.build.directory}</porelo.target>
+                                        <project.version>${project.version}</project.version>
+                                        <agent.snapshot.run>${agent.snapshot.run}</agent.snapshot.run>
+                                    </systemPropertyVariables>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>acceptance</id>
+            <activation>
+                <property><name>porelo.acceptance.host</name></property>
+            </activation>
+            <properties>
+                <porelo.acceptance.user>acceptance</porelo.acceptance.user>
+                <porelo.acceptance.key>${user.home}/.ssh/id_ed25519</porelo.acceptance.key>
+                <porelo.acceptance.as/>
+            </properties>
+            <dependencies>
+
+                <dependency>
+                    <groupId>org.fuin.porelo</groupId>
+                    <artifactId>porelo-acceptance-kit</artifactId>
+                    <version>${porelo.kit.version}</version>
+                    <scope>test</scope>
+                </dependency>
+            </dependencies>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>build-helper-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>acceptance-sources</id>
+                                <phase>generate-test-sources</phase>
+                                <goals>
+                                    <goal>add-test-source</goal>
+                                    <goal>add-test-resource</goal>
+                                </goals>
+                                <configuration>
+                                    <sources>
+                                        <source>src/acceptance/java</source>
+                                    </sources>
+                                    <resources>
+                                        <resource>
+                                            <directory>src/acceptance/resources</directory>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>integration-test</goal>
+                                    <goal>verify</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <systemPropertyVariables>
+                                <porelo.acceptance.host>${porelo.acceptance.host}</porelo.acceptance.host>
+                                <porelo.acceptance.user>${porelo.acceptance.user}</porelo.acceptance.user>
+                                <porelo.acceptance.as>${porelo.acceptance.as}</porelo.acceptance.as>
+                                <porelo.acceptance.key>${porelo.acceptance.key}</porelo.acceptance.key>
+
+                                <porelo.acceptance.features>src/acceptance/resources/</porelo.acceptance.features>
+                                <cucumber.plugin>pretty, html:target/acceptance.html, json:target/acceptance.json, org.fuin.porelo.acceptance.GitHubReport</cucumber.plugin>
+                            </systemPropertyVariables>
+
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+    </profiles>
+
+</project>

@@ -1,0 +1,21 @@
+version: 2
+
+# Every action is pinned to a commit, and a pin nobody moves rots. This is what moves them: each
+# new release arrives as a pull request naming the new commit and its version, for a person to
+# review. Nothing merges it automatically - the review is the point of the pin.
+updates:
+    - package-ecosystem: github-actions
+      # The workflows, and the composite actions beside them: the pinned-JDK action pins its cache.
+      directories:
+          - "/"
+          - "/.github/actions/*"
+      schedule:
+          interval: weekly
+      # A release becomes old enough to take after three days, as every other pin here.
+      cooldown:
+          default-days: 3
+      groups:
+          actions:
+              patterns: ["*"]
+      commit-message:
+          prefix: "Move the pinned"

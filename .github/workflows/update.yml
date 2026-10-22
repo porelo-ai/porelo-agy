@@ -1,0 +1,30 @@
+name: Verify pinned Antigravity CLI artifact
+on:
+    schedule:
+        - cron: '29 4 * * 1'
+    workflow_dispatch:
+env:
+    MAVEN_ARGS: -U
+permissions:
+    contents: read
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+jobs:
+    update:
+        runs-on: ubuntu-26.04
+        timeout-minutes: 10
+        steps:
+            - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  persist-credentials: false
+            - name: The pinned GraalVM
+              uses: ./.github/actions/pinned-jdk
+            - name: Build the artifact checks
+              run: ./mvnw -U -B -s settings.xml test
+            - name: Resolve the shared tooling
+              run: ./mvnw -U -B -q -Pci-tools -s settings.xml dependency:build-classpath -Dmdep.outputFile=target/cp.txt
+            - name: The publisher digest agrees with the pin
+              run: |
+                  set -eu
+                  java -cp "$(cat target/cp.txt)" org.fuin.porelo.release.Main check-pin --pin agy --definition target/classes/agent/agy.yaml

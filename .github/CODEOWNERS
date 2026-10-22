@@ -1,0 +1,16 @@
+# Changes here wait for the owner's review.
+/.github/        @michael-schnell
+/AGENTS.md       @michael-schnell
+
+# The build, its wrapper and where it publishes.
+/pom.xml         @michael-schnell
+/mvnw            @michael-schnell
+/mvnw.cmd        @michael-schnell
+/.mvn/           @michael-schnell
+/settings.xml    @michael-schnell
+/src/deb/        @michael-schnell
+/mkdocs.yml      @michael-schnell
+
+# What a task may reach and run.
+/porelo.yml      @michael-schnell
+/src/main/resources/agent/  @michael-schnell

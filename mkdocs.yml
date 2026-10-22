@@ -1,0 +1,5 @@
+site_name: Antigravity CLI adapter
+docs_dir: doc
+nav:
+    - Overview: index.md
+    - Decisions: decisions.md

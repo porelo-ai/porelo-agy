@@ -1,0 +1,79 @@
+# Antigravity CLI - https://github.com/google-antigravity/antigravity-cli
+
+name: agy
+label: Antigravity CLI
+binary: agy
+
+config_dir: "~/.gemini/antigravity-cli"
+
+sandboxed:
+    arguments: ["--dangerously-skip-permissions"]
+
+git_identity:
+    name: Antigravity
+    email: noreply@google.com
+
+headless:
+    prompt_flag: "-p"
+    model_flag: "--model"
+    verbose_flag: "--verbose"
+    output_format_flags: ["--output-format", "json"]
+
+session:
+    supports_resume: true
+    resume_flag: "--conversation"
+    ready_marker: "? for shortcuts"
+    ready_within_seconds: 120
+    # The composer remains visible during work, so its footer alone cannot permit wake input.
+    at_rest:
+        shows: ["Type your message or @path/to/file", "? for shortcuts"]
+        lacks: ["esc to cancel", "enter Confirm · esc Exit", "enter Select · esc Cancel"]
+    waiting:
+        screen:
+            - contains: "enter Confirm · esc Exit"
+              in_last_lines: 5
+              for: "workspace trust"
+            - contains: "enter Select · esc Cancel"
+              in_last_lines: 5
+              for: "a selection"
+    session_id:
+        record: { status: SUCCESS }
+        key: conversation_id
+        directory: ".gemini/antigravity-cli/conversations"
+        suffix: ".db"
+
+provider:
+    default: google
+    dialect: google-generative-ai
+    endpoint: url
+    base_url_env: GOOGLE_GEMINI_BASE_URL
+    adds_path: true
+    token_env:
+        _default: GEMINI_API_KEY
+
+refused_domains:
+    - antigravity-cli-auto-updater-974169037036.us-central1.run.app
+    - play.googleapis.com
+
+install:
+    version: "${agent.cli.version}"
+    artifacts:
+        - url: https://github.com/google-antigravity/antigravity-cli/releases/download/${agent.cli.version}/agy_cli_linux_x64.tar.gz
+          sha256: "${agent.cli.sha256}"
+          license: "SEE LICENSE IN README.md"
+          target: /home/agent/.cache/porelo/agy/agy.tar.gz
+          mode: "0644"
+    as_agent:
+        - ENV AGY_CLI_DISABLE_AUTO_UPDATE=true
+        - >-
+          RUN set -eux;
+          mkdir -p /home/agent/.gemini/antigravity-cli/cache;
+          chmod 0700 /home/agent/.gemini;
+          ln -s /run/porelo/guide/README.md /home/agent/.gemini/GEMINI.md;
+          staging=$(mktemp -d);
+          trap 'rm -rf "$staging"' EXIT;
+          test "$(tar -tzf /home/agent/.cache/porelo/agy/agy.tar.gz)" = antigravity;
+          tar -xzf /home/agent/.cache/porelo/agy/agy.tar.gz -C "$staging" --no-same-owner;
+          install -D -m 0755 "$staging/antigravity" /home/agent/.local/bin/antigravity;
+          ln -s antigravity /home/agent/.local/bin/agy;
+          rm /home/agent/.cache/porelo/agy/agy.tar.gz

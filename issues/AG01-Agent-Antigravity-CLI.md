@@ -1,8 +1,8 @@
 # AG01 — Agent Antigravity CLI
 
-**Status:** Backlog.
+**Status:** Implementing; blocked by `porelo` [P06](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p06), `porelo` [B248](https://github.com/porelo-ai/porelo/blob/main/issues/base/README.md#b248) and `porelo` [P12](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p12).
 **Size:** L - this repository's adapter with its packaging and an acceptance leg, on the API-key path first and
-the Google sign-in beside it; it needs `porelo` [P06](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p06) (Provider Google).
+the Google sign-in beside it; it needs `porelo` [P06](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p06) (Provider Google), `porelo` [B248](https://github.com/porelo-ai/porelo/blob/main/issues/base/README.md#b248) (A Base URL Without The Dialect's Path) and `porelo` [P12](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p12) (The Google Sign-In As A Provider).
 
 **What must be true.** Antigravity CLI (`agy`) runs in a task as a packaged agent, with a Gemini API key or
 with the person's Google sign-in, brokered like the supported ones, with the real credential never in the
@@ -38,24 +38,30 @@ on credentials say so, and the API-key path is not touched by it.
 
 **Unattended use.** `agy -p` runs one prompt and exits, `--output-format json` or `stream-json` structures
 its output, `--conversation <id>` resumes. It updates itself in the background
-(`antigravity-cli-auto-updater-974169037036.us-central1.run.app`), which a task must stop.
+(`antigravity-cli-auto-updater-974169037036.us-central1.run.app`), stopped by `AGY_CLI_DISABLE_AUTO_UPDATE=true`
+and refused at egress together with `play.googleapis.com` (`server.go:3274` sends Clearcut logs there on shutdown
+even when `"enableTelemetry": false` is set in `settings.json`).
 
 ## Plan
 
-1. **The API-key path first:** the agent definition with `modelProvider: gemini` in the task's
-   `~/.gemini/antigravity-cli/settings.json`, `GOOGLE_GEMINI_BASE_URL` at the broker and a phantom
-   `GEMINI_API_KEY`; the self-update stopped; the package fetching the pinned binary at the image build.
+1. **The API-key path first:** the agent definition `src/main/resources/agent/agy.yaml` (`provider.adds_path: true`,
+   since `agy` appends `/v1beta/models/...` to `GOOGLE_GEMINI_BASE_URL` itself) and `AgyContainerSetup` writing
+   `~/.gemini/antigravity-cli/settings.json` (`modelProvider: "gemini"`, `toolPermission: "always-proceed"`,
+   `artifactReviewPolicy: "always-proceed"`, `enableTelemetry: false`, `trustedWorkspaces: [<workspace>]`) and
+   `~/.gemini/antigravity-cli/cache/onboarding.json` (`onboardingComplete: true`), linking
+   `~/.gemini/GEMINI.md` to `/run/porelo/guide/README.md`, setting `AGY_CLI_DISABLE_AUTO_UPDATE=true`, and
+   fetching the pinned binary (`1.4.5`, build `4952523841339392`) by its SHA-256 digest at the image build.
 2. **The sign-in second:** measured on the VM with the operator's sign-in, once, attended: where the token is
    kept without a desktop keyring, which hosts it reaches, whether `CLOUD_CODE_URL` points it at the broker,
    and how it is refreshed. Then the extractor that hands it to Porelo, and the provider for the signed-in
-   path in `porelo` (a new issue there, as [P11](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p11) is for the ChatGPT sign-in).
-3. **This repository**, shaped like `porelo-omp`: its `AgentMain` against `porelo-agent-api` and
-   `porelo-wire`, its definition, the Debian and RPM packaging, unit tests, and an acceptance leg on a machine
-   rented through `porelo-machines`, the key from the repository secret `GOOGLE_API`.
+   path in `porelo` ([P12](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p12), as [P11](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p11) is for the ChatGPT sign-in).
+3. **This repository**, shaped like `porelo-omp`: `AgyAgent`, `AgyContainerSetup` and `AgyJsonFormatter` against
+   `porelo-agent-api` and `porelo-wire`, its definition, the Debian and RPM packaging, unit tests, and an acceptance
+   leg on a machine rented through `porelo-machines`, the key from the repository secret `GOOGLE_API`.
 4. **The risk said:** `doc/index.md` here and a line in porelo's `doc/credentials.md` name the terms and
    what Porelo does and does not do with the sign-in.
-5. **Seen to fail first:** the acceptance leg that searches the container for the real credential, run
-   before the broker's swap is wired.
+5. **Seen to fail first:** the unit tests (`AgyAgentTest`, `AgyContainerSetupTest`, `AgyJsonFormatterTest`,
+   `AgyScreenTest`, `PinAgreementTest`) and the acceptance leg that searches the container for the real credential.
 
 ## Acceptance
 
@@ -69,4 +75,3 @@ its output, `--conversation <id>` resumes. It updates itself in the background
 ## To be checked
 
 - Where the sign-in is kept without a keyring, and whether `CLOUD_CODE_URL` redirects the signed-in path. - Agent AGY's to measure, with the operator's sign-in.
-- Whether the self-update can be stopped by a setting or only by the egress refusing its host. - Agent AGY's to measure.

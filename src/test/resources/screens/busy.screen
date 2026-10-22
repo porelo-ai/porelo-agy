@@ -1,19 +1,13 @@
-                      █▀▀█ █▀▀▄ ▀▀█▀▀ ▀█▀ █▀▀▀ █▀▀█ █▀▀█ █  █ ▀█▀ ▀▀█▀▀ █  █
-                      █▄▄█ █  █   █    █  █ ▀█ █▄▄▀ █▄▄█ █  █  █    █   █▄▄█
-                      ▀  ▀ ▀  ▀   ▀   ▀▀▀ ▀▀▀▀ ▀ ▀▀ ▀  ▀  ▀▀  ▀▀▀   ▀   ▄▄▄█
+      ▄▀▀▄        Antigravity CLI 1.4.5
+     ▀▀▀▀▀▀       Gemini API key
+    ▀▀▀▀▀▀▀▀      Gemini 3.6 Flash (Low)
+   ▄▀▀    ▀▀▄     /workspace
+  ▄▀▀      ▀▀▄
 
-
-  Welcome to Antigravity CLI v1.4.5!
-
-  Tips for getting started:
-  1. Ask questions, edit files, or run commands
-  2. Be specific for the best results
-  3. /help for more information
-
-
- ✦ Thinking... (esc to cancel, 2s)
-
- ╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
- │ >   Type your message or @path/to/file                                                                             │
- ╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-  ? for shortcuts                                                                        gemini-4-argon-medium · 0.0%
+────────────────────────────────────────────────────────────
+> Run the shell command 'sleep 8' with your shell tool, then reply with DONE.
+⣽  Generating...
+────────────────────────────────────────────────────────────────────────────────────────────────────
+>
+────────────────────────────────────────────────────────────────────────────────────────────────────
+esc to cancel                                                                 Gemini 3.6 Flash · low

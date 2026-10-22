@@ -24,9 +24,9 @@ session:
     resume_flag: "--conversation"
     ready_marker: "? for shortcuts"
     ready_within_seconds: 120
-    # The composer remains visible during work, so its footer alone cannot permit wake input.
+    # The composer remains visible during work, while the footer switches from "? for shortcuts" to "esc to cancel".
     at_rest:
-        shows: ["Type your message or @path/to/file", "? for shortcuts"]
+        shows: ["? for shortcuts"]
         lacks: ["esc to cancel", "enter Confirm · esc Exit", "enter Select · esc Cancel"]
     waiting:
         screen:

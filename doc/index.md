@@ -4,12 +4,9 @@ The adapter is discovered through Porelo's published agent protocol. Its package
 adapter executable and bill of materials; a task image downloads the pinned Antigravity CLI archive
 and verifies its digest before extraction.
 
-The adapter builds and is discovered by Porelo. Its Google Gemini API-key setup points Antigravity
-CLI at the task's broker using only a phantom token (`GEMINI_API_KEY` and `GOOGLE_GEMINI_BASE_URL`
-with `provider.adds_path: true`). End-to-end provider brokering and Google OAuth/Cloud Code Assist
-integration depend on the published provider contracts tracked in porelo's
-[provider index](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p06),
-[broker path handling](https://github.com/porelo-ai/porelo/blob/main/issues/base/README.md#b248) and
+Its Google Gemini API-key setup points Antigravity CLI at the task's broker using only a phantom
+token (`GEMINI_API_KEY` and `GOOGLE_GEMINI_BASE_URL` with `provider.adds_path: true`). Google
+OAuth/Cloud Code Assist integration is tracked in porelo's
 [OAuth provider issue](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p12).
 
 Google's terms call it a breach to use third-party software to access the service with Antigravity's
@@ -18,9 +15,9 @@ sign-in, and say such use may suspend the account. Porelo does not replace the C
 third-party access is not known; the API-key path is not touched by it.
 
 Build with GraalVM and `./mvnw -U -B -s settings.xml verify`. The native executable and Debian/RPM
-packages are built by `./mvnw -U -B -s settings.xml -Pnative,dist verify`. Main dependencies are the
-latest published Porelo agent API and wire snapshot selected by the imported BOM; no Porelo
-implementation checkout is required.
+packages are built by `./mvnw -U -B -s settings.xml -Pnative,dist verify` and require
+`porelo (>= 0.5.1~snapshot.317)`. Main dependencies are the latest published Porelo agent API and
+wire snapshot selected by the imported BOM; no Porelo implementation checkout is required.
 
 ## Building in a task
 

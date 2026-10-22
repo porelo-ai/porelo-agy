@@ -389,4 +389,4 @@ like the shared block; what is one adapter's alone stays outside.
 ## What this repository is
 
 The Antigravity CLI (`agy`) adapter: an agent definition, the Java that shapes what the CLI cannot
-express as data, and the packaging that ships it. It holds no code yet.
+express as data, and the packaging that ships it.

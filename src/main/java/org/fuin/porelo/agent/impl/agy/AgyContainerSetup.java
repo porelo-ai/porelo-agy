@@ -45,6 +45,7 @@ public final class AgyContainerSetup implements ContainerSetup {
                 """
                 {
                   "modelProvider": "gemini",
+                  "model": "Gemini 3.6 Flash (Low)",
                   "toolPermission": "always-proceed",
                   "artifactReviewPolicy": "always-proceed",
                   "enableTelemetry": false,

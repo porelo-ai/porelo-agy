@@ -46,6 +46,9 @@ class AgyAgentTest {
         assertThat(definition.provider().baseUrlEnvironment())
                 .as("environment variable pointing the GenAI SDK at the broker")
                 .isEqualTo("GOOGLE_GEMINI_BASE_URL");
+        assertThat(definition.provider().addsPath())
+                .as("base URL omits /v1beta so the GenAI SDK appends it once")
+                .isTrue();
         assertThat(definition.tokenEnvironment())
                 .as("environment variable carrying the phantom token")
                 .isEqualTo(Map.of("_default", "GEMINI_API_KEY"));

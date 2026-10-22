@@ -53,6 +53,9 @@ class NativeProtocolCheck {
             assertThat(provider.get("baseUrlEnvironment"))
                     .as("base URL environment variable")
                     .isEqualTo("GOOGLE_GEMINI_BASE_URL");
+            assertThat(provider.get("addsPath"))
+                    .as("base URL omits the dialect path")
+                    .isEqualTo(true);
             assertThat(definition.get("refusedDomains"))
                     .as("the configured refusals must survive native resource inclusion")
                     .isEqualTo(

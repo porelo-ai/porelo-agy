@@ -12,3 +12,7 @@ Feature: The provider-independent adapter on a machine
         Given a terminal on the machine
         When I run "porelo agents"
         Then the terminal shows "Antigravity CLI"
+
+    Scenario: An update run installs the version it was asked to test
+        Given the environment variable "PORELO_E2E_EXPECT_CLI" is set
+        Then the "agy" agent installs the version in the environment variable "PORELO_E2E_EXPECT_CLI"

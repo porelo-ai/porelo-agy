@@ -10,7 +10,7 @@ Maintainer: fuin.org <info@fuin.org>
 Homepage: https://github.com/porelo-ai/porelo
 # The native binary links against both; jdeb does not read it to find out. NativeLinkageCheck
 # holds these floors to the binary.
-Depends: porelo, libc6 (>= [[package.glibc.floor]]), zlib1g (>= 1:[[package.zlib.floor]])
+Depends: porelo (>= [[porelo.minimum.version]]), libc6 (>= [[package.glibc.floor]]), zlib1g (>= 1:[[package.zlib.floor]])
 # What the setup script and Tasks1.Installable() list: every package providing it is an agent a
 # person can choose. The name is Porelo's.
 Provides: porelo-agent

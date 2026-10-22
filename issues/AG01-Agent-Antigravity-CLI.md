@@ -1,8 +1,8 @@
 # AG01 — Agent Antigravity CLI
 
-**Status:** Implementing; blocked by `porelo` [P06](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p06), `porelo` [B248](https://github.com/porelo-ai/porelo/blob/main/issues/base/README.md#b248) and `porelo` [P12](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p12).
+**Status:** Implementing; blocked by `porelo` [P12](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p12).
 **Size:** L - this repository's adapter with its packaging and an acceptance leg, on the API-key path first and
-the Google sign-in beside it; it needs `porelo` [P06](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p06) (Provider Google), `porelo` [B248](https://github.com/porelo-ai/porelo/blob/main/issues/base/README.md#b248) (A Base URL Without The Dialect's Path) and `porelo` [P12](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p12) (The Google Sign-In As A Provider).
+the Google sign-in beside it; it uses `porelo` [P06](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p06) (Provider Google) and `porelo` [B248](https://github.com/porelo-ai/porelo/blob/main/issues/base/README.md#b248) (A Base URL Without The Dialect's Path), and needs `porelo` [P12](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p12) (The Google Sign-In As A Provider).
 
 **What must be true.** Antigravity CLI (`agy`) runs in a task as a packaged agent, with a Gemini API key or
 with the person's Google sign-in, brokered like the supported ones, with the real credential never in the
@@ -39,6 +39,10 @@ no D-Bus Secret Service collection is available, `agy` falls back to `~/.gemini/
 When `expiry` is in the past, `agy` refreshes via `https://oauth2.googleapis.com/token` (`grant_type=refresh_token`,
 `client_id` `1071006060591-tmhssin2h21lcre235vtolojh4g403ep.apps.googleusercontent.com`). Post-login interactive
 prompts (theme, terms/data-use) record their completion in `~/.gemini/antigravity-cli/jetski_state.pbtxt`.
+During `porelo vault login`, the CLI writes `antigravity-oauth-token` in the throwaway login container's config
+directory before Porelo copies it to an owner-only host directory, stores it in the encrypted vault, and deletes
+the host copy and login container at once; that short login-only window is an accepted risk, narrowed later by
+runtime-backed collection without plaintext filesystem copies.
 
 **Licence and terms.** Proprietary; no copy may be shipped, so the package fetches the pinned binary at the
 image build, by URL and digest, as Claude Code's does. Google's terms call it a breach to use third-party
@@ -57,11 +61,12 @@ even when `"enableTelemetry": false` is set in `settings.json`).
 
 1. **The API-key path first:** the agent definition `src/main/resources/agent/agy.yaml` (`provider.adds_path: true`,
    since `agy` appends `/v1beta/models/...` to `GOOGLE_GEMINI_BASE_URL` itself) and `AgyContainerSetup` writing
-   `~/.gemini/antigravity-cli/settings.json` (`modelProvider: "gemini"`, `toolPermission: "always-proceed"`,
-   `artifactReviewPolicy: "always-proceed"`, `enableTelemetry: false`, `trustedWorkspaces: [<workspace>]`) and
-   `~/.gemini/antigravity-cli/cache/onboarding.json` (`onboardingComplete: true`), linking
-   `~/.gemini/GEMINI.md` to `/run/porelo/guide/README.md`, setting `AGY_CLI_DISABLE_AUTO_UPDATE=true`, and
-   fetching the pinned binary (`1.4.5`, build `4952523841339392`) by its SHA-256 digest at the image build.
+   `~/.gemini/antigravity-cli/settings.json` (`modelProvider: "gemini"`, `model: "Gemini 3.6 Flash (Low)"`,
+   `toolPermission: "always-proceed"`, `artifactReviewPolicy: "always-proceed"`, `enableTelemetry: false`,
+   `trustedWorkspaces: [<workspace>]`) and `~/.gemini/antigravity-cli/cache/onboarding.json`
+   (`onboardingComplete: true`), linking `~/.gemini/GEMINI.md` to `/run/porelo/guide/README.md`, setting
+   `AGY_CLI_DISABLE_AUTO_UPDATE=true`, and fetching the pinned binary (`1.4.5`, build `4952523841339392`) by its
+   SHA-256 digest at the image build.
 2. **The sign-in second:** measured on the VM with the operator's sign-in, once, attended: where the token is
    kept without a desktop keyring, which hosts it reaches, whether `CLOUD_CODE_URL` points it at the broker,
    and how it is refreshed. Then the extractor that hands it to Porelo, and the provider for the signed-in

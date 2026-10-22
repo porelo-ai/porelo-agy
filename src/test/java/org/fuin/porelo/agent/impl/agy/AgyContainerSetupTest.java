@@ -40,11 +40,13 @@ class AgyContainerSetupTest {
         assertThat(settings.ownerOnly()).as("settings file is owner-readable only").isTrue();
         assertThat(Json.parse(settings.content()))
                 .as(
-                        "settings select Gemini API-key mode, auto-approve tools, disable telemetry, and trust the workspace")
+                        "settings select Gemini API-key mode, a free-tier default model, auto-approve tools, disable telemetry, and trust the workspace")
                 .isEqualTo(
                         Map.of(
                                 "modelProvider",
                                 "gemini",
+                                "model",
+                                "Gemini 3.6 Flash (Low)",
                                 "toolPermission",
                                 "always-proceed",
                                 "artifactReviewPolicy",

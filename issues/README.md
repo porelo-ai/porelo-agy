@@ -8,4 +8,4 @@ Within a group, the order is the priority. The number is identity, not sequence.
 
 | # | Size | Blocked by | What it covers |
 |---|---|---|---|
-| <a id="ag01"></a>[AG01](AG01-Agent-Antigravity-CLI.md) | L | `porelo` [P06](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p06), `porelo` [B248](https://github.com/porelo-ai/porelo/blob/main/issues/base/README.md#b248), `porelo` [P12](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p12) | Antigravity CLI (`agy`) as a packaged agent, with an API key (brokering measured) and with the Google sign-in (to be measured), the binary fetched by its digest, the terms' risk said |
+| <a id="ag01"></a>[AG01](AG01-Agent-Antigravity-CLI.md) | L | `porelo` [P12](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p12) | Antigravity CLI (`agy`) as a packaged agent, with an API key (brokering and VM task measured) and with the Google sign-in (brokering measured; provider in `porelo` open), the binary fetched by its digest, the terms' risk said |

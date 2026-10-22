@@ -8,13 +8,12 @@
 | Task-local profile | Owner-only `settings.json` and pre-completed `onboarding.json` suppress interactive setup | [Profile](#profile) |
 | Terminal state | Measured composer, busy and dialog boundaries gate wake input | [Terminal state](#terminal-state) |
 | Artifact checks | Shared named-pin calls check and record the fetched CLI component | [Artifact checks](#artifact-checks) |
-| Build boundary | CI verifies packages without publishing or live credentials | [Build boundary](#build-boundary) |
+| Build boundary | Packages require `porelo >= 0.5.1~snapshot.317`, publish to Artifactory and run acceptance against `GOOGLE_API` | [Build boundary](#build-boundary) |
 
 ## Provider boundary
 
-The Google Gemini API-key provider and Google OAuth/Cloud Code Assist provider belong to porelo's
-[Google Gemini issue](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p06),
-[broker path issue](https://github.com/porelo-ai/porelo/blob/main/issues/base/README.md#b248) and
+The Google Gemini API-key provider and broker path support are shipped in Porelo (`porelo >= 0.5.1~snapshot.317`),
+while Google OAuth/Cloud Code Assist belongs to porelo's
 [Google OAuth issue](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p12).
 The adapter defaults to `google` and speaks the `google-generative-ai` dialect through a URL broker
 with `adds_path: true`, because the Google GenAI Go SDK inside Antigravity CLI appends
@@ -59,19 +58,20 @@ absent.
 For a brokered task, `AgyContainerSetup` validates the endpoint, task token and workspace path,
 refusing a missing endpoint/token pair, unsafe URL/token characters, or a relative/root workspace
 without echoing secret values. It writes `/home/agent/.gemini/antigravity-cli/settings.json` (mode
-`0600`) with `"modelProvider": "gemini"`, `"toolPermission": "always-proceed"`,
-`"artifactReviewPolicy": "always-proceed"`, `"enableTelemetry": false` and `"trustedWorkspaces"`
-scoped to the normalized task workspace, alongside
-`/home/agent/.gemini/antigravity-cli/cache/onboarding.json` with onboarding flags set to `true` so
-interactive first-run wizards and workspace-trust dialogs never block startup. A shell with neither
-endpoint nor token receives no setup files.
+`0600`) with `"modelProvider": "gemini"`, `"model": "Gemini 3.6 Flash (Low)"`,
+`"toolPermission": "always-proceed"`, `"artifactReviewPolicy": "always-proceed"`,
+`"enableTelemetry": false` and `"trustedWorkspaces"` scoped to the normalized task workspace,
+alongside `/home/agent/.gemini/antigravity-cli/cache/onboarding.json` with onboarding flags set to
+`true` so interactive first-run wizards and workspace-trust dialogs never block startup, and tasks
+started without an explicit `--model` flag default to a free-tier model rather than a zero-quota Pro
+model. A shell with neither endpoint nor token receives no setup files.
 
 ## Terminal state
 
-The composer footer `? for shortcuts` establishes startup readiness, not idleness: it remains
-visible during work. Wake input additionally requires the composer prompt `Type your message or @path/to/file`
-and excludes the measured busy indicator `esc to cancel` and interactive confirmation or selection
-footers (`enter Confirm · esc Exit` and `enter Select · esc Cancel`).
+The composer footer `? for shortcuts` establishes startup readiness and idle composer state. During
+a working turn the composer remains visible while the footer switches to `esc to cancel`; wake input
+requires `? for shortcuts` and excludes `esc to cancel` together with interactive confirmation or
+selection footers (`enter Confirm · esc Exit` and `enter Select · esc Cancel`).
 Waiting rules cover the measured workspace-trust (`enter Confirm · esc Exit`) and question
 (`enter Select · esc Cancel`) footers in the last five lines of the terminal.
 
@@ -82,5 +82,8 @@ stateless JSON formatter and container setup, service registration and a null-ma
 The setup consumes only the published agent contract; provider upstreams, headers and credential
 handling remain outside the adapter.
 
-Until the provider contracts and live acceptance are published, CI checks the existing pin and
-builds packages without publishing or requesting live secrets.
+Both packages require `porelo >= 0.5.1~snapshot.317`, the first Porelo snapshot carrying the
+`google` provider, `adds_path: true` URL brokering and structured conversation-ID extraction. CI
+publishes `porelo-agent-agy` (`.deb`, `.rpm` and `.cdx.json`) to Artifactory using the shared curl
+helper with the token on standard input, verifies that the Debian index lists the built package, and
+runs the acceptance suite on Ubuntu and Fedora with `GOOGLE_API` and `gemini-3.6-flash-low`.

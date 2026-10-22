@@ -47,6 +47,7 @@
         <porelo.release.pin.agy.sha256>agent.cli.sha256</porelo.release.pin.agy.sha256>
 
         <porelo.version>0.5.1-SNAPSHOT</porelo.version>
+        <porelo.minimum.version>0.5.1~snapshot.317</porelo.minimum.version>
 
         <porelo.kit.version>0.5.1-SNAPSHOT</porelo.kit.version>
 
@@ -385,7 +386,7 @@
                             <license>GPL-3.0-or-later</license>
                             <packager>fuin.org</packager>
                             <requires>
-                                <require>porelo</require>
+                                <require>porelo &gt;= ${porelo.minimum.version}</require>
 
                                 <require>libc.so.6(GLIBC_${package.glibc.floor})(64bit)</require>
                                 <require>libz.so.1(ZLIB_${package.zlib.floor})(64bit)</require>
@@ -445,6 +446,7 @@
                                         <porelo.target>${project.build.directory}</porelo.target>
                                         <project.version>${project.version}</project.version>
                                         <agent.snapshot.run>${agent.snapshot.run}</agent.snapshot.run>
+                                        <porelo.minimum.version>${porelo.minimum.version}</porelo.minimum.version>
                                     </systemPropertyVariables>
                                 </configuration>
                             </execution>
@@ -521,7 +523,9 @@
                                 <porelo.acceptance.features>src/acceptance/resources/</porelo.acceptance.features>
                                 <cucumber.plugin>pretty, html:target/acceptance.html, json:target/acceptance.json, org.fuin.porelo.acceptance.GitHubReport</cucumber.plugin>
                             </systemPropertyVariables>
-
+                            <environmentVariables>
+                                <PORELO_E2E_REFUSED_KEY>porelo-acceptance-not-a-key</PORELO_E2E_REFUSED_KEY>
+                            </environmentVariables>
                         </configuration>
                     </plugin>
                 </plugins>

@@ -1,4 +1,7 @@
 name: Build
+
+# Workflows alone build nothing: an action's move is checked by its pull request, and the next push with
+# content builds with it.
 on:
     push:
         branches: ['**']
@@ -6,7 +9,7 @@ on:
         paths-ignore: ['**/*.md', 'mkdocs.yml', 'doc/**', 'issues/**', '.github/**', 'porelo.yml']
     pull_request:
         branches: ['**']
-        paths-ignore: ['**/*.md', 'mkdocs.yml', 'doc/**', 'issues/**', 'porelo.yml']
+        paths-ignore: ['**/*.md', 'mkdocs.yml', 'doc/**', 'issues/**', '.github/**', 'porelo.yml']
     workflow_dispatch:
 
 env:

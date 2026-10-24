@@ -69,7 +69,8 @@ class WorkflowTimeLimitTest {
                         "build.yml acceptance",
                         "build.yml release",
                         "shared-rules.yml check-shared",
-                        "update.yml update");
+                        "update.yml update",
+                        "workflows.yml check");
         assertThat(unlimited).as("jobs without timeout-minutes").isEmpty();
     }
 }

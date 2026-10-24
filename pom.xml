@@ -47,7 +47,7 @@
         <porelo.release.pin.agy.sha256>agent.cli.sha256</porelo.release.pin.agy.sha256>
 
         <porelo.version>0.5.1-SNAPSHOT</porelo.version>
-        <porelo.minimum.version>0.5.1~snapshot.317</porelo.minimum.version>
+        <porelo.minimum.version>0.5.1~snapshot.318</porelo.minimum.version>
 
         <porelo.kit.version>0.5.1-SNAPSHOT</porelo.kit.version>
 

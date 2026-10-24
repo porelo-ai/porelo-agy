@@ -17,7 +17,7 @@ Feature: The brokering path works end to end, without an account
         When a script runs "printf porelo-agy-check-not-a-real-key | porelo vault put google --type api-key"
         Then it exits zero
         Given a project called "brokercheck" of class "guarded" with a file in it
-        When a task is started in "brokercheck" for the "agy" agent and left running
+        When a task is started in "brokercheck" for the "agy" agent through "google" and left running
         # The agent's own setup file, which selects the Gemini provider mode and points at the broker.
         And the task's container runs:
             """

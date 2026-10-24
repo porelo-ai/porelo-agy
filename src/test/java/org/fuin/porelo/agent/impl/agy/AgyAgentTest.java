@@ -33,10 +33,27 @@ class AgyAgentTest {
                 .as("human-readable agent label")
                 .isEqualTo("Antigravity CLI");
         assertThat(definition.binary()).as("installed CLI binary name").isEqualTo("agy");
+        assertThat(definition.configDirectory())
+                .as("login configuration directory")
+                .isEqualTo("~/.gemini/antigravity-cli");
+        assertThat(definition.loginArguments())
+                .as("login starts the CLI without flags")
+                .isEqualTo(List.of());
+        assertThat(agent.credentialExtractor())
+                .as("sign-in extraction is adapter-specific")
+                .isInstanceOf(AgyCredentialExtractor.class);
         assertThat(definition.provider()).as("provider declaration").isNotNull();
+        assertThat(definition.provider().dialects())
+                .as("Cloud Code Assist is a supported second dialect")
+                .containsKey("cloud-code");
+        final var cloud = definition.provider().dialects().get("cloud-code");
+        assertThat(cloud.baseUrlEnvironment())
+                .as("Cloud Code Assist uses its own broker base URL")
+                .isEqualTo("CLOUD_CODE_URL");
+        assertThat(cloud.addsPath()).as("the CLI appends the Cloud Code path").isTrue();
         assertThat(definition.provider().defaultProvider())
-                .as("default provider is google")
-                .isEqualTo("google");
+                .as("default provider uses the Google sign-in")
+                .isEqualTo("google-sign-in");
         assertThat(definition.provider().dialect())
                 .as("Gemini API dialect")
                 .isEqualTo("google-generative-ai");
@@ -51,12 +68,14 @@ class AgyAgentTest {
                 .isTrue();
         assertThat(definition.tokenEnvironment())
                 .as("environment variable carrying the phantom token")
-                .isEqualTo(Map.of("_default", "GEMINI_API_KEY"));
+                .isEqualTo(Map.of("_default", "GEMINI_API_KEY", "oauth", "GOOGLE_SIGN_IN_TOKEN"));
         assertThat(definition.refusedDomains())
                 .as("self-update and Clearcut telemetry domains are refused at the firewall")
                 .containsExactly(
                         "antigravity-cli-auto-updater-974169037036.us-central1.run.app",
-                        "play.googleapis.com");
+                        "play.googleapis.com",
+                        "www.googleapis.com",
+                        "antigravity-unleash.goog");
     }
 
     @Test
@@ -148,10 +167,15 @@ class AgyAgentTest {
     void theTaskImageDisablesAutoUpdateAndLinksStandingInstructions() {
         assertThat(agent.imageLayer().asAgent())
                 .as("auto-updater is disabled and standing instructions point at Porelo's guide")
-                .anySatisfy(line -> assertThat(line).contains("AGY_CLI_DISABLE_AUTO_UPDATE=true"))
                 .anySatisfy(
                         line ->
                                 assertThat(line)
+                                        .as("auto-update is disabled")
+                                        .contains("AGY_CLI_DISABLE_AUTO_UPDATE=true"))
+                .anySatisfy(
+                        line ->
+                                assertThat(line)
+                                        .as("standing instructions are linked")
                                         .contains(
                                                 "ln -s "
                                                         + "/run/porelo/guide/README"

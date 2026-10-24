@@ -1,8 +1,8 @@
 # AG01 — Agent Antigravity CLI
 
-**Status:** Implementing; blocked by `porelo` [P12](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p12).
+**Status:** Implementing.
 **Size:** L - this repository's adapter with its packaging and an acceptance leg, on the API-key path first and
-the Google sign-in beside it; it uses `porelo` [P06](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p06) (Provider Google) and `porelo` [B248](https://github.com/porelo-ai/porelo/blob/main/issues/base/README.md#b248) (A Base URL Without The Dialect's Path), and needs `porelo` [P12](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p12) (The Google Sign-In As A Provider).
+the Google sign-in beside it; it uses `porelo` [P06](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p06) (Provider Google) and `porelo` [B248](https://github.com/porelo-ai/porelo/blob/main/issues/base/README.md#b248) (A Base URL Without The Dialect's Path), and uses `porelo` [P12](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p12) (The Google Sign-In As A Provider).
 
 **What must be true.** Antigravity CLI (`agy`) runs in a task as a packaged agent, with a Gemini API key or
 with the person's Google sign-in, brokered like the supported ones, with the real credential never in the
@@ -36,8 +36,8 @@ archive named with its SHA-512 in a manifest; feedback at https://github.com/goo
 **Where the sign-in is kept.** Measured on 1.4.5 without a desktop keyring (`composite_token_storage.go`): when
 no D-Bus Secret Service collection is available, `agy` falls back to `~/.gemini/antigravity-cli/antigravity-oauth-token`
 (mode `0600`), storing `{"auth_method":"consumer","id_token":"<jwt>","token":{"access_token":"...","token_type":"Bearer","refresh_token":"...","expiry":"<RFC3339>","expires_in":3599}}`.
-When `expiry` is in the past, `agy` refreshes via `https://oauth2.googleapis.com/token` (`grant_type=refresh_token`,
-`client_id` `1071006060591-tmhssin2h21lcre235vtolojh4g403ep.apps.googleusercontent.com`). Post-login interactive
+When `expiry` is in the past, `agy` refreshes via `https://oauth2.googleapis.com/token` (`grant_type=refresh_token`
+with its embedded OAuth client ID and client secret). Post-login interactive
 prompts (theme, terms/data-use) record their completion in `~/.gemini/antigravity-cli/jetski_state.pbtxt`.
 During `porelo vault login`, the CLI writes `antigravity-oauth-token` in the throwaway login container's config
 directory before Porelo copies it to an owner-only host directory, stores it in the encrypted vault, and deletes
@@ -67,17 +67,23 @@ even when `"enableTelemetry": false` is set in `settings.json`).
    (`onboardingComplete: true`), linking `~/.gemini/GEMINI.md` to `/run/porelo/guide/README.md`, setting
    `AGY_CLI_DISABLE_AUTO_UPDATE=true`, and fetching the pinned binary (`1.4.5`, build `4952523841339392`) by its
    SHA-256 digest at the image build.
-2. **The sign-in second:** measured on the VM with the operator's sign-in, once, attended: where the token is
-   kept without a desktop keyring, which hosts it reaches, whether `CLOUD_CODE_URL` points it at the broker,
-   and how it is refreshed. Then the extractor that hands it to Porelo, and the provider for the signed-in
-   path in `porelo` ([P12](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p12), as [P11](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p11) is for the ChatGPT sign-in).
+2. **The built sign-in path:** the published `porelo >= 0.5.1~snapshot.318` contract
+   ([P12](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p12)) supports default
+   `google-sign-in` routing through `cloud-code` and `CLOUD_CODE_URL`. `AgyCredentialExtractor` validates
+   the consumer `antigravity-oauth-token`, reads the client secret from the collected `.client-secret`
+   or installed CLI, and hands the host all five renewal attributes. The login-only wrapper collects
+   the secret with owner-only permissions; task startup writes nothing through the wrapper.
+   `AgyContainerSetup` writes an owner-only phantom-only OAuth file, settings without Gemini API-key
+   mode, the onboarding cache and completed post-onboarding state. Both non-inference hosts
+   `www.googleapis.com` and `antigravity-unleash.goog` are refused alongside telemetry and updates.
 3. **This repository**, shaped like `porelo-omp`: `AgyAgent`, `AgyContainerSetup` and `AgyJsonFormatter` against
    `porelo-agent-api` and `porelo-wire`, its definition, the Debian and RPM packaging, unit tests, and an acceptance
    leg on a machine rented through `porelo-machines`, the key from the repository secret `GOOGLE_API`.
 4. **The risk said:** `doc/index.md` here and a line in porelo's `doc/credentials.md` name the terms and
    what Porelo does and does not do with the sign-in.
 5. **Seen to fail first:** the unit tests (`AgyAgentTest`, `AgyContainerSetupTest`, `AgyJsonFormatterTest`,
-   `AgyScreenTest`, `PinAgreementTest`) and the acceptance leg that searches the container for the real credential.
+   `AgyScreenTest`, `PinAgreementTest`, `AgyCredentialExtractorTest`), native credential protocol coverage
+   with synthetic values, and the acceptance leg that searches the container for the real credential.
 
 ## Acceptance
 
@@ -87,3 +93,32 @@ even when `"enableTelemetry": false` is set in `settings.json`).
 - A task authenticates with an API key and with a sign-in without anyone signing in inside the container.
 - The real credential is never in the container, seen by searching the container for it, on both paths.
 - The CLI does not update itself in a task.
+
+## Local verification
+
+- Online Maven `verify` passes all 106 unit and repository tests with none skipped; `-Pdocuments test`
+  passes all five document tests.
+- Targeted mutations and red-first checks fail as expected for unsafe token acceptance, an excessive
+  expiry, malformed client-secret acceptance, unknown credential types, client-secret writes during
+  task startup, a preexisting `.client-secret` symlink in the login wrapper, a binary lacking a
+  client secret during login, a symlinked configuration directory, and unsafe `user.home` properties.
+- Online `-Pnative,dist verify` builds the native executable (`-march=x86-64`), records `agy` `1.4.5`
+  in the CycloneDX SBOM, builds the Debian and RPM packages, and passes `NativeLinkageCheck` (2),
+  `NativeProtocolCheck` (3, including positive OAuth extraction and malformed-credential refusal across
+  the Varlink protocol without echoing secrets), `FetchedArtifactsCheck` (1) and `PackageVersionCheck` (3).
+- `check-shared`, `check-citations`, `check-readmes`, `check-doc-site`, `check-actions` and
+  `check-pin --pin agy` pass.
+- On the local Ubuntu VM against `porelo` `0.5.1~snapshot.323` (carrying `porelo`
+  [P12](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p12) and `porelo`
+  [B255](https://github.com/porelo-ai/porelo/blob/main/issues/base/README.md#b255)), all seven
+  provider-free acceptance scenarios (`installed.feature`, `terminal.feature` and `broker.feature`)
+  pass in 63.7 s, `porelo vault login agy` reaches the `Google OAuth` code-paste prompt with an
+  owner-only 36-byte `.client-secret` in the throwaway login container, and a detached `oauth` task
+  starts with `CLOUD_CODE_URL`, `GOOGLE_SIGN_IN_TOKEN`, phantom-only `antigravity-oauth-token`,
+  `jetski_state.pbtxt` and no `.client-secret`.
+- The changed code is read against `graal` `2026.910.3`.
+
+## To be checked
+
+- Run the attended browser authorization-code sign-in and live signed-in prompt turn on the local VM,
+  including a search for the real access and refresh tokens in the task container.

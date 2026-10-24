@@ -9,7 +9,7 @@ Feature: The agy agent runs against the live provider without holding the creden
     Given a vault of this scenario's own, unlocked with the passphrase "scenario-vault-passphrase"
     And the vault holds the value of "GEMINI_API_KEY" as "google" of kind "api-key"
     And a project called "broker" of class "guarded" with a file in it
-    When a task is started in "broker" for the "agy" agent and left running
+    When a task is started in "broker" for the "agy" agent through "google" and left running
     And the task's container runs:
       """
       timeout 240 agy --model "${PORELO_E2E_MODEL}" --output-format json --dangerously-skip-permissions -p "Reply with the single word PORELOLIVE and nothing else."
@@ -34,7 +34,7 @@ Feature: The agy agent runs against the live provider without holding the creden
     Given a vault of this scenario's own, unlocked with the passphrase "scenario-vault-passphrase"
     And the vault holds the value of "PORELO_E2E_REFUSED_KEY" as "google" of kind "api-key"
     And a project called "refused" of class "guarded" with a file in it
-    When a task is started in "refused" for the "agy" agent and left running
+    When a task is started in "refused" for the "agy" agent through "google" and left running
     And the task's container runs:
       """
       timeout 120 agy --model "${PORELO_E2E_MODEL}" --output-format json --dangerously-skip-permissions -p "Reply with the single word PORELONEVER."

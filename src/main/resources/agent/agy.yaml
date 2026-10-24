@@ -6,6 +6,9 @@ binary: agy
 
 config_dir: "~/.gemini/antigravity-cli"
 
+login:
+    arguments: []
+
 sandboxed:
     arguments: ["--dangerously-skip-permissions"]
 
@@ -43,17 +46,24 @@ session:
         suffix: ".db"
 
 provider:
-    default: google
+    default: google-sign-in
     dialect: google-generative-ai
     endpoint: url
     base_url_env: GOOGLE_GEMINI_BASE_URL
     adds_path: true
+    dialects:
+        cloud-code:
+            base_url_env: CLOUD_CODE_URL
+            adds_path: true
     token_env:
         _default: GEMINI_API_KEY
+        oauth: GOOGLE_SIGN_IN_TOKEN
 
 refused_domains:
     - antigravity-cli-auto-updater-974169037036.us-central1.run.app
     - play.googleapis.com
+    - www.googleapis.com
+    - antigravity-unleash.goog
 
 install:
     version: "${agent.cli.version}"
@@ -75,5 +85,18 @@ install:
           test "$(tar -tzf /home/agent/.cache/porelo/agy/agy.tar.gz)" = antigravity;
           tar -xzf /home/agent/.cache/porelo/agy/agy.tar.gz -C "$staging" --no-same-owner;
           install -D -m 0755 "$staging/antigravity" /home/agent/.local/bin/antigravity;
-          ln -s antigravity /home/agent/.local/bin/agy;
+          printf '%s\n' '#!/bin/sh'
+          'set -eu'
+          'if [ -z "${CLOUD_CODE_URL:-}" ] && [ -z "${GOOGLE_GEMINI_BASE_URL:-}" ] && [ ! -e /run/porelo ]; then'
+          '  umask 077'
+          '  mkdir -p /home/agent/.gemini/antigravity-cli'
+          '  rm -f /home/agent/.gemini/antigravity-cli/.client-id /home/agent/.gemini/antigravity-cli/.client-secret'
+          '  (set -C; grep -a -o -m 1 '\''[0-9]\{12\}-[a-z0-9]\{32\}\.apps\.[g]oogleusercontent\.com'\'' /home/agent/.local/bin/antigravity | head -n 1 > /home/agent/.gemini/antigravity-cli/.client-id)'
+          '  (set -C; grep -a -o -m 1 '\''[G]OCSPX-[A-Za-z0-9_-]\{28\}'\'' /home/agent/.local/bin/antigravity | head -n 1 > /home/agent/.gemini/antigravity-cli/.client-secret)'
+          '  [ -s /home/agent/.gemini/antigravity-cli/.client-id ]'
+          '  [ -s /home/agent/.gemini/antigravity-cli/.client-secret ]'
+          'fi'
+          'exec /home/agent/.local/bin/antigravity "$@"'
+          > /home/agent/.local/bin/agy;
+          chmod 0755 /home/agent/.local/bin/agy;
           rm /home/agent/.cache/porelo/agy/agy.tar.gz

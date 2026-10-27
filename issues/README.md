@@ -4,8 +4,8 @@ What is open in this repository, grouped by state in the order Review, Rework, I
 Analyzed, Accepted, Idea, Estimated, Finished and Rejected; a group with nothing in it is left out.
 Within a group, the order is the priority. The number is identity, not sequence.
 
-## Review
+## Finished
 
-| # | Size | Blocked by | What it covers |
-|---|---|---|---|
-| <a id="ag01"></a>[AG01](AG01-Agent-Antigravity-CLI.md) | L | — | Antigravity CLI (`agy`) as a packaged agent, with an API key and with the Google sign-in (brokering, native protocol, packages, provider-free VM scenarios, attended VM sign-in, live signed-in turn and container token containment verified), the binary fetched by its digest, the terms' risk said |
+| # | Title | What was built |
+|---|---|---|
+| <a id="ag01"></a>[AG01](README.md#ag01) | Agent Antigravity CLI | `porelo-agent-agy` ships Antigravity CLI (`agy`) as a packaged agent with its digest-verified binary download, brokering both the Google sign-in (`cloud-code` via `CLOUD_CODE_URL` with encrypted host-side OAuth renewal) and the Gemini API key (`google-generative-ai` via `GOOGLE_GEMINI_BASE_URL`), with the real credential never in the container and the terms' risk stated in `doc/index.md`. |

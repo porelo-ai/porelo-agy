@@ -1,6 +1,6 @@
 # AG01 — Agent Antigravity CLI
 
-**Status:** Implementing.
+**Status:** Review.
 **Size:** L - this repository's adapter with its packaging and an acceptance leg, on the API-key path first and
 the Google sign-in beside it; it uses `porelo` [P06](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p06) (Provider Google) and `porelo` [B248](https://github.com/porelo-ai/porelo/blob/main/issues/base/README.md#b248) (A Base URL Without The Dialect's Path), and uses `porelo` [P12](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p12) (The Google Sign-In As A Provider).
 
@@ -70,9 +70,10 @@ even when `"enableTelemetry": false` is set in `settings.json`).
 2. **The built sign-in path:** the published `porelo >= 0.5.1~snapshot.318` contract
    ([P12](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p12)) supports default
    `google-sign-in` routing through `cloud-code` and `CLOUD_CODE_URL`. `AgyCredentialExtractor` validates
-   the consumer `antigravity-oauth-token`, reads the client secret from the collected `.client-secret`
-   or installed CLI, and hands the host all five renewal attributes. The login-only wrapper collects
-   the secret with owner-only permissions; task startup writes nothing through the wrapper.
+   the consumer `antigravity-oauth-token`, reads the client ID and client secret from the collected
+   `.client-id` and `.client-secret` or installed CLI, and hands the host all five renewal attributes.
+   The login-only wrapper collects the client ID and secret with owner-only permissions; task startup
+   writes nothing through the wrapper.
    `AgyContainerSetup` writes an owner-only phantom-only OAuth file, settings without Gemini API-key
    mode, the onboarding cache and completed post-onboarding state. Both non-inference hosts
    `www.googleapis.com` and `antigravity-unleash.goog` are refused alongside telemetry and updates.
@@ -82,8 +83,9 @@ even when `"enableTelemetry": false` is set in `settings.json`).
 4. **The risk said:** `doc/index.md` here and a line in porelo's `doc/credentials.md` name the terms and
    what Porelo does and does not do with the sign-in.
 5. **Seen to fail first:** the unit tests (`AgyAgentTest`, `AgyContainerSetupTest`, `AgyJsonFormatterTest`,
-   `AgyScreenTest`, `PinAgreementTest`, `AgyCredentialExtractorTest`), native credential protocol coverage
-   with synthetic values, and the acceptance leg that searches the container for the real credential.
+   `AgyScreenTest`, `PinAgreementTest`, `AgyCredentialExtractorTest`, `AgyLoginWrapperTest`), native
+   credential protocol coverage with synthetic values, and the acceptance leg that searches the container
+   for the real credential.
 
 ## Acceptance
 
@@ -110,15 +112,30 @@ even when `"enableTelemetry": false` is set in `settings.json`).
   `check-pin --pin agy` pass.
 - On the local Ubuntu VM against `porelo` `0.5.1~snapshot.323` (carrying `porelo`
   [P12](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p12) and `porelo`
-  [B255](https://github.com/porelo-ai/porelo/blob/main/issues/base/README.md#b255)), all seven
-  provider-free acceptance scenarios (`installed.feature`, `terminal.feature` and `broker.feature`)
-  pass in 63.7 s, `porelo vault login agy` reaches the `Google OAuth` code-paste prompt with an
-  owner-only 36-byte `.client-secret` in the throwaway login container, and a detached `oauth` task
-  starts with `CLOUD_CODE_URL`, `GOOGLE_SIGN_IN_TOKEN`, phantom-only `antigravity-oauth-token`,
-  `jetski_state.pbtxt` and no `.client-secret`.
-- The changed code is read against `graal` `2026.910.3`.
-
-## To be checked
-
-- Run the attended browser authorization-code sign-in and live signed-in prompt turn on the local VM,
-  including a search for the real access and refresh tokens in the task container.
+  [B255](https://github.com/porelo-ai/porelo/blob/main/issues/base/README.md#b255)) and adapter
+  `9e86e0e0130889d5ef7ce133a3aed108f510b239c184ee8950e4e0dafc449e86`:
+  - Seven of the eight provider-free acceptance scenarios (`installed.feature`, `terminal.feature` and
+    `broker.feature`) pass in 63.7 s (`An update run installs the version it was asked to test` in
+    `installed.feature` is skipped when `PORELO_E2E_EXPECT_CLI` is unset).
+  - Attended `porelo vault login agy` completes the browser authorization-code sign-in (`Google OAuth`),
+    collects `antigravity-oauth-token`, `.client-id` (72 B) and `.client-secret` (36 B) from the
+    throwaway login container, stores `google-sign-in` (`oauth`, 258-character access token,
+    71-character `*.apps.googleusercontent.com` `client_id`, `token_url`
+    `https://oauth2.googleapis.com/token`, plus the companion refresh-token grant and client-secret
+    entries) in the encrypted vault, and removes the login container.
+  - A live signed-in task (`porelo task start ... --agent agy --clearance deny`) replies with the
+    requested token (`PORELOLIVE`) after 23 brokered Cloud Code Assist requests
+    (`/v1internal:loadCodeAssist`, `/v1internal:fetchAdminControls`, `/v1internal:fetchUserInfo`,
+    `/v1internal:retrieveUserQuotaSummary`, `/v1internal:fetchAvailableModels`,
+    `/v1internal:listExperiments`, `/v1internal:writeTrajectoryAcls` and two
+    `/v1internal:streamGenerateContent?alt=…` calls) all return HTTP `200` from
+    `https://daily-cloudcode-pa.googleapis.com` over the task's vault socket.
+  - Searching the signed-in task container's environment (261 B), `/home/agent` files (1,455,876 B),
+    container root filesystem tar stream (443,514,368 B) and container logs (8,834 B) finds neither the
+    258-character real access token nor the real refresh token (after a red-first check confirms the
+    scanner fails when a secret is planted in the container); the container's owner-only
+    `antigravity-oauth-token` holds only the `porelo_pt_` phantom token and `2099-01-01T00:00:00Z`, with
+    no `refresh_token`, `id_token`, `.client-id` or `.client-secret`.
+- The changed code is read against `graal` `2026.910.3`, `java-code-review` `2026.906.3`,
+  `test-quality` `2026.906.3`, `security-audit` `2026.906.3`, `concurrency-review` `2026.906.3`,
+  `clean-code` `2026.906.3` and `solid-principles` `2026.906.3`.

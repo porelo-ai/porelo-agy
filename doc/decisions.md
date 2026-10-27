@@ -22,19 +22,20 @@ explicit API-key choice.
 `AgyCredentialExtractor` verifies that the configuration directory and every file it reads are
 regular and contain no symbolic links along their path, reads `antigravity-oauth-token` of at most
 one mebibyte, validates the consumer access and refresh tokens and converts its ISO-8601 expiry to
-epoch milliseconds. It collects the client secret from `.client-secret` first, then a profile-local
-`antigravity` binary, then `/home/agent/.local/bin/antigravity`. Small secret files are limited to 4096 bytes; binary
-scans stream at most 512 mebibytes and preserve matches across chunk boundaries. A present invalid
-secret file fails closed. Diagnostics never include credential contents or parser causes. The five
-renewal attributes go to the host: refresh token, expiry, token URL, client ID and client secret.
-This adapter-specific extraction differs from the single-CLI baseline because Google's consumer
-renewal requires the installed client's secret as well as the person's refresh token.
+epoch milliseconds. It collects the client ID and client secret from `.client-id` and `.client-secret`
+first, then a profile-local `antigravity` binary, then `/home/agent/.local/bin/antigravity`. Small
+client files are limited to 4096 bytes; binary scans stream at most 512 mebibytes and preserve matches
+across chunk boundaries. A present invalid client file fails closed. Diagnostics never include
+credential contents or parser causes. The five renewal attributes go to the host: refresh token,
+expiry, token URL, client ID and client secret. This adapter-specific extraction differs from the
+single-CLI baseline because Google's consumer renewal requires the installed client's ID and secret
+as well as the person's refresh token.
 
-The login-only plaintext collection window is an accepted exposure: the wrapper creates an
-owner-only `.client-secret` beside the CLI's login file so the host can collect and encrypt both
-before deleting the temporary host directory and login container. Runtime-backed collection that
-avoids plaintext filesystem copies would remove the need for this window. Signed-in tasks never
-receive either renewal secret.
+The login-only plaintext collection window is an accepted exposure: the wrapper creates owner-only
+`.client-id` and `.client-secret` files beside the CLI's login file so the host can collect and
+encrypt all three before deleting the temporary host directory and login container. Runtime-backed
+collection that avoids plaintext filesystem copies would remove the need for this window. Signed-in
+tasks never receive either renewal secret.
 
 ## Installation
 
@@ -43,9 +44,10 @@ digest matching its Google Cloud Storage manifest. The archive contains a single
 binary named `antigravity`. The definition verifies the archive digest and member list before
 installing `/home/agent/.local/bin/antigravity` and a mode `0755` POSIX shell wrapper at
 `/home/agent/.local/bin/agy`. With neither broker URL set and no `/run/porelo`, the wrapper uses
-`set -eu`, `umask 077`, removes any preexisting `.client-secret`, writes the first matching client
-secret with `set -C` (`noclobber`), and requires a non-empty `.client-secret` before executing the
-CLI. In a task it immediately executes the CLI without writing files.
+`set -eu`, `umask 077`, removes any preexisting `.client-id` and `.client-secret`, writes the first
+matching client ID and client secret with `set -C` (`noclobber`), and requires non-empty `.client-id`
+and `.client-secret` files before executing the CLI. In a task it immediately executes the CLI
+without writing files.
 The image sets `AGY_CLI_DISABLE_AUTO_UPDATE=true` to disable the background self-updater, and
 refuses `antigravity-cli-auto-updater-974169037036.us-central1.run.app`, `play.googleapis.com`,
 `www.googleapis.com` and `antigravity-unleash.goog` at the network boundary. The signed-in CLI's

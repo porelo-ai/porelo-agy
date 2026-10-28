@@ -1,6 +1,6 @@
 # AG04 — The Build Runs On The Local Forge As On The Central One
 
-**Status:** Idea.
+**Status:** Idea; blocked by porelo-buildtools [BT25](https://github.com/porelo-ai/porelo-buildtools/blob/main/issues/README.md#bt25) and [BT24](https://github.com/porelo-ai/porelo-buildtools/blob/main/issues/README.md#bt24), porelo-host [HO12](https://github.com/porelo-ai/porelo-host/blob/main/issues/README.md#ho12) and [HO27](https://github.com/porelo-ai/porelo-host/blob/main/issues/README.md#ho27).
 
 **What must be true.** `porelo-agy`'s workflows run green on the local Forgejo and on the central forge on the same
 commit, with no edit between them: the machines its legs rent are asked for by kind, and the registry and the

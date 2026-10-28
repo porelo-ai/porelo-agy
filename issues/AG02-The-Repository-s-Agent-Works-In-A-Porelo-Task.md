@@ -72,3 +72,15 @@ image*) and `doc/running.md` (the agent's layer), and porelo-project's `project.
 - That the host's inventory names `porelo-agy` in `forge_repositories`: the forge role skips the migration, `main`'s
   protection and the gate's identity where it names none (porelo-host `roles/forge/tasks/main.yml`), and a task
   start then finds no copy of the repository on the host's forge.
+- What porelo-message-sluice's dry run showed
+  ([SL35](https://github.com/porelo-ai/porelo-message-sluice/blob/main/issues/README.md#sl35)), each to hold here before
+  the start:
+  - That the task's Claude writes `Assisted-by: Claude Code, <model>` and no `Co-Authored-By` line, set in the image or
+    the task's settings, since check-commits refuses the other.
+  - Whether a fix after the outside reading lands as a new commit on top, so no force push is needed (SL35's
+    recommendation, a question for the operator with the move), or as an amend pushed with `git push --force` to the
+    task's own unmerged branch, which the gate passes on.
+  - That a revoked sign-in is renewed with `porelo vault login claude --force` and a stop and start of the task: a
+    running task keeps the credential it started with.
+  - That the outside reader may join the room from its harness; otherwise it posts its findings in the channel and the
+    operator relays them.

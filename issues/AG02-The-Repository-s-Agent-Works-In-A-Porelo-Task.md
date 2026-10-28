@@ -69,3 +69,6 @@ image*) and `doc/running.md` (the agent's layer), and porelo-project's `project.
   operator's language and time zone): `.AGENTS.md` is not committed, so it is not in the task.
 - That the outside reader can fetch `porelo/<task>` from the host's forge, not only from GitHub.
 - The way back, rehearsed once: the task's open work fetched from the host's forge into the checkout here.
+- That the host's inventory names `porelo-agy` in `forge_repositories`: the forge role skips the migration, `main`'s
+  protection and the gate's identity where it names none (porelo-host `roles/forge/tasks/main.yml`), and a task
+  start then finds no copy of the repository on the host's forge.

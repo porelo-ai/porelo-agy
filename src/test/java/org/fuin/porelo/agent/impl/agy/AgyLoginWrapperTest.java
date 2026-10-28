@@ -9,32 +9,44 @@ import java.nio.file.attribute.PosixFilePermissions;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
-/** Guards login-only client-secret collection against writing renewal material in task profiles. */
+/** Guards login-only client collection against writing renewal material in task profiles. */
 class AgyLoginWrapperTest {
     private static final String FIRST_ID =
             "0".repeat(12) + "-" + "a".repeat(32) + ".apps.google" + "usercontent.com";
     private static final String SECOND_ID =
-            "1".repeat(12) + "-" + "b".repeat(32) + ".apps.google" + "usercontent.com";
+            "1".repeat(13) + "-" + "b".repeat(32) + ".apps.google" + "usercontent.com";
     private static final String FIRST_SECRET = "GOC" + "SPX-" + "1".repeat(28);
     private static final String SECOND_SECRET = "GOC" + "SPX-" + "2".repeat(28);
     @TempDir Path directory;
 
     @Test
-    void aLoginCollectsAnOwnerOnlySecretAndPreservesCliArguments() throws Exception {
+    void aLoginCollectsEveryClientOwnerOnlyAndPreservesCliArguments() throws Exception {
         final Path wrapper = installWrapper();
+        final Path config =
+                Files.createDirectories(directory.resolve("agent/.gemini/antigravity-cli"));
+        final Path staleId = Files.writeString(config.resolve(".client-id"), FIRST_ID);
+        final Path staleSecret = Files.writeString(config.resolve(".client-secret"), FIRST_SECRET);
         run(wrapper, "", "");
-        final Path clientId = directory.resolve("agent/.gemini/antigravity-cli/.client-id");
-        final Path secret = directory.resolve("agent/.gemini/antigravity-cli/.client-secret");
+        final Path clientId = config.resolve(".client-ids");
+        final Path secret = config.resolve(".client-secrets");
+        assertThat(staleId)
+                .as("an older image's single client id cannot stand in for the CLI's clients")
+                .doesNotExist();
+        assertThat(staleSecret)
+                .as("an older image's single client secret cannot stand in either")
+                .doesNotExist();
         assertThat(Files.readString(clientId))
-                .as("the login wrapper collects only the first synthetic client ID")
-                .isEqualTo(FIRST_ID + "\n");
+                .as("the login wrapper collects every synthetic client ID whole, in order")
+                .isEqualTo(FIRST_ID + "\n" + SECOND_ID + "\n");
         assertThat(Files.getPosixFilePermissions(clientId))
                 .as("collected client ID is readable and writable by its owner only")
                 .isEqualTo(PosixFilePermissions.fromString("rw-------"));
         assertThat(Files.readString(secret))
-                .as("the login wrapper collects only the first synthetic client secret")
-                .isEqualTo(FIRST_SECRET + "\n");
+                .as("the login wrapper collects every synthetic client secret, in order")
+                .isEqualTo(FIRST_SECRET + "\n" + SECOND_SECRET + "\n");
         assertThat(Files.getPosixFilePermissions(secret))
                 .as("login collection is readable and writable by its owner only")
                 .isEqualTo(PosixFilePermissions.fromString("rw-------"));
@@ -71,9 +83,13 @@ class AgyLoginWrapperTest {
         final Path wrapper = installWrapper();
         final Path config =
                 Files.createDirectories(directory.resolve("agent/.gemini/antigravity-cli"));
+        final Path ids = Files.writeString(config.resolve(".client-ids"), "synthetic-ids-marker");
         final Path secret =
-                Files.writeString(config.resolve(".client-secret"), "synthetic-existing-marker");
+                Files.writeString(config.resolve(".client-secrets"), "synthetic-existing-marker");
         run(wrapper, "http://broker", "");
+        assertThat(Files.readString(ids))
+                .as("task startup cannot truncate an existing profile's client ids")
+                .isEqualTo("synthetic-ids-marker");
         assertThat(Files.readString(secret))
                 .as("task startup cannot truncate an existing profile secret")
                 .isEqualTo("synthetic-existing-marker");
@@ -85,7 +101,7 @@ class AgyLoginWrapperTest {
         final Path config =
                 Files.createDirectories(directory.resolve("agent/.gemini/antigravity-cli"));
         final Path target = Files.writeString(directory.resolve("outside-target"), "untouched");
-        final Path secret = config.resolve(".client-secret");
+        final Path secret = config.resolve(".client-secrets");
         Files.createSymbolicLink(secret, target);
         run(wrapper, "", "");
         assertThat(Files.isSymbolicLink(secret))
@@ -99,11 +115,16 @@ class AgyLoginWrapperTest {
                 .isEqualTo(PosixFilePermissions.fromString("rw-------"));
     }
 
-    @Test
-    void loginFailsClosedWhenTheBinaryHasNoClientSecret() throws Exception {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void loginFailsClosedWhenTheBinaryHasNoClientSecret(boolean withClientId) throws Exception {
         final Path wrapper = installWrapper();
         final Path cli = directory.resolve("agent/.local/bin/antigravity");
-        Files.writeString(cli, "#!/bin/sh\nprintf 'ran-without-secret\\n'\n");
+        Files.writeString(
+                cli,
+                "#!/bin/sh\n"
+                        + (withClientId ? "# " + FIRST_ID + "\n" : "")
+                        + "printf 'ran-without-secret\\n'\n");
         Files.setPosixFilePermissions(cli, PosixFilePermissions.fromString("rwxr-xr-x"));
         final ProcessBuilder builder =
                 new ProcessBuilder(wrapper.toString()).redirectErrorStream(true);

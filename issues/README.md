@@ -4,6 +4,12 @@ What is open in this repository, grouped by state in the order Review, Rework, I
 Analyzed, Accepted, Idea, Estimated, Finished and Rejected; a group with nothing in it is left out.
 Within a group, the order is the priority. The number is identity, not sequence.
 
+## Implementing
+
+| # | Size | Blocked by | What it covers |
+|---|---|---|---|
+| <a id="ag03"></a>[AG03](AG03-The-Sign-In-s-Client-Is-Picked-Not-Guessed.md) | S |  | the extractor hands Porelo every client id and secret of the CLI, so the login picks the pair the sign-in was granted to |
+
 ## Idea
 
 | # | Size | Blocked by | What it covers |

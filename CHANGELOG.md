@@ -16,7 +16,13 @@
   started without an explicit `--model` flag do not default to a zero-quota Pro model.
 - Google sign-in as the default `google-sign-in` provider, with the `cloud-code` dialect routed
   through `CLOUD_CODE_URL` alongside Gemini API-key routing. `AgyCredentialExtractor` reads
-  `antigravity-oauth-token` and the installed CLI's client secret for host-side renewal; the login
-  wrapper collects that secret only in a throwaway login container. `AgyContainerSetup` writes a
+  `antigravity-oauth-token` and the installed CLI's OAuth clients for host-side renewal; the login
+  wrapper collects them only in a throwaway login container. `AgyContainerSetup` writes a
   phantom-only `antigravity-oauth-token` and completed post-onboarding state for signed-in tasks.
   The task firewall also refuses `www.googleapis.com` and `antigravity-unleash.goog`.
+
+### Fixed
+
+- A Google sign-in renews on the host: the login hands Porelo every OAuth client id and secret the
+  installed CLI holds, each id whole, so Porelo picks the pair the sign-in was granted to. Before,
+  the first id and the first secret were taken, a pair Google refuses with `invalid_client`.

@@ -20,6 +20,14 @@ import org.junit.jupiter.api.io.TempDir;
 
 /** Exercises the packaged native executable using synthetic credentials only. */
 class NativeProtocolCheck {
+    private static final String IDS =
+            "123456789012-"
+                    + "a".repeat(32)
+                    + ".apps.googleusercontent.com\n1987654321098-"
+                    + "b".repeat(32)
+                    + ".apps.googleusercontent.com";
+    private static final String SECRETS =
+            "GOC" + "SPX-" + "c".repeat(28) + "\nGOC" + "SPX-" + "d".repeat(28);
     @TempDir Path directory;
 
     @Test
@@ -30,9 +38,8 @@ class NativeProtocolCheck {
                         "synthetic-access-token",
                         "synthetic-refresh-token",
                         "1970-01-01T00:00:42Z"));
-        Files.writeString(directory.resolve(".client-id"), AgyCredentialExtractorTest.CLIENT_ID);
-        Files.writeString(
-                directory.resolve(".client-secret"), AgyCredentialExtractorTest.CLIENT_SECRET);
+        Files.writeString(directory.resolve(".client-ids"), IDS + "\n");
+        Files.writeString(directory.resolve(".client-secrets"), SECRETS + "\n");
         try (InstalledAgent agent =
                 new InstalledAgent(
                         Path.of(System.getProperty("porelo.native.binary")),
@@ -49,15 +56,14 @@ class NativeProtocolCheck {
                     .as("the protocol preserves the synthetic access token")
                     .isEqualTo("synthetic-access-token");
             assertThat(credential.attributes())
-                    .as("all five host renewal attributes survive the wire")
+                    .as("the renewal attributes and both candidate lists survive the wire")
                     .containsExactlyInAnyOrderEntriesOf(
                             Map.of(
                                     Credential.REFRESH_TOKEN, "synthetic-refresh-token",
                                     Credential.EXPIRES_AT, "42000",
                                     Credential.TOKEN_URL, "https://oauth2.googleapis.com/token",
-                                    Credential.CLIENT_ID, AgyCredentialExtractorTest.CLIENT_ID,
-                                    Credential.CLIENT_SECRET,
-                                            AgyCredentialExtractorTest.CLIENT_SECRET));
+                                    AgyCredentialExtractor.CLIENT_ID_CANDIDATES, IDS,
+                                    AgyCredentialExtractor.CLIENT_SECRET_CANDIDATES, SECRETS));
         }
     }
 
@@ -66,9 +72,8 @@ class NativeProtocolCheck {
         Files.writeString(
                 directory.resolve("antigravity-oauth-token"),
                 "{\"auth_method\":\"consumer\",\"token\":{\"access_token\":\"access-secret-marker\\n\"}}");
-        Files.writeString(directory.resolve(".client-id"), AgyCredentialExtractorTest.CLIENT_ID);
-        Files.writeString(
-                directory.resolve(".client-secret"), AgyCredentialExtractorTest.CLIENT_SECRET);
+        Files.writeString(directory.resolve(".client-ids"), IDS + "\n");
+        Files.writeString(directory.resolve(".client-secrets"), SECRETS + "\n");
         try (InstalledAgent agent =
                 new InstalledAgent(
                         Path.of(System.getProperty("porelo.native.binary")),
@@ -83,9 +88,7 @@ class NativeProtocolCheck {
                                 error.printStackTrace(new PrintWriter(trace));
                                 assertThat(trace.toString())
                                         .as("protocol errors never echo secret markers")
-                                        .doesNotContain(
-                                                "access-secret-marker",
-                                                AgyCredentialExtractorTest.CLIENT_SECRET);
+                                        .doesNotContain("access-secret-marker", "GOC" + "SPX-");
                             });
         }
     }

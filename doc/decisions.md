@@ -22,18 +22,27 @@ explicit API-key choice.
 `AgyCredentialExtractor` verifies that the configuration directory and every file it reads are
 regular and contain no symbolic links along their path, reads `antigravity-oauth-token` of at most
 one mebibyte, validates the consumer access and refresh tokens and converts its ISO-8601 expiry to
-epoch milliseconds. It collects the client ID and client secret from `.client-id` and `.client-secret`
-first, then a profile-local `antigravity` binary, then `/home/agent/.local/bin/antigravity`. Small
-client files are limited to 4096 bytes; binary scans stream at most 512 mebibytes and preserve matches
-across chunk boundaries. A present invalid client file fails closed. Diagnostics never include
-credential contents or parser causes. The five renewal attributes go to the host: refresh token,
-expiry, token URL, client ID and client secret. This adapter-specific extraction differs from the
-single-CLI baseline because Google's consumer renewal requires the installed client's ID and secret
-as well as the person's refresh token.
+epoch milliseconds. It collects every client ID and every client secret from `.client-ids` and
+`.client-secrets` first, then a profile-local `antigravity` binary, then
+`/home/agent/.local/bin/antigravity`; a single `.client-id` or `.client-secret` from an older image is
+ignored. The candidate files are limited to 4096 bytes and every line must be a whole id or secret;
+binary scans stream at most 512 mebibytes and keep a value split across chunk boundaries whole and
+once. Candidates are kept distinct in the binary's order, and more than eight of one kind is refused.
+A present invalid candidate file fails closed. Diagnostics never include credential contents or parser
+causes. The host receives the refresh token, expiry, token URL and the two candidate lists
+(`clientIdCandidates`, `clientSecretCandidates`); Porelo's login tries each id with each secret once
+with the fresh refresh token and stores the pair that renews it. This adapter-specific extraction
+differs from the single-CLI baseline because Google's consumer renewal requires the installed client's
+ID and secret as well as the person's refresh token.
+
+The CLI holds several OAuth clients and chooses one by sign-in kind in its code: the client IDs differ
+in their number of leading digits, and nothing in the strings' order or neighborhood pairs an id with
+its secret. Reading the pairing from the machine code would tie the adapter to x86-64 and to one
+compiler's code shape, so the pair is picked live at login instead.
 
 The login-only plaintext collection window is an accepted exposure: the wrapper creates owner-only
-`.client-id` and `.client-secret` files beside the CLI's login file so the host can collect and
-encrypt all three before deleting the temporary host directory and login container. Runtime-backed
+`.client-ids` and `.client-secrets` files beside the CLI's login file so the host can collect and
+encrypt the picked pair before deleting the temporary host directory and login container. Runtime-backed
 collection that avoids plaintext filesystem copies would remove the need for this window. Signed-in
 tasks never receive either renewal secret.
 
@@ -44,9 +53,9 @@ digest matching its Google Cloud Storage manifest. The archive contains a single
 binary named `antigravity`. The definition verifies the archive digest and member list before
 installing `/home/agent/.local/bin/antigravity` and a mode `0755` POSIX shell wrapper at
 `/home/agent/.local/bin/agy`. With neither broker URL set and no `/run/porelo`, the wrapper uses
-`set -eu`, `umask 077`, removes any preexisting `.client-id` and `.client-secret`, writes the first
-matching client ID and client secret with `set -C` (`noclobber`), and requires non-empty `.client-id`
-and `.client-secret` files before executing the CLI. In a task it immediately executes the CLI
+`set -eu`, `umask 077`, removes any preexisting `.client-id`, `.client-secret`, `.client-ids` and
+`.client-secrets`, and writes every matching client ID and client secret with `set -C` (`noclobber`);
+when `grep` finds none of either, it stops the wrapper before the CLI runs. In a task it immediately executes the CLI
 without writing files.
 The image sets `AGY_CLI_DISABLE_AUTO_UPDATE=true` to disable the background self-updater, and
 refuses `antigravity-cli-auto-updater-974169037036.us-central1.run.app`, `play.googleapis.com`,

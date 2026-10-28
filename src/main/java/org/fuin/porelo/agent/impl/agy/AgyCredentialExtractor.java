@@ -10,8 +10,10 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.DateTimeException;
 import java.time.Instant;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.SequencedSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.fuin.porelo.agent.api.AgentException;
@@ -20,18 +22,25 @@ import org.fuin.porelo.agent.api.CredentialExtractor;
 import org.fuin.porelo.wire.Json;
 import org.fuin.porelo.wire.JsonException;
 
-/** Collects Antigravity's consumer sign-in and installed client secret for host-side renewal. */
+/**
+ * Collects Antigravity's consumer sign-in and every OAuth client of the installed CLI, so the login
+ * on the host can pick the client the sign-in was granted to.
+ */
 public final class AgyCredentialExtractor implements CredentialExtractor {
     private static final int MAX_TOKEN_BYTES = 1024 * 1024;
-    private static final int MAX_SECRET_BYTES = 4096;
+    private static final int MAX_CANDIDATES = 8;
+    private static final int MAX_CANDIDATE_FILE_BYTES = 4096;
     private static final long MAX_BINARY_BYTES = 512L * 1024 * 1024;
     private static final Pattern TOKEN = Pattern.compile("[A-Za-z0-9._~+/-]+=*");
-    private static final Pattern COLLECTED_CLIENT_ID = Pattern.compile("[A-Za-z0-9._-]{6,128}");
-    private static final Pattern COLLECTED_CLIENT_SECRET = Pattern.compile("[A-Za-z0-9_-]{12,64}");
+    // The CLI's clients differ in the number of leading digits, so none may be cut.
     private static final Pattern BINARY_CLIENT_ID =
-            Pattern.compile("[0-9]{12}-[a-z0-9]{32}\\.apps\\." + "googleusercontent\\.com");
+            Pattern.compile("[0-9]{1,20}-[0-9a-z]{16,64}\\.apps\\." + "googleusercontent\\.com");
     private static final Pattern BINARY_CLIENT_SECRET =
             Pattern.compile("GOC" + "SPX-[A-Za-z0-9_-]{28}");
+    // Agreed with porelo's login, which tries each id with each secret; local until agents/api has
+    // them.
+    static final String CLIENT_ID_CANDIDATES = "clientIdCandidates";
+    static final String CLIENT_SECRET_CANDIDATES = "clientSecretCandidates";
     private static final String NO_CLIENT_ID =
             "Antigravity CLI OAuth client ID could not be read from the installed CLI";
     private static final String NO_CLIENT_SECRET =
@@ -48,7 +57,7 @@ public final class AgyCredentialExtractor implements CredentialExtractor {
     /**
      * Creates an extractor with an explicit fallback CLI binary.
      *
-     * @param cliBinary Regular binary to scan when the collected profile has no client secret.
+     * @param cliBinary Regular binary to scan when the configuration directory holds none.
      */
     public AgyCredentialExtractor(Path cliBinary) {
         this(cliBinary, BINARY_CLIENT_ID, BINARY_CLIENT_SECRET);
@@ -81,18 +90,25 @@ public final class AgyCredentialExtractor implements CredentialExtractor {
         final String access = token(token, "access_token");
         final String refresh = token(token, "refresh_token");
         final String expiresAt = expiry(token);
-        final String clientId = clientId(directory);
-        final String clientSecret = clientSecret(directory);
+        final String clientIds =
+                candidates(directory, ".client-ids", binaryClientId, 112, NO_CLIENT_ID);
+        final String clientSecrets =
+                candidates(directory, ".client-secrets", binaryClientSecret, 35, NO_CLIENT_SECRET);
         return Optional.of(
                 new Credential(
                         "oauth",
                         access,
                         Map.of(
-                                Credential.REFRESH_TOKEN, refresh,
-                                Credential.EXPIRES_AT, expiresAt,
-                                Credential.TOKEN_URL, "https://oauth2.googleapis.com/token",
-                                Credential.CLIENT_ID, clientId,
-                                Credential.CLIENT_SECRET, clientSecret)));
+                                Credential.REFRESH_TOKEN,
+                                refresh,
+                                Credential.EXPIRES_AT,
+                                expiresAt,
+                                Credential.TOKEN_URL,
+                                "https://oauth2.googleapis.com/token",
+                                CLIENT_ID_CANDIDATES,
+                                clientIds,
+                                CLIENT_SECRET_CANDIDATES,
+                                clientSecrets)));
     }
 
     private static Map<?, ?> object(String json) {
@@ -139,57 +155,61 @@ public final class AgyCredentialExtractor implements CredentialExtractor {
         }
     }
 
-    private String clientId(Path configDirectory) {
-        return collectedOrScanned(
-                configDirectory,
-                ".client-id",
-                COLLECTED_CLIENT_ID,
-                "Antigravity CLI collected OAuth client ID",
-                binaryClientId,
-                71,
-                NO_CLIENT_ID);
-    }
-
-    private String clientSecret(Path configDirectory) {
-        return collectedOrScanned(
-                configDirectory,
-                ".client-secret",
-                COLLECTED_CLIENT_SECRET,
-                "Antigravity CLI collected OAuth client secret",
-                binaryClientSecret,
-                34,
-                NO_CLIENT_SECRET);
-    }
-
-    private String collectedOrScanned(
+    private String candidates(
             Path configDirectory,
             String fileName,
-            Pattern collectedPattern,
-            String collectedLabel,
-            Pattern binaryPattern,
+            Pattern pattern,
             int overlap,
             String missingMessage) {
+        final String label = "Antigravity CLI collected OAuth client values (" + fileName + ")";
         final Optional<byte[]> collected =
-                readSmallFile(configDirectory.resolve(fileName), MAX_SECRET_BYTES, collectedLabel);
+                readSmallFile(configDirectory.resolve(fileName), MAX_CANDIDATE_FILE_BYTES, label);
+        SequencedSet<String> found;
         if (collected.isPresent()) {
-            final String value =
-                    new String(collected.orElseThrow(), StandardCharsets.US_ASCII).strip();
-            if (!collectedPattern.matcher(value).matches()) {
-                throw new AgentException(collectedLabel + " is malformed");
+            found = collectedCandidates(collected.orElseThrow(), pattern, label);
+            if (found.isEmpty()) {
+                throw new AgentException(label + " is malformed");
             }
-            return value;
+        } else {
+            found =
+                    scanBinary(
+                            configDirectory.resolve("antigravity"),
+                            pattern,
+                            overlap,
+                            missingMessage);
+            if (found.isEmpty()) {
+                found = scanBinary(cliBinary, pattern, overlap, missingMessage);
+            }
         }
-        final Optional<String> local =
-                scanBinary(
-                        configDirectory.resolve("antigravity"),
-                        binaryPattern,
-                        overlap,
-                        missingMessage);
-        if (local.isPresent()) {
-            return local.orElseThrow();
+        if (found.isEmpty()) {
+            throw new AgentException(missingMessage);
         }
-        return scanBinary(cliBinary, binaryPattern, overlap, missingMessage)
-                .orElseThrow(() -> new AgentException(missingMessage));
+        return String.join("\n", found);
+    }
+
+    private static SequencedSet<String> collectedCandidates(
+            byte[] bytes, Pattern pattern, String label) {
+        final SequencedSet<String> found = new LinkedHashSet<>();
+        for (final String line : new String(bytes, StandardCharsets.US_ASCII).split("\n", -1)) {
+            if (line.isEmpty()) {
+                continue;
+            }
+            if (!pattern.matcher(line).matches()) {
+                throw new AgentException(label + " is malformed");
+            }
+            found.add(line);
+            refuseTooMany(found);
+        }
+        return found;
+    }
+
+    private static void refuseTooMany(SequencedSet<String> found) {
+        if (found.size() > MAX_CANDIDATES) {
+            throw new AgentException(
+                    "Antigravity CLI holds more than "
+                            + MAX_CANDIDATES
+                            + " OAuth client values of one kind");
+        }
     }
 
     private static Optional<byte[]> readSmallFile(Path file, int limit, String label) {
@@ -244,11 +264,12 @@ public final class AgyCredentialExtractor implements CredentialExtractor {
         }
     }
 
-    private static Optional<String> scanBinary(
+    private static SequencedSet<String> scanBinary(
             Path file, Pattern pattern, int overlap, String missingMessage) {
         try {
+            final SequencedSet<String> found = new LinkedHashSet<>();
             if (!regularFile(file, MAX_BINARY_BYTES, "Antigravity CLI binary")) {
-                return Optional.empty();
+                return found;
             }
             try (InputStream input = Files.newInputStream(file, LinkOption.NOFOLLOW_LINKS)) {
                 final byte[] buffer = new byte[8192];
@@ -272,13 +293,18 @@ public final class AgyCredentialExtractor implements CredentialExtractor {
                     final String chunk =
                             tail + new String(buffer, 0, count, StandardCharsets.ISO_8859_1);
                     final Matcher match = pattern.matcher(chunk);
-                    if (match.find()) {
-                        return Optional.of(match.group());
+                    while (match.find()) {
+                        // A match lying wholly in the retained tail was taken from the read before.
+                        if (match.end() > tail.length()) {
+                            found.add(match.group());
+                        }
+                        refuseTooMany(found);
                     }
-                    // Retain enough bytes to recognize a value split across reads.
+                    // Retain a whole value's length, so one split across reads is seen whole and
+                    // once.
                     tail = chunk.substring(Math.max(0, chunk.length() - overlap));
                 }
-                return Optional.empty();
+                return found;
             }
         } catch (IOException | SecurityException exception) {
             throw new AgentException(missingMessage);

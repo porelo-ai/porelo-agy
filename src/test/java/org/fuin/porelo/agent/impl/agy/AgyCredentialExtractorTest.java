@@ -34,6 +34,72 @@ class AgyCredentialExtractorTest {
     @TempDir Path directory;
 
     @Test
+    void everyWholeClientIdAndEverySecretOfTheInstalledCliReachesTheLoginsPick()
+            throws IOException {
+        writeLogin();
+        // A stale pair from an older image's wrapper must not stand in for the CLI's clients.
+        Files.writeString(directory.resolve(".client-id"), CLIENT_ID);
+        Files.writeString(directory.resolve(".client-secret"), CLIENT_SECRET);
+        final String gcpId = "123456789012-" + "a".repeat(32) + ".apps.googleusercontent.com";
+        final String consumerId = "1987654321098-" + "b".repeat(32) + ".apps.googleusercontent.com";
+        final String consumerSecret = "GOC" + "SPX-" + "c".repeat(28);
+        final String gcpSecret = "GOC" + "SPX-" + "d".repeat(28);
+        final Path binary =
+                Files.writeString(
+                        directory.resolve("installed-cli"),
+                        consumerSecret
+                                + gcpSecret
+                                + "\0text"
+                                + gcpId
+                                + "\0%v"
+                                + consumerId
+                                + consumerId
+                                + "\0"
+                                + gcpSecret);
+        final Credential credential =
+                new AgyCredentialExtractor(binary).extract(directory).orElseThrow();
+        assertThat(credential.attributes())
+                .as("the login tries each whole id with each secret, in the binary's order")
+                .containsEntry(
+                        AgyCredentialExtractor.CLIENT_ID_CANDIDATES, gcpId + "\n" + consumerId)
+                .containsEntry(
+                        AgyCredentialExtractor.CLIENT_SECRET_CANDIDATES,
+                        consumerSecret + "\n" + gcpSecret)
+                .doesNotContainKeys(Credential.CLIENT_ID, Credential.CLIENT_SECRET);
+    }
+
+    @Test
+    void theWrappersCollectedListsReachTheLoginDistinctAndInOrder() throws IOException {
+        writeLogin();
+        Files.writeString(
+                directory.resolve(".client-ids"),
+                CLIENT_ID + "-2\n" + CLIENT_ID + "\n" + CLIENT_ID + "-2\n");
+        Files.writeString(directory.resolve(".client-secrets"), CLIENT_SECRET + "\n");
+        Files.writeString(directory.resolve("antigravity"), CLIENT_ID + "-3\0" + CLIENT_SECRET);
+        assertThat(extractor().extract(directory).orElseThrow().attributes())
+                .as("the collected lists stand for the CLI, without repeats, in their order")
+                .containsEntry(
+                        AgyCredentialExtractor.CLIENT_ID_CANDIDATES, CLIENT_ID + "-2\n" + CLIENT_ID)
+                .containsEntry(AgyCredentialExtractor.CLIENT_SECRET_CANDIDATES, CLIENT_SECRET);
+    }
+
+    @Test
+    void moreThanEightClientsOfOneKindAreRefusedRatherThanTriedAgainstGoogle() throws IOException {
+        writeLogin();
+        final StringBuilder ids = new StringBuilder();
+        for (int i = 1; i <= 9; i++) {
+            ids.append(CLIENT_ID).append('-').append(i).append('\n');
+        }
+        Files.writeString(directory.resolve(".client-ids"), ids);
+        Files.writeString(directory.resolve(".client-secrets"), CLIENT_SECRET);
+        refuses(extractor());
+        Files.delete(directory.resolve(".client-ids"));
+        Files.delete(directory.resolve(".client-secrets"));
+        Files.writeString(directory.resolve("antigravity"), ids.toString().replace('\n', '\0'));
+        refuses(extractor());
+    }
+
+    @Test
     void aMissingLoginLeavesNothingToImport() {
         assertThat(extractor().extract(directory))
                 .as("an unfinished login has no credential")
@@ -43,19 +109,45 @@ class AgyCredentialExtractorTest {
     @Test
     void aConsumerSignInRetainsEveryHostRenewalAttribute() throws IOException {
         writeLogin();
-        Files.writeString(directory.resolve(".client-id"), "\n" + CLIENT_ID + "\n");
-        Files.writeString(directory.resolve(".client-secret"), "\n" + CLIENT_SECRET + "\n");
+        Files.writeString(directory.resolve(".client-ids"), "\n" + CLIENT_ID + "\n");
+        Files.writeString(directory.resolve(".client-secrets"), "\n" + CLIENT_SECRET + "\n");
         assertCredential(extractor().extract(directory).orElseThrow(), EXPIRY);
     }
 
     @Test
-    void aLocalBinaryCanSupplyTheFirstClientSecretAcrossAChunkBoundary() throws IOException {
+    void anIdCutByTheRetainedTailIsNotTakenForAnotherClient() throws IOException {
+        writeLogin();
+        final String id = "1987654321098-" + "b".repeat(32) + ".apps.googleusercontent.com";
+        final String secret = "GOC" + "SPX-" + "c".repeat(28);
+        // The id ends inside the first read, but starts before the 112 bytes kept for the next one.
+        final Path binary = directory.resolve("installed-cli");
+        Files.write(binary, new byte[8075]);
+        Files.writeString(binary, id + "\0" + secret + "\0".repeat(50), StandardOpenOption.APPEND);
+        assertThat(new AgyCredentialExtractor(binary).extract(directory).orElseThrow().attributes())
+                .as("the login is offered the whole id once, never its cut tail as a second client")
+                .containsEntry(AgyCredentialExtractor.CLIENT_ID_CANDIDATES, id);
+    }
+
+    @Test
+    void anEmptyCollectedListIsRefusedAsMalformedNotAsAMissingCli() throws IOException {
+        writeLogin();
+        Files.writeString(directory.resolve(".client-ids"), CLIENT_ID);
+        Files.writeString(directory.resolve(".client-secrets"), "\n");
+        refuses(extractor());
+        assertThatThrownBy(() -> extractor().extract(directory))
+                .as("the collected file is named, not the CLI it came from")
+                .hasMessageContaining(".client-secrets")
+                .hasMessageEndingWith("is malformed");
+    }
+
+    @Test
+    void aLocalBinarySuppliesItsClientsWholeAcrossAChunkBoundary() throws IOException {
         writeLogin();
         final byte[] prefix = new byte[8190];
         Files.write(directory.resolve("antigravity"), prefix);
         Files.writeString(
                 directory.resolve("antigravity"),
-                CLIENT_ID + "\0" + CLIENT_SECRET + "\0test-client-secret-2",
+                CLIENT_ID + "\0" + CLIENT_SECRET + "\0" + CLIENT_SECRET,
                 StandardOpenOption.APPEND);
         assertCredential(extractor().extract(directory).orElseThrow(), EXPIRY);
     }
@@ -215,8 +307,8 @@ class AgyCredentialExtractorTest {
             })
     void aMalformedCollectedClientSecretCannotFallBackToABinary(String secret) throws IOException {
         writeLogin();
-        Files.writeString(directory.resolve(".client-id"), CLIENT_ID);
-        Files.writeString(directory.resolve(".client-secret"), secret);
+        Files.writeString(directory.resolve(".client-ids"), CLIENT_ID);
+        Files.writeString(directory.resolve(".client-secrets"), secret);
         Files.writeString(directory.resolve("antigravity"), CLIENT_ID + "\0" + CLIENT_SECRET);
         refuses(extractor());
     }
@@ -224,33 +316,33 @@ class AgyCredentialExtractorTest {
     @Test
     void aClientSecretSymlinkCannotReadAnotherFile() throws IOException {
         writeLogin();
-        Files.writeString(directory.resolve(".client-id"), CLIENT_ID);
+        Files.writeString(directory.resolve(".client-ids"), CLIENT_ID);
         final Path other = Files.writeString(directory.resolve("other"), CLIENT_SECRET);
-        Files.createSymbolicLink(directory.resolve(".client-secret"), other);
+        Files.createSymbolicLink(directory.resolve(".client-secrets"), other);
         refuses(extractor());
     }
 
     @Test
     void aClientSecretDirectoryIsRefused() throws IOException {
         writeLogin();
-        Files.writeString(directory.resolve(".client-id"), CLIENT_ID);
-        Files.createDirectory(directory.resolve(".client-secret"));
+        Files.writeString(directory.resolve(".client-ids"), CLIENT_ID);
+        Files.createDirectory(directory.resolve(".client-secrets"));
         refuses(extractor());
     }
 
     @Test
     void anOversizedClientSecretIsRefused() throws IOException {
         writeLogin();
-        Files.writeString(directory.resolve(".client-id"), CLIENT_ID);
-        Files.writeString(directory.resolve(".client-secret"), CLIENT_SECRET + " ".repeat(4096));
+        Files.writeString(directory.resolve(".client-ids"), CLIENT_ID);
+        Files.writeString(directory.resolve(".client-secrets"), CLIENT_SECRET + " ".repeat(4096));
         refuses(extractor());
     }
 
     @Test
     void anUnreadableClientSecretCannotFallBackToABinary() throws IOException {
         writeLogin();
-        Files.writeString(directory.resolve(".client-id"), CLIENT_ID);
-        final Path file = Files.writeString(directory.resolve(".client-secret"), CLIENT_SECRET);
+        Files.writeString(directory.resolve(".client-ids"), CLIENT_ID);
+        final Path file = Files.writeString(directory.resolve(".client-secrets"), CLIENT_SECRET);
         Files.setPosixFilePermissions(file, PosixFilePermissions.fromString("---------"));
         try {
             refuses(extractor());
@@ -262,7 +354,7 @@ class AgyCredentialExtractorTest {
     @Test
     void aMissingClientSecretFailsWithTheSafeInstalledCliDiagnostic() throws IOException {
         writeLogin();
-        Files.writeString(directory.resolve(".client-id"), CLIENT_ID);
+        Files.writeString(directory.resolve(".client-ids"), CLIENT_ID);
         refuses(extractor());
         assertThatThrownBy(() -> extractor().extract(directory))
                 .as("absence names the missing runtime source")
@@ -273,7 +365,7 @@ class AgyCredentialExtractorTest {
     @Test
     void aLocalBinarySymlinkOrDirectoryCannotSupplyASecret() throws IOException {
         writeLogin();
-        Files.writeString(directory.resolve(".client-id"), CLIENT_ID);
+        Files.writeString(directory.resolve(".client-ids"), CLIENT_ID);
         final Path other = Files.writeString(directory.resolve("other"), CLIENT_SECRET);
         final Path binary = directory.resolve("antigravity");
         Files.createSymbolicLink(binary, other);
@@ -286,7 +378,7 @@ class AgyCredentialExtractorTest {
     @Test
     void aFallbackBinarySymlinkCannotRedirectTheRead() throws IOException {
         writeLogin();
-        Files.writeString(directory.resolve(".client-id"), CLIENT_ID);
+        Files.writeString(directory.resolve(".client-ids"), CLIENT_ID);
         final Path other = Files.writeString(directory.resolve("other"), CLIENT_SECRET);
         final Path link = Files.createSymbolicLink(directory.resolve("fallback"), other);
         refuses(extractor(link));
@@ -295,7 +387,7 @@ class AgyCredentialExtractorTest {
     @Test
     void anOversizedBinaryCannotCauseAnUnboundedScan() throws IOException {
         writeLogin();
-        Files.writeString(directory.resolve(".client-id"), CLIENT_ID);
+        Files.writeString(directory.resolve(".client-ids"), CLIENT_ID);
         final Path binary = directory.resolve("antigravity");
         try (var channel =
                 Files.newByteChannel(
@@ -360,7 +452,8 @@ class AgyCredentialExtractorTest {
                             assertThat(trace.toString())
                                     .as(
                                             "messages, causes, and suppressed errors never repeat credential bytes")
-                                    .doesNotContain(ACCESS, REFRESH, "too-short", CLIENT_SECRET);
+                                    .doesNotContain(
+                                            ACCESS, REFRESH, "too-short", CLIENT_ID, CLIENT_SECRET);
                         });
     }
 
@@ -369,8 +462,8 @@ class AgyCredentialExtractorTest {
     }
 
     private void writeClientMetadata() throws IOException {
-        Files.writeString(directory.resolve(".client-id"), CLIENT_ID);
-        Files.writeString(directory.resolve(".client-secret"), CLIENT_SECRET);
+        Files.writeString(directory.resolve(".client-ids"), CLIENT_ID);
+        Files.writeString(directory.resolve(".client-secrets"), CLIENT_SECRET);
     }
 
     private void write(String json) throws IOException {
@@ -396,7 +489,7 @@ class AgyCredentialExtractorTest {
                 .as("the broker receives the access token")
                 .isEqualTo(ACCESS);
         assertThat(credential.attributes())
-                .as("the host receives precisely the five renewal attributes")
+                .as("the host receives the renewal attributes and every client to pick from")
                 .containsExactlyInAnyOrderEntriesOf(
                         Map.of(
                                 Credential.REFRESH_TOKEN,
@@ -405,9 +498,9 @@ class AgyCredentialExtractorTest {
                                 Long.toString(Instant.parse(expiry).toEpochMilli()),
                                 Credential.TOKEN_URL,
                                 "https://oauth2.googleapis.com/token",
-                                Credential.CLIENT_ID,
+                                AgyCredentialExtractor.CLIENT_ID_CANDIDATES,
                                 CLIENT_ID,
-                                Credential.CLIENT_SECRET,
+                                AgyCredentialExtractor.CLIENT_SECRET_CANDIDATES,
                                 CLIENT_SECRET));
         assertThat(credential.toString())
                 .as("credential diagnostics remain redacted")

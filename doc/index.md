@@ -6,9 +6,10 @@ and verifies its digest before extraction.
 
 Google sign-in (`google-sign-in`) is the default provider. Run `porelo vault login agy` for the
 CLI's attended login, or use `--dry-run` to preview it. The extractor reads the consumer sign-in
-from `~/.gemini/antigravity-cli/antigravity-oauth-token` and collects the installed CLI's OAuth client
-ID and secret for encrypted host-side renewal. The login wrapper writes `.client-id` and `.client-secret`
-only in the throwaway login container; it writes nothing in a brokered task.
+from `~/.gemini/antigravity-cli/antigravity-oauth-token` and collects every OAuth client ID and secret
+of the installed CLI; Porelo's login tries them with the fresh sign-in and keeps the pair that renews
+it, for encrypted host-side renewal. The login wrapper writes `.client-ids` and `.client-secrets` only in
+the throwaway login container; it writes nothing in a brokered task.
 
 Signed-in tasks use the `cloud-code` dialect through `CLOUD_CODE_URL` and receive only a phantom
 access token in an owner-only `antigravity-oauth-token`, with a far expiry and completed onboarding
@@ -63,7 +64,8 @@ To verify the Google sign-in path end to end with a dedicated Google AI account 
      `https://antigravity.google/oauth-callback` and displays an authorization code.
    - Paste that authorization code at `authorization code...` in the terminal and press `Enter`.
    - Once the CLI writes `antigravity-oauth-token`, Porelo collects `antigravity-oauth-token`,
-     `.client-id` and `.client-secret` into the encrypted vault and removes the login container
+     `.client-ids` and `.client-secrets`, picks the client that renews the sign-in, stores it in the
+     encrypted vault and removes the login container
      automatically.
 5. Verify with `porelo vault list` that `google-sign-in` (`oauth`) is stored with `client_id`,
    `expires_at` and `token_url`.
@@ -71,7 +73,7 @@ To verify the Google sign-in path end to end with a dedicated Google AI account 
    `porelo task start check -p default -r default --agent agy --clearance deny -P "Reply with the single word PORELOOAUTH and nothing else."`
    and verify that the response contains `PORELOOAUTH`, that `/home/agent/.gemini/antigravity-cli/antigravity-oauth-token`
    in `porelo-default-check` holds only the `porelo_pt_` phantom token and `2099-01-01T00:00:00Z`,
-   and that no refresh token, ID token, `.client-id` or `.client-secret` file exists in `/home/agent/.gemini/antigravity-cli`.
+   and that no refresh token, ID token, `.client-ids` or `.client-secrets` file exists in `/home/agent/.gemini/antigravity-cli`.
 7. Remove the task and disposable vault:
    `porelo task remove porelo-default-check --force && porelo vault lock && rm -rf /tmp/agy-signin`.
 

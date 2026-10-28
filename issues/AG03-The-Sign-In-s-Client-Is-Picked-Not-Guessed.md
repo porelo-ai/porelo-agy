@@ -1,6 +1,6 @@
 # AG03 — The Sign-In's Client Is Picked, Not Guessed
 
-**Status:** Implementing; the pick is porelo's, in its next snapshot.
+**Status:** Implementing; blocked by porelo [P12](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p12), which picks the pair.
 **Size:** S - the extractor and the definition's wrapper, and their tests; the pick itself is
 porelo's.
 

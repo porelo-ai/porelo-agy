@@ -8,7 +8,7 @@ Within a group, the order is the priority. The number is identity, not sequence.
 
 | # | Size | Blocked by | What it covers |
 |---|---|---|---|
-| <a id="ag03"></a>[AG03](AG03-The-Sign-In-s-Client-Is-Picked-Not-Guessed.md) | S |  | the extractor hands Porelo every client id and secret of the CLI, so the login picks the pair the sign-in was granted to |
+| <a id="ag03"></a>[AG03](AG03-The-Sign-In-s-Client-Is-Picked-Not-Guessed.md) | S | porelo [P12](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p12) | the extractor hands Porelo every client id and secret of the CLI, so the login picks the pair the sign-in was granted to |
 
 ## Idea
 

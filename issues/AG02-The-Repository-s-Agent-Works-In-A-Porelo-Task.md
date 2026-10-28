@@ -32,6 +32,8 @@ image*) and `doc/running.md` (the agent's layer), and porelo-project's `project.
   [B172](https://github.com/porelo-ai/porelo/blob/main/issues/base/README.md#b172)'s reviewer task is built, an agent
   outside the task reads the pull request's diff against the skills, as today's sub-agent reading does, and posts its
   findings in the room.
+- **The CLI:** Claude Code runs the agent in the task, as it runs this repository's agent today: woken by a
+  message, its subscription brokered from the vault. Antigravity CLI itself runs it in an issue of its own, afterwards.
 - **Steps:**
   0. *A dry run on this machine first*, as for porelo-message-sluice: the task online with GitHub as upstream, its
      Build read through the `github` reader, snapshots from Sonatype; it shows the image, the room, the wake and the
@@ -56,18 +58,9 @@ image*) and `doc/running.md` (the agent's layer), and porelo-project's `project.
 - Its build runs on the local forge as on the central one, [AG04](README.md#ag04).
 - The room shows it as `Agent Agy`, from the nickname `Agy` in porelo-project's `project.yml`, set once porelo
   [B298](https://github.com/porelo-ai/porelo/blob/main/issues/base/README.md#b298) is published.
-- Whichever CLI *Open questions* chooses works in the task with its sign-in from the vault; Antigravity CLI's is
-  the operator's Google subscription (porelo [P12](https://github.com/porelo-ai/porelo/blob/main/issues/providers/README.md#p12)).
+- Claude Code works in the task with the operator's subscription from the vault.
 - [PJ59](https://github.com/porelo-ai/porelo-project/blob/main/issues/README.md#pj59)'s move check is red for `porelo-agy` before the move and green after it; the agent's session on this machine and its
   VM accounts are no longer used, and the way back [PJ59](https://github.com/porelo-ai/porelo-project/blob/main/issues/README.md#pj59) describes is open.
-
-## Open questions
-
-- **Which CLI runs this repository's agent in its task.** (a) Claude Code, as for every one of this agent's
-  repositories today: woken by a message, its subscription brokered; (b) Antigravity CLI itself, so the adapter is used daily
-  where it is built: it declares its resting and its waiting screen, so it is woken, and its sign-in is brokered; the
-  agent's own reading then needs another model than the one that built. **Recommended: (a)** for the move, one new
-  thing at a time; (b) as an issue of its own afterwards.
 
 ## To be checked
 

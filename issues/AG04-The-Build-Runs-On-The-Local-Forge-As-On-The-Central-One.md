@@ -1,7 +1,6 @@
 # AG04 — The Build Runs On The Local Forge As On The Central One
 
-**Status:** Analyzed; waits for the build tools asking for a machine by kind, the host's pool file and a
-forge job learning where that pool is, and Porelo's snapshots in the forge's registry.
+**Status:** Analyzed; waits for Porelo's and the build tools' snapshots in the forge's registry.
 **Size:** S - the workflows and `settings.xml` of this one repository, no contract another repository reads; about
 2 hours of work once porelo-claude-code has set the shape, plus the runs
 on the host's forge.
@@ -53,7 +52,9 @@ of it: there is no `artifactory-smoke.yml` and no `delete-runs.yml`, and `update
      job learns where the host's pool is from the forge's runner (`PORELO_MACHINES_POOL`, as porelo-host
      proposes it), so the same lines take a pool
      account on the forge and rent on GitHub; *Delete what this run created* takes `PORELO_MACHINES_API` the same
-     way. `GOOGLE_API` must be on the forge too, verified by the operator.
+     way. **On the host's forge the `acceptance` job is off while the repository moves:** it runs only where
+     `github.server_url` is GitHub's, until the host's pool lends a forge job a machine by kind;
+     [AG05](README.md#ag05) switches it on there.
   4. `porelo-release check-providers` joins the Build's checks in the same commit; the provider's names are in the
      workflows only.
 - **Red first:** today's `build.yml` on the host's Forgejo, which stops at the snapshot resolution or at Publish; and
@@ -62,7 +63,7 @@ of it: there is no `artifactory-smoke.yml` and no `delete-runs.yml`, and `update
 ## Acceptance
 
 - Seen to fail first: today's `build.yml` on the local Forgejo.
-- The same commit's Build green on the local Forgejo (legs on the host's pool, nothing published) and on GitHub (legs
+- The same commit's Build green on the local Forgejo (the `acceptance` job skipped, nothing published) and on GitHub (legs
   rented, published as today).
 - The kinds' check finds no provider's name in this repository's workflows.
 
@@ -70,11 +71,6 @@ of it: there is no `artifactory-smoke.yml` and no `delete-runs.yml`, and `update
 
 - That the host's Forgejo runner serves `actions/checkout` v7, `actions/upload-artifact` v7,
   `actions/download-artifact` v8 and `actions/cache` v6, and that the `pinned-jdk` action (`JAVA_HOME_25_X64`, `porelo-machines jdk --github`) works there.
-- That the host's VM pool holds an `ubuntu` and a `fedora` VM: a rented server once reported a pool of
-  0 KiB.
-- That a pool VM reaches the hosts the legs install Antigravity CLI and its packages from, `porelo` among them, which a
-  leg may still take from Artifactory with `--candidate`, since the candidate holds only this repository's package.
-- That `GOOGLE_API` is set on the forge, verified by the operator, as the shared rule on separate access lists asks.
 - That the runner reaches GitHub where the checks still read it: `check-citations` fetches the other repositories'
   indexes from `raw.githubusercontent.com`, so a cited issue pushed only to the host's forge fails it, and
   `check-pin` asks `api.github.com` without a token, inside the limit of 60 requests an hour per address.

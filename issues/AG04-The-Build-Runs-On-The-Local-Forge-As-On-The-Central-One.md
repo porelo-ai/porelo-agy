@@ -1,27 +1,20 @@
 # AG04 — The Build Runs On The Local Forge As On The Central One
 
-**Status:** Analyzed; blocked by porelo-buildtools [BT25](https://github.com/porelo-ai/porelo-buildtools/blob/main/issues/README.md#bt25)
-and [BT24](https://github.com/porelo-ai/porelo-buildtools/blob/main/issues/README.md#bt24), porelo-host
-[HO12](https://github.com/porelo-ai/porelo-host/blob/main/issues/README.md#ho12) and
-[HO27](https://github.com/porelo-ai/porelo-host/blob/main/issues/README.md#ho27), and porelo
-[B306](https://github.com/porelo-ai/porelo/blob/main/issues/base/README.md#b306), Porelo's snapshots in the forge's registry.
+**Status:** Analyzed; waits for the build tools asking for a machine by kind, the host's pool file and a
+forge job learning where that pool is, and Porelo's snapshots in the forge's registry.
 **Size:** S - the workflows and `settings.xml` of this one repository, no contract another repository reads; about
-2 hours of work once porelo-claude-code
-[CC38](https://github.com/porelo-ai/porelo-claude-code/blob/main/issues/README.md#cc38) has set the shape, plus the runs
+2 hours of work once porelo-claude-code has set the shape, plus the runs
 on the host's forge.
 
 **What must be true.** `porelo-agy`'s workflows run green on the local Forgejo and on the central forge on the same
 commit, with no edit between them: the machines its legs rent are asked for by kind, and the registry and the
 provider are variables of the setup.
 
-From porelo-project [PJ60](https://github.com/porelo-ai/porelo-project/blob/main/issues/README.md#pj60), for the move's
-wave 7b, before [AG02](README.md#ag02); the kinds come from porelo-buildtools
-[BT25](https://github.com/porelo-ai/porelo-buildtools/blob/main/issues/README.md#bt25).
+The machine kinds are porelo-buildtools' (`porelo-machines acceptance --kind amd64`), before [AG02](README.md#ag02).
 
 ## Plan
 
-Read in today's `.github/workflows/`, `.github/actions/pinned-jdk`, `settings.xml` and `pom.xml`. The shape is
-porelo-claude-code [CC38](https://github.com/porelo-ai/porelo-claude-code/blob/main/issues/README.md#cc38)'s, with less
+Read in today's `.github/workflows/`, `.github/actions/pinned-jdk`, `settings.xml` and `pom.xml`. The shape is porelo-claude-code's, with less
 of it: there is no `artifactory-smoke.yml` and no `delete-runs.yml`, and `update.yml` opens no pull request.
 
 - **What ties the Build to GitHub today:**
@@ -41,7 +34,7 @@ of it: there is no `artifactory-smoke.yml` and no `delete-runs.yml`, and `update
     pushes nothing.
 - **Where Porelo's snapshots come from on the local forge:** the `forge` profile replaces Sonatype, so the forge's
   registry must hold `porelo`'s Maven snapshots before this Build resolves there. `porelo`'s Build on the host's forge
-  deploys them there (porelo [B306](https://github.com/porelo-ai/porelo/blob/main/issues/base/README.md#b306)).
+  deploys them there.
 - **Steps:**
   1. `settings.xml` gains the `forge` profile and the `porelo-forge` server as porelo-message-sluice has them
      (activated by `MAVEN_SNAPSHOTS_URL`, the token from `PORELO_PUBLISHER_TOKEN`), and `standard` stays off where
@@ -57,8 +50,8 @@ of it: there is no `artifactory-smoke.yml` and no `delete-runs.yml`, and `update
      run built* and the `FROM=` line of *Acceptance on …* pick the `packages` artifact (`--candidate candidate`), as a
      tag does today, so a leg never tests what Artifactory held before.
   3. The legs ask `porelo-machines acceptance --kind amd64` with `PORELO_MACHINES_API` and `PORELO_MACHINES_SSH`; the
-     job learns where the host's pool is from the forge's runner (porelo-host
-     [HO27](https://github.com/porelo-ai/porelo-host/blob/main/issues/README.md#ho27)), so the same lines take a pool
+     job learns where the host's pool is from the forge's runner (`PORELO_MACHINES_POOL`, as porelo-host
+     proposes it), so the same lines take a pool
      account on the forge and rent on GitHub; *Delete what this run created* takes `PORELO_MACHINES_API` the same
      way. `GOOGLE_API` must be on the forge too, verified by the operator.
   4. `porelo-release check-providers` joins the Build's checks in the same commit; the provider's names are in the
@@ -77,7 +70,7 @@ of it: there is no `artifactory-smoke.yml` and no `delete-runs.yml`, and `update
 
 - That the host's Forgejo runner serves `actions/checkout` v7, `actions/upload-artifact` v7,
   `actions/download-artifact` v8 and `actions/cache` v6, and that the `pinned-jdk` action (`JAVA_HOME_25_X64`, `porelo-machines jdk --github`) works there.
-- That the host's VM pool holds an `ubuntu` and a `fedora` VM: the rented server of the 6e round reported a pool of
+- That the host's VM pool holds an `ubuntu` and a `fedora` VM: a rented server once reported a pool of
   0 KiB.
 - That a pool VM reaches the hosts the legs install Antigravity CLI and its packages from, `porelo` among them, which a
   leg may still take from Artifactory with `--candidate`, since the candidate holds only this repository's package.

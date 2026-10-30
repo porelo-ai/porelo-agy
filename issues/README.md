@@ -15,7 +15,7 @@ Within a group, the order is the priority. The number is identity, not sequence.
 
 | # | Size | Blocked by | What it covers |
 |---|---|---|---|
-| <a id="ag07"></a>[AG07](AG07-The-Sign-In-Says-How-It-Is-Answered.md) | XS | — | the definition names its sign-in's flow, `paste-code`, so the person is told to paste a code or confirm a device page; waits for Porelo's agent API with `login.flow` |
+| <a id="ag07"></a>[AG07](AG07-The-Sign-In-Says-How-It-Is-Answered.md) | XS | — | a person signing in to Antigravity CLI from a host is told to open the link and paste the code Google's page shows |
 
 ## Idea
 

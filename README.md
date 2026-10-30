@@ -1,7 +1,8 @@
 # porelo-agy
 
-> **Early bird - work in progress.** Porelo is not stable yet: until release 1.0.0, its code, commands
-> and file formats can change without notice.
+<img src="doc/images/crazy-chicken.svg" width="350" alt="Crazy chicken - just hatched">
+
+> **Crazy chicken - just hatched.** Interfaces, formats and even the purpose may change any day. Use it only to try ideas, never to build on.
 
 Adapts [Antigravity CLI](https://github.com/google-antigravity/antigravity-cli) (`agy`) for
 [Porelo](https://github.com/porelo-ai/porelo): in a hardened container, reaching only what it needs,

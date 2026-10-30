@@ -4,6 +4,9 @@
 
 ### Added
 
+- The definition names how its sign-in is answered, `login.flow: paste-code`, so a person signing
+  in on a host over SSH can be told to paste the code Google's page shows; Porelo 0.5.0, which this
+  builds against, ignores the key, and a later Porelo reads it.
 - A provider-independent Antigravity CLI adapter with task-local settings, structured turn outcomes
   and a pinned, verified CLI installation archive.
 - A draft task-build image declaration with pinned build tools and native package prerequisites.

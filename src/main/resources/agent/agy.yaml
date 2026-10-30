@@ -8,6 +8,8 @@ config_dir: "~/.gemini/antigravity-cli"
 
 login:
     arguments: []
+    # Google's hosted callback page shows a code that is pasted at the terminal.
+    flow: paste-code
 
 sandboxed:
     arguments: ["--dangerously-skip-permissions"]

@@ -1,6 +1,6 @@
 # AG07 — The Sign-In Says How It Is Answered
 
-**Status:** Backlog; Estimated and Backlog (operator, 2026-10-30, sprint 6m).
+**Status:** Implementing; Estimated and Backlog (operator, 2026-10-30, sprint 6m).
 **Size:** XS - the key in `agy.yaml` and the Porelo version in `pom.xml`, under an hour.
 
 **What must be true.** A person signing in to Antigravity CLI from a host, at a terminal or in the GUI, is told to open

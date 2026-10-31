@@ -11,10 +11,14 @@ task asking for more than it can enforce is refused by Porelo, never run with le
   start inside a task, 0 (none) by default; each agent definition declares what it can enforce - off, a
   concurrent count, a depth - and Porelo refuses a value the definition cannot enforce instead of
   enforcing less.
-- Read in 1.4.12, not yet at the pin: subagents are the tool `invoke_subagent`, and workflows start agents
-  of their own. No CLI setting turns them off or counts them; the cap of 128 is only an instruction in
-  the system prompt. A `PreToolUse` hook denying `invoke_subagent` is the one switch found, so this
-  definition declares off and nothing more.
+- Measured headless at the pin 1.4.5, on the VM in Gemini API-key mode: by default `invoke_subagent`
+  starts a subagent.
+  - **Off:** a `PreToolUse` hook in `~/.gemini/config/hooks.json`, matching `invoke_subagent` and
+    answering `{"decision":"deny"}`, holds - the call ends in error and the agent reports it denied.
+  - No CLI setting turns subagents off or counts them; the cap of 128 is only an instruction in the
+    system prompt. So this definition declares off and nothing more.
+  - The session also offers `run_workflow`, `browser_subagent`, `define_subagent` and `manage_subagents`,
+    which the hook's matcher has to cover too.
 
 ## Acceptance
 
@@ -23,6 +27,6 @@ task asking for more than it can enforce is refused by Porelo, never run with le
 
 ## To be checked
 
-- On the VM, at the pinned version: that the hook stops `invoke_subagent`, attended and headless, and
-  whether a workflow still starts agents past it.
+- Whether `run_workflow` or `browser_subagent` start agents past a hook matching only `invoke_subagent`,
+  and the hook attended, at a terminal.
 - Whether a CLI setting reaches the internal `AllowedSubagents` choice, which would replace the hook.

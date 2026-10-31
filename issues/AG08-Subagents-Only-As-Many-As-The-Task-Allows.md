@@ -17,8 +17,12 @@ task asking for more than it can enforce is refused by Porelo, never run with le
     answering `{"decision":"deny"}`, holds - the call ends in error and the agent reports it denied.
   - No CLI setting turns subagents off or counts them; the cap of 128 is only an instruction in the
     system prompt. So this definition declares off and nothing more.
-  - The session also offers `run_workflow`, `browser_subagent`, `define_subagent` and `manage_subagents`,
-    which the hook's matcher has to cover too.
+  - The init record also lists `run_workflow`, `browser_subagent`, `define_subagent` and
+    `manage_subagents`. Asked to start an agent with them past a hook matching only `invoke_subagent`,
+    the model started none: the first two are not offered to it headless, `define_subagent` only
+    registers a definition, and `manage_subagents` only lists and stops. The matcher still names all
+    five, `invoke_subagent|run_workflow|browser_subagent|define_subagent|manage_subagents`, which was
+    measured to hold, so a version that offers them is covered.
 
 ## Acceptance
 
@@ -27,6 +31,5 @@ task asking for more than it can enforce is refused by Porelo, never run with le
 
 ## To be checked
 
-- Whether `run_workflow` or `browser_subagent` start agents past a hook matching only `invoke_subagent`,
-  and the hook attended, at a terminal.
+- The hook attended, at a terminal, where `run_workflow` and `browser_subagent` may be offered.
 - Whether a CLI setting reaches the internal `AllowedSubagents` choice, which would replace the hook.

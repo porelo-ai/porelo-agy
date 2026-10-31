@@ -1,7 +1,7 @@
 # AG08 — Subagents Only As Many As The Task Allows
 
-**Status:** Analyzed; Accepted (operator, 2026-10-31).
-**Size:** S - one module and its tests, one more file the setup writes; about 45 minutes.
+**Status:** Estimated (operator, 2026-10-31).
+**Size:** S - one module and its tests, one more file the setup writes; about 45 minutes: this repository's median of 35, raised by the scenario on the VM, the check that an inline hook command runs through a shell, and the attended check.
 
 **What must be true.** Antigravity CLI in a Porelo task starts no subagent unless the task allows it; a
 task asking for more than it can enforce is refused by Porelo, never run with less.

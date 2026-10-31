@@ -11,9 +11,10 @@ task asking for more than it can enforce is refused by Porelo, never run with le
 ## Plan
 
 - **The contract built against:** Porelo's agent interface carries one number, the most subagents an agent may
-  start inside a task, 0 (none) by default, and no depth; each agent definition declares what it can enforce
-  of it - off only, or a count - and Porelo refuses a value the definition cannot enforce with exit code 64
-  instead of enforcing less. Where a CLI needs a depth to make the count hold, the adapter sets it itself.
+  run at the same time inside a task (not a total over the task), 0 (none) by default, and no depth; each
+  agent definition declares what it can enforce of it - off only, or a count - and Porelo refuses a value the
+  definition cannot enforce with exit code 64 instead of enforcing less. Where a CLI needs a depth to make the
+  count hold, the adapter sets it itself.
 - Measured headless at the pin 1.4.5, on the VM in Gemini API-key mode with Gemini 3.6 Flash (Low), the
   settings and onboarding files written as `AgyContainerSetup` writes them: by default `invoke_subagent`
   starts a subagent.

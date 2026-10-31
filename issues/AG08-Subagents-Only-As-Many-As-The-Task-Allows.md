@@ -1,17 +1,19 @@
 # AG08 — Subagents Only As Many As The Task Allows
 
 **Status:** Estimated (operator, 2026-10-31).
-**Size:** S - one module and its tests, one more file the setup writes; about 45 minutes: this repository's median of 35, raised by the scenario on the VM, the check that an inline hook command runs through a shell, and the attended check.
+**Size:** S - one module and its tests, one more file the setup writes; about 45 minutes: this repository's
+median of 35, raised by the scenario on the VM, the check that an inline hook command runs through a shell,
+and the attended check.
 
 **What must be true.** Antigravity CLI in a Porelo task starts no subagent unless the task allows it; a
 task asking for more than it can enforce is refused by Porelo, never run with less.
 
 ## Plan
 
-- **The contract built against:** Porelo's agent interface carries the number of subagents an agent may
-  start inside a task, 0 (none) by default; each agent definition declares what it can enforce - off, a
-  concurrent count, a depth - and Porelo refuses a value the definition cannot enforce instead of
-  enforcing less.
+- **The contract built against:** Porelo's agent interface carries one number, the most subagents an agent may
+  start inside a task, 0 (none) by default, and no depth; each agent definition declares what it can enforce
+  of it - off only, or a count - and Porelo refuses a value the definition cannot enforce with exit code 64
+  instead of enforcing less. Where a CLI needs a depth to make the count hold, the adapter sets it itself.
 - Measured headless at the pin 1.4.5, on the VM in Gemini API-key mode with Gemini 3.6 Flash (Low), the
   settings and onboarding files written as `AgyContainerSetup` writes them: by default `invoke_subagent`
   starts a subagent.

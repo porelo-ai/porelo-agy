@@ -1,6 +1,6 @@
 # AG08 — Subagents Only As Many As The Task Allows
 
-**Status:** Estimated (operator, 2026-10-31).
+**Status:** Estimated.
 **Size:** S - one module and its tests, one more file the setup writes; about 45 minutes: this repository's
 median of 35, raised by the scenario on the VM, the check that an inline hook command runs through a shell,
 and the attended check.

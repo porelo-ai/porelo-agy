@@ -4,12 +4,6 @@ What is open in this repository, grouped by state in the order Review, Rework, I
 Analyzed, Accepted, Idea, Estimated, Finished and Rejected; a group with nothing in it is left out.
 Within a group, the order is the priority. The number is identity, not sequence.
 
-## Review
-
-| # | Size | Blocked by | What it covers |
-|---|---|---|---|
-| <a id="ag07"></a>[AG07](AG07-The-Sign-In-Says-How-It-Is-Answered.md) | XS | — | a person signing in to Antigravity CLI from a host is told to open the link and paste the code Google's page shows |
-
 ## Analyzed
 
 | # | Size | Blocked by | What it covers | Open questions |
@@ -34,5 +28,6 @@ Within a group, the order is the priority. The number is identity, not sequence.
 
 | # | Title | What was built |
 |---|---|---|
+| <a id="ag07"></a>[AG07](README.md#ag07) | The Sign-In Says How It Is Answered | `agy.yaml` declares `login.flow: paste-code`, so a person signing in to Antigravity CLI from a host is told to open the link and paste the code Google's page shows; tested in sprint 6m: passed. |
 | <a id="ag03"></a>[AG03](README.md#ag03) | The Sign-In's Client Is Picked, Not Guessed | The login wrapper collects every OAuth client id (whole, the 13-digit consumer id included) and secret of the CLI, and `AgyCredentialExtractor` hands them to Porelo's login as `clientIdCandidates`/`clientSecretCandidates`, so the login keeps the pair the sign-in was granted to; a live sign-in stored the consumer client and renewed on the host with it. |
 | <a id="ag01"></a>[AG01](README.md#ag01) | Agent Antigravity CLI | `porelo-agent-agy` ships Antigravity CLI (`agy`) as a packaged agent with its digest-verified binary download, brokering both the Google sign-in (`cloud-code` via `CLOUD_CODE_URL` with encrypted host-side OAuth renewal) and the Gemini API key (`google-generative-ai` via `GOOGLE_GEMINI_BASE_URL`), with the real credential never in the container and the terms' risk stated in `doc/index.md`. |

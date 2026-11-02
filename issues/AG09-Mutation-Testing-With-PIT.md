@@ -10,5 +10,4 @@ code no test notices, sorted into real gaps and harmless ones.
 - It runs on a VM where tests call real tools.
 - A report sorts the survivors into real gaps and harmless ones.
 
-**The model.** Agent Matrix's try: `~/.porelo/handover/porelo-message-matrix/pit-014d86a/report.md`, on its branch
-`pit-try`, and later its pushed profile.
+**The model.** The trial in the messaging repository, on its branch `pit-try`, and later its pushed profile.

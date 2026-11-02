@@ -18,7 +18,7 @@ task asking for more than it can enforce is refused by Porelo, never run with le
 - Measured headless at the pin 1.4.5, on the VM in Gemini API-key mode with Gemini 3.6 Flash (Low), the
   settings and onboarding files written as `AgyContainerSetup` writes them: by default `invoke_subagent`
   starts a subagent.
-  - **Off:** a `PreToolUse` hook in `~/.gemini/config/hooks.json`, matching `invoke_subagent` and
+  - **Off:** a `PreToolUse` hook in `.gemini/config/hooks.json` in the home, matching `invoke_subagent` and
     answering `{"decision":"deny"}`, holds - the call ends in error and the agent reports it denied.
     Measured shape: `{"no-subagents":{"PreToolUse":[{"matcher":"<regex>","hooks":[{"type":"command",
     "command":"<cmd>","timeout":10}]}]}}`, the command reading the call on standard input and printing
@@ -32,7 +32,7 @@ task asking for more than it can enforce is refused by Porelo, never run with le
     five, `invoke_subagent|run_workflow|browser_subagent|define_subagent|manage_subagents`, which was
     measured to hold, so a version that offers them is covered.
 - **`agy.yaml`** declares off and nothing more, so Porelo refuses a task allowing more than 0.
-- **`AgyContainerSetup`** adds `/home/agent/.gemini/config/hooks.json` to both its file lists, the API-key
+- **`AgyContainerSetup`** adds `.gemini/config/hooks.json` in the agent's home to both its file lists, the API-key
   one and the signed-in one: a `PreToolUse` hook matching the five tools whose command prints the deny
   answer inline - a `ContainerFile` carries no executable bit, so there is no script to run.
 - **Red first:** `AgyContainerSetupTest` - both credential kinds yield the hooks file with that matcher;

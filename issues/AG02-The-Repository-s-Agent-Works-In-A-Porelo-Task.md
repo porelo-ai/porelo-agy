@@ -39,8 +39,8 @@ image*) and `doc/running.md` (the agent's layer), and porelo-project's `project.
      in `project.yml`, and the upstream switched to the host's forge, as the project's procedure for an agent's move lays out.
   3. *The start:* the operator starts the task attended; inside it the agent takes this issue to Review, its push
      through the gate to `porelo/<task>`, the forge's Build read through the `forgejo` reader.
-  4. *After the check:* the session on this machine gives up `porelo-agy` (the responsibility line of the shared area
-     of `.AGENTS.md` changes through the channel); its VM accounts stay with the repositories not moved yet.
+  4. *After the check:* the session on this machine gives up `porelo-agy`;
+     its test accounts stay with the repositories not moved yet.
 - **Red first:** the move's check from the project's procedure for an agent's move, for
   `porelo-agy` before the move, each line failing by name.
 
@@ -53,13 +53,13 @@ image*) and `doc/running.md` (the agent's layer), and porelo-project's `project.
 - The room shows it as `Agent Agy`, from the nickname `Agy` in porelo-project's `project.yml`.
 - Claude Code works in the task with the operator's subscription from the vault.
 - The move's check is red for `porelo-agy` before the move and green after it; the agent's session on this machine and its
-  VM accounts are no longer used, and the way back the project's procedure for an agent's move describes is open.
+  test accounts are no longer used, and the way back the project's procedure for an agent's move describes is open.
 
 ## To be checked
 
 - That porelo-project's `project.yml` lets the task reach the hosts named under *Plan*.
-- Where the task's agent finds what `.AGENTS.md` gives it here (its name, the room in place of the channel, the
-  operator's language and time zone): `.AGENTS.md` is not committed, so it is not in the task.
+- Where the task's agent finds what the local setup gives it here (its name, the room in place of the channel, the
+  operator's language and time zone): that setup is not committed, so it is not in the task.
 - That the outside reader can fetch `porelo/<task>` from the host's forge, not only from GitHub.
 - The way back, rehearsed once: the task's open work fetched from the host's forge into the checkout here.
 - That the host's inventory names `porelo-agy` in `forge_repositories`: the forge role skips the migration, `main`'s

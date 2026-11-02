@@ -6,7 +6,7 @@ and verifies its digest before extraction.
 
 Google sign-in (`google-sign-in`) is the default provider. Run `porelo vault login agy` for the
 CLI's attended login, or use `--dry-run` to preview it. The extractor reads the consumer sign-in
-from `~/.gemini/antigravity-cli/antigravity-oauth-token` and collects every OAuth client ID and secret
+from `.gemini/antigravity-cli/antigravity-oauth-token` in the home and collects every OAuth client ID and secret
 of the installed CLI; Porelo's login tries them with the fresh sign-in and keeps the pair that renews
 it, for encrypted host-side renewal. The login wrapper writes `.client-ids` and `.client-secrets` only in
 the throwaway login container; it writes nothing in a brokered task.
@@ -44,8 +44,8 @@ automatic repository-image discovery. GitHub checkout/cache/upload actions and `
 are runner-specific: use a commit-scoped handover checkout, the image's pinned JDK and local
 package inspection instead. No Maven verification or shared check is exempted.
 
-Task profiles use `/home/agent/.gemini/antigravity-cli` for settings, onboarding state and SQLite
-conversation stores, and `/home/agent/.gemini/GEMINI.md` for Porelo's standing instructions.
+Task profiles use `.gemini/antigravity-cli` in the agent's home for settings, onboarding state and SQLite
+conversation stores, and `.gemini/GEMINI.md` in the agent's home for Porelo's standing instructions.
 
 ## Attended Google sign-in acceptance
 
@@ -71,9 +71,9 @@ To verify the Google sign-in path end to end with a dedicated Google AI account 
    `expires_at` and `token_url`.
 6. Run a signed-in task in `default`:
    `porelo task start check -p default -r default --agent agy --clearance deny -P "Reply with the single word PORELOOAUTH and nothing else."`
-   and verify that the response contains `PORELOOAUTH`, that `/home/agent/.gemini/antigravity-cli/antigravity-oauth-token`
+   and verify that the response contains `PORELOOAUTH`, that `.gemini/antigravity-cli/antigravity-oauth-token` in the agent's home
    in `porelo-default-check` holds only the `porelo_pt_` phantom token and `2099-01-01T00:00:00Z`,
-   and that no refresh token, ID token, `.client-ids` or `.client-secrets` file exists in `/home/agent/.gemini/antigravity-cli`.
+   and that no refresh token, ID token, `.client-ids` or `.client-secrets` file exists in `.gemini/antigravity-cli` in the agent's home.
 7. Remove the task and disposable vault:
    `porelo task remove porelo-default-check --force && porelo vault lock && rm -rf /tmp/agy-signin`.
 

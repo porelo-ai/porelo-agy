@@ -24,7 +24,7 @@ regular and contain no symbolic links along their path, reads `antigravity-oauth
 one mebibyte, validates the consumer access and refresh tokens and converts its ISO-8601 expiry to
 epoch milliseconds. It collects every client ID and every client secret from `.client-ids` and
 `.client-secrets` first, then a profile-local `antigravity` binary, then
-`/home/agent/.local/bin/antigravity`; a single `.client-id` or `.client-secret` from an older image is
+`.local/bin/antigravity` in the agent's home; a single `.client-id` or `.client-secret` from an older image is
 ignored. The candidate files are limited to 4096 bytes and every line must be a whole id or secret;
 binary scans stream at most 512 mebibytes and keep a value split across chunk boundaries whole and
 once. Candidates are kept distinct in the binary's order, and more than eight of one kind is refused.
@@ -51,8 +51,8 @@ tasks never receive either renewal secret.
 Antigravity CLI publishes `agy_cli_linux_x64.tar.gz` on GitHub Releases with a publisher SHA-256
 digest matching its Google Cloud Storage manifest. The archive contains a single statically linked
 binary named `antigravity`. The definition verifies the archive digest and member list before
-installing `/home/agent/.local/bin/antigravity` and a mode `0755` POSIX shell wrapper at
-`/home/agent/.local/bin/agy`. With neither broker URL set and no `/run/porelo`, the wrapper uses
+installing `.local/bin/antigravity` in the agent's home and a mode `0755` POSIX shell wrapper at
+`.local/bin/agy` in the agent's home. With neither broker URL set and no `/run/porelo`, the wrapper uses
 `set -eu`, `umask 077`, removes any preexisting `.client-id`, `.client-secret`, `.client-ids` and
 `.client-secrets`, and writes every matching client ID and client secret with `set -C` (`noclobber`);
 when `grep` finds none of either, it stops the wrapper before the CLI runs. In a task it immediately executes the CLI
@@ -81,17 +81,17 @@ download URL and fetched-at-image-build provenance.
 
 ## Profile
 
-The image links `/home/agent/.gemini/GEMINI.md` to `/run/porelo/guide/README.md`, which Antigravity
+The image links `.gemini/GEMINI.md` in the agent's home to `/run/porelo/guide/README.md`, which Antigravity
 CLI loads into its `<user_rules>` system prompt when the guide is mounted and ignores cleanly when
 absent.
 
 For a brokered task, `AgyContainerSetup` validates the endpoint, task token, credential type and workspace path,
 refusing a missing endpoint/token pair, unsafe URL/token characters, or a relative/root workspace
-without echoing secret values. For `api-key` it writes `/home/agent/.gemini/antigravity-cli/settings.json` (mode
+without echoing secret values. For `api-key` it writes `.gemini/antigravity-cli/settings.json` in the agent's home (mode
 `0600`) with `"modelProvider": "gemini"`, `"model": "Gemini 3.6 Flash (Low)"`,
 `"toolPermission": "always-proceed"`, `"artifactReviewPolicy": "always-proceed"`,
 `"enableTelemetry": false` and `"trustedWorkspaces"` scoped to the normalized task workspace,
-alongside `/home/agent/.gemini/antigravity-cli/cache/onboarding.json` with onboarding flags set to
+alongside `.gemini/antigravity-cli/cache/onboarding.json` in the agent's home with onboarding flags set to
 `true` so interactive first-run wizards and workspace-trust dialogs never block startup, and tasks
 started without an explicit `--model` flag default to a free-tier model rather than a zero-quota Pro
 model.

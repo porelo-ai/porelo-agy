@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Changed
+
+- The package says that the `porelo-wire` classes in its executable are under Apache-2.0, in its
+  Debian copyright and its RPM license, with the license's text beside the GPL's in the RPM.
+
 ### Added
 
 - The definition names how its sign-in is answered, `login.flow: paste-code`, so a person signing

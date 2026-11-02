@@ -11,6 +11,12 @@ Within a group, the order is the priority. The number is identity, not sequence.
 | <a id="ag02"></a>[AG02](AG02-The-Repository-s-Agent-Works-In-A-Porelo-Task.md) | S | [AG04](#ag04) | the repository's agent moves into its own Porelo task, after a dry run on this machine | 0 |
 | <a id="ag04"></a>[AG04](AG04-The-Build-Runs-On-The-Local-Forge-As-On-The-Central-One.md) | S | — | the workflows run 1:1 on the local Forgejo and the central forge, legs asked by kind, before the move | 0 |
 
+## Accepted
+
+| # | Size | Blocked by | What it covers |
+|---|---|---|---|
+| <a id="ag09"></a>[AG09](AG09-Mutation-Testing-With-PIT.md) |  | — | mutation testing by hand: a `pit` profile outside CI with no threshold, and a report sorting survivors into real gaps and harmless ones |
+
 ## Idea
 
 | # | Size | Blocked by | What it covers |

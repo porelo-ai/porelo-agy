@@ -51,6 +51,13 @@ off, but this adapter switches nothing off, so Antigravity CLI in such a task st
 - Seen to fail first: a task with the default asks agy to start a subagent, and it does.
 - With the change, the same task starts none, and a task allowing N > 0 is refused by Porelo naming agy.
 
+## Skills
+
+A soft bound: a task's agent has skills, and nothing measured at the pin switches them off or hides them. It lists the
+built-in ones and any in `.agents/skills`, and reads one with `read_file`. A hook on that tool was not tried, and would
+leave the shell, from which the agent can also start another copy of its CLI. A hard bound is Porelo's own, outside this
+repository.
+
 ## Open questions
 
 - None.
@@ -67,6 +74,13 @@ against a Porelo older than the one on `main`, so `project remove` in the new sc
   inline runs, through a shell, which was to be checked.
 - **Attended, at a terminal, one run, not kept as a scenario:** the call ends in "tool call denied by pre-tool hook:
   this task allows no subagents".
+- **Skills, agy alone with the adapter's files written by hand, not through Porelo, one run each:** the list stayed
+  with `--disable-slash-commands`, and with a `skills.json` in the home holding `{}`, `{"skills":[]}` or unknown switches.
+  Naming the skill directories under `entries` with `exclude: [".*"]`, in the home alone or also in `.agents/`, listed
+  more skills than before, not fewer.
+- **Other tools, same setup, one run each:** `run_workflow` is in the init record, and the model reported it does not
+  have it. `schedule` accepted a prompt and returned a task id; the file it was to write had not appeared when the run
+  ended, so whether it starts an agent later is open. `generate_image` was not tried.
 - **Above 0, one run, not kept as a scenario:** `--subagents 1` ends with exit code 64, "agy can only switch its
   subagents off", and nothing is created.
 

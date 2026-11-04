@@ -1,6 +1,6 @@
 # AG04 — The Build Runs On The Local Forge As On The Central One
 
-**Status:** Analyzed; waits for Porelo's and the build tools' snapshots in the forge's registry.
+**Status:** Implementing; measured on a local Forgejo.
 **Size:** S - the workflows, the `pinned-jdk` action, `settings.xml` and one test of this one repository, no contract another repository reads; about
 2 hours of work once porelo-claude-code has set the shape, plus the runs
 on the host's forge.

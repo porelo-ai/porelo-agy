@@ -1,13 +1,14 @@
 # AG04 — The Build Runs On The Local Forge As On The Central One
 
 **Status:** Analyzed; waits for Porelo's and the build tools' snapshots in the forge's registry.
-**Size:** S - the workflows and `settings.xml` of this one repository, no contract another repository reads; about
+**Size:** S - the workflows, the `pinned-jdk` action, `settings.xml` and one test of this one repository, no contract another repository reads; about
 2 hours of work once porelo-claude-code has set the shape, plus the runs
 on the host's forge.
 
 **What must be true.** `porelo-agy`'s workflows run green on the local Forgejo and on the central forge on the same
 commit, with no edit between them: the machines its legs rent are asked for by kind, and the registry and the
-provider are variables of the setup.
+provider are variables of the setup. And a Build on a forge other than the central one whose `MAVEN_SNAPSHOTS_URL` is
+empty fails at its start and says so, instead of falling back to Central's snapshots.
 
 The machine kinds are porelo-buildtools' (`porelo-machines acceptance --kind amd64`), before [AG02](README.md#ag02).
 
@@ -57,8 +58,15 @@ of it: there is no `artifactory-smoke.yml` and no `delete-runs.yml`, and `update
      [AG05](README.md#ag05) switches it on there.
   4. `porelo-release check-providers` joins the Build's checks in the same commit; the provider's names are in the
      workflows only.
+  5. The `pinned-jdk` action, the first thing every job that runs Maven does, starts with *The forge names its
+     snapshot repository*, as in porelo-claude-code: outside `https://github.com` an empty, white-space-only or unset
+     `MAVEN_SNAPSHOTS_URL` stops the job and names the variable, since without it `settings.xml` falls back to
+     Central's snapshots without a word; on the central forge it changes nothing. It is the action's first step and
+     has no `if:`. `SnapshotTokenTest` comes along as that repository has it, self-contained, and holds this check
+     and that no step names the publisher's token.
 - **Red first:** today's `build.yml` on the host's Forgejo, which stops at the snapshot resolution or at Publish; and
-  `check-providers` on today's tree, which names `build.yml`'s `HETZNER_*` lines.
+  `check-providers` on today's tree, which names `build.yml`'s `HETZNER_*` lines;
+  and `SnapshotTokenTest` on today's tree, which has no check in the action and the read-only token in no workflow.
 
 ## Acceptance
 
@@ -66,6 +74,8 @@ of it: there is no `artifactory-smoke.yml` and no `delete-runs.yml`, and `update
 - The same commit's Build green on the local Forgejo (the `acceptance` job skipped, nothing published) and on GitHub (legs
   rented, published as today).
 - The kinds' check finds no provider's name in this repository's workflows.
+- A Build on the local forge with `MAVEN_SNAPSHOTS_URL` unset is seen to fail at its first step, naming the variable;
+  on GitHub the Build is unchanged.
 
 ## To be checked
 

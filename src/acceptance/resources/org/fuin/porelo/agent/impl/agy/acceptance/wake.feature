@@ -26,7 +26,7 @@ Feature: A mailbox message wakes the composer without interrupting work
             podman exec porelo-wake-wake tmux capture-pane -p -S - -t porelo | grep -qE '5,?555'
             """
         When a script runs "porelo task remove porelo-wake-wake --force"
-        And a script runs "porelo project unfollow wake --force"
+        And a script runs "porelo project remove wake --force"
         Then it exits zero
 
     @slow
@@ -55,5 +55,5 @@ Feature: A mailbox message wakes the composer without interrupting work
             podman exec porelo-busy-busy tmux capture-pane -p -S - -t porelo | grep -qE '5,?555'
             """
         When a script runs "porelo task remove porelo-busy-busy --force"
-        And a script runs "porelo project unfollow busy --force"
+        And a script runs "porelo project remove busy --force"
         Then it exits zero

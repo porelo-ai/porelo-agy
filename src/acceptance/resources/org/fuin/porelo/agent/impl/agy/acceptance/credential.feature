@@ -24,7 +24,7 @@ Feature: The agy agent runs against the live provider without holding the creden
     And its output does not contain the value of "GEMINI_API_KEY"
     And no log the task left contains the value of "GEMINI_API_KEY"
     And the task's broker saw a request
-    When a script runs "porelo project unfollow broker --force"
+    When a script runs "porelo project remove broker --force"
     Then it exits zero
 
   Scenario: a task started with a refused key fails before any work is done
@@ -49,5 +49,5 @@ Feature: The agy agent runs against the live provider without holding the creden
     Then its output contains "\"modelProvider\": \"gemini\""
     And its output does not contain the value of "PORELO_E2E_REFUSED_KEY"
     And no log the task left contains the value of "PORELO_E2E_REFUSED_KEY"
-    When a script runs "porelo project unfollow refused --force"
+    When a script runs "porelo project remove refused --force"
     Then it exits zero

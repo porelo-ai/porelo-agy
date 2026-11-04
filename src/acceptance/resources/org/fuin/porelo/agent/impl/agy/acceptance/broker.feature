@@ -37,5 +37,5 @@ Feature: The brokering path works end to end, without an account
             """
         Then the task's broker saw a request
         And its output contains "from the provider"
-        When a script runs "porelo project unfollow brokercheck --force"
+        When a script runs "porelo project remove brokercheck --force"
         Then it exits zero

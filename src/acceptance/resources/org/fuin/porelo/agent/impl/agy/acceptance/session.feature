@@ -19,5 +19,5 @@ Feature: An unattended task continues its recorded conversation
         Then it exits zero
         And its output contains "session   continuing"
         And its output contains "PAPAYA"
-        When a script runs "porelo project unfollow cont --force"
+        When a script runs "porelo project remove cont --force"
         Then it exits zero

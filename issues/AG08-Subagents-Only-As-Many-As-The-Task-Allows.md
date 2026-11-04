@@ -1,6 +1,6 @@
 # AG08 — Subagents Only As Many As The Task Allows
 
-**Status:** Implementing.
+**Status:** Review.
 **Size:** S - one module and its tests, one more file the setup writes; about 45 minutes: this repository's
 median of 35, raised by the scenario on the VM, the check that an inline hook command runs through a shell,
 and the attended check.
@@ -55,9 +55,30 @@ off, but this adapter switches nothing off, so Antigravity CLI in such a task st
 
 - None.
 
+## Measured
+
+On the VM at the pin 1.4.5 in Gemini API-key mode with `gemini-3.6-flash-low`, the adapter installed in the account,
+against a Porelo older than the one on `main`, so `project remove` in the new scenario's last step was run as
+`project unfollow`:
+
+- **Seen to fail first:** the new `session.feature` scenario against the adapter before the change: the agent
+  answered `STARTED`, and said the subagent completed.
+- **With the change, headless:** the same scenario is green: the agent answers `MISSING`. So a hook command given
+  inline runs, through a shell, which was to be checked.
+- **Attended, at a terminal, one run, not kept as a scenario:** the call ends in "tool call denied by pre-tool hook:
+  this task allows no subagents".
+- **Above 0, one run, not kept as a scenario:** `--subagents 1` ends with exit code 64, "agy can only switch its
+  subagents off", and nothing is created.
+
+The hook is also written for a task with neither endpoint nor token, which the plan did not name: it holds no
+credential, and without it an agent started there would still start a subagent. The signed-in list is covered by the
+unit test only: no scenario here signs in.
+
 ## To be checked
 
-- Whether a hook command given inline, not as a script path, runs through a shell; measured only with a
-  script path.
-- The hook attended, at a terminal, where `run_workflow` and `browser_subagent` may be offered.
+- What the scenario proves: Antigravity CLI's output is the agent's text alone, so `MISSING` and no `STARTED` rest on
+  what the model says. Claude Code's and Oh My Pi's scenarios see the tool call, and Codex's counts its session files.
+  Whether agy leaves something to count from outside was not measured.
+- Whether `run_workflow` and `browser_subagent` are offered attended: the attended run asked only for
+  `invoke_subagent`. The matcher names them either way.
 - Whether a CLI setting reaches the internal `AllowedSubagents` choice, which would replace the hook.

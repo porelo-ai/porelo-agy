@@ -194,4 +194,11 @@ class AgyAgentTest {
         assertThat(end).as("completed turn outcome").isNotNull();
         assertThat(end.finished()).as("SUCCESS turn finishes cleanly").isTrue();
     }
+
+    @Test
+    void declaresThatItCanOnlySwitchSubagentsOff() {
+
+        assertThat(new AgyAgent().definition().subagents())
+                .isEqualTo(org.fuin.porelo.agent.api.SubagentLimit.OFF);
+    }
 }

@@ -6,6 +6,10 @@ binary: agy
 
 config_dir: "~/.gemini/antigravity-cli"
 
+# What this adapter can hold a task to: off, by a hook AgyContainerSetup writes. No CLI setting counts
+# subagents, so Porelo refuses a task allowing more than 0.
+subagents: off
+
 login:
     arguments: []
     # Google's hosted callback page shows a code that is pasted at the terminal.

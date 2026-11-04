@@ -20,10 +20,52 @@ class AgyContainerSetupTest {
     private final AgyAgent agent = new AgyAgent();
 
     @Test
+    void deniesEverySubagentToolWhicheverWayTheTaskIsSignedIn() {
+        for (final List<ContainerFile> given :
+                List.of(
+                        files("", ""),
+                        new AgyContainerSetup()
+                                .files(
+                                        new SetupContext(
+                                                "task-token",
+                                                "api-key",
+                                                "/workspace",
+                                                "http://host.containers.internal:1/v1",
+                                                "google")),
+                        new AgyContainerSetup()
+                                .files(
+                                        new SetupContext(
+                                                "task-token",
+                                                "oauth",
+                                                "/workspace",
+                                                "http://host.containers.internal:1/v1",
+                                                "google")))) {
+            final ContainerFile hooks =
+                    given.stream()
+                            .filter(file -> file.path().equals(AgyContainerSetup.HOOKS))
+                            .findFirst()
+                            .orElseThrow();
+            final Map<?, ?> root = (Map<?, ?>) Json.parse(hooks.content());
+            final Map<?, ?> entry =
+                    (Map<?, ?>)
+                            ((List<?>) ((Map<?, ?>) root.get("no-subagents")).get("PreToolUse"))
+                                    .getFirst();
+            assertThat(entry.get("matcher"))
+                    .isEqualTo(
+                            "invoke_subagent|run_workflow|browser_subagent|define_subagent"
+                                    + "|manage_subagents");
+            final Map<?, ?> hook = (Map<?, ?>) ((List<?>) entry.get("hooks")).getFirst();
+            assertThat(hook.get("type")).isEqualTo("command");
+            assertThat((String) hook.get("command")).contains("\"decision\":\"deny\"");
+        }
+    }
+
+    @Test
     void writesNoSetupFilesWhenNeitherEndpointNorTokenIsProvided() {
         assertThat(files("", ""))
-                .as("an unbrokered shell receives no credential or onboarding files")
-                .isEmpty();
+                .as("an unbrokered task receives no credential or onboarding files")
+                .extracting(ContainerFile::path)
+                .containsExactly(AgyContainerSetup.HOOKS);
     }
 
     @Test
@@ -31,7 +73,7 @@ class AgyContainerSetupTest {
         final List<ContainerFile> files =
                 files("porelo_pt_secret_token", "http://10.0.2.2:43123", "/workspace/repo");
 
-        assertThat(files).as("both settings.json and onboarding.json are written").hasSize(2);
+        assertThat(files).as("settings.json, onboarding.json and the hook are written").hasSize(3);
 
         final ContainerFile settings = files.get(0);
         assertThat(settings.path())
@@ -157,7 +199,7 @@ class AgyContainerSetupTest {
     @Test
     void aSignedInTaskReceivesOnlyAPhantomCredentialAndCompletedOnboarding() {
         final List<ContainerFile> files =
-                agent.containerSetup()
+                new AgyContainerSetup()
                         .files(
                                 new SetupContext(
                                         "synthetic-phantom-token",
@@ -167,8 +209,8 @@ class AgyContainerSetupTest {
                                         "google-sign-in"));
         assertThat(files)
                 .as(
-                        "the sign-in profile has settings, token, onboarding, and post-onboarding state")
-                .hasSize(4);
+                        "the sign-in profile has settings, token, onboarding, post-onboarding state and the hook")
+                .hasSize(5);
         final ContainerFile settings = files.get(0);
         assertThat(settings.path())
                 .as("settings stay in the task profile")
@@ -245,7 +287,7 @@ class AgyContainerSetupTest {
         for (final String type : java.util.Arrays.asList(null, "", " ", "access-secret-marker")) {
             assertThatThrownBy(
                             () ->
-                                    agent.containerSetup()
+                                    new AgyContainerSetup()
                                             .files(
                                                     new SetupContext(
                                                             "access-secret-marker",
@@ -312,7 +354,7 @@ class AgyContainerSetupTest {
     }
 
     private List<ContainerFile> files(String token, String endpoint, String workspace) {
-        return agent.containerSetup()
+        return new AgyContainerSetup()
                 .files(new SetupContext(token, "api-key", workspace, endpoint, "google"));
     }
 }

@@ -48,14 +48,44 @@ public final class AgyContainerSetup implements ContainerSetup {
             }
             """;
 
+    /** Where the CLI reads the hooks of the account it runs in. */
+    static final String HOOKS = "/home/agent/.gemini/config/hooks.json";
+
+    /**
+     * What keeps a subagent from starting. No CLI setting turns them off or counts them, measured
+     * on 1.4.5; a {@code PreToolUse} hook answering deny holds. All five tools are named, though
+     * headless only {@code invoke_subagent} starts one, so a version that offers the others is
+     * covered. Inline, since a {@link ContainerFile} carries no executable bit.
+     */
+    private static final String NO_SUBAGENTS =
+            """
+            {
+              "no-subagents": {
+                "PreToolUse": [
+                  {
+                    "matcher": "invoke_subagent|run_workflow|browser_subagent|define_subagent|manage_subagents",
+                    "hooks": [
+                      {
+                        "type": "command",
+                        "command": "cat >/dev/null; printf '%s' '{\\"decision\\":\\"deny\\",\\"reason\\":\\"this task allows no subagents\\"}'",
+                        "timeout": 10
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+            """;
+
     /** Creates a stateless container setup. */
     public AgyContainerSetup() {}
 
     /** {@inheritDoc} */
     @Override
     public List<ContainerFile> files(SetupContext context) {
+        final ContainerFile hooks = ContainerFile.of(HOOKS, NO_SUBAGENTS);
         if (context.endpoint().isEmpty() && context.token().isEmpty()) {
-            return List.of();
+            return List.of(hooks);
         }
         validateEndpoint(context.endpoint());
         if (!TOKEN.matcher(context.token()).matches()) {
@@ -68,7 +98,7 @@ public final class AgyContainerSetup implements ContainerSetup {
             throw new AgentException("Antigravity CLI needs an API-key or OAuth credential type");
         }
         if ("oauth".equals(context.credentialType())) {
-            return signedInFiles(context.token(), workspace);
+            return signedInFiles(context.token(), workspace, hooks);
         }
         final String settings =
                 """
@@ -85,10 +115,12 @@ public final class AgyContainerSetup implements ContainerSetup {
         return List.of(
                 ContainerFile.secret("/home/agent/.gemini/antigravity-cli/settings.json", settings),
                 ContainerFile.of(
-                        "/home/agent/.gemini/antigravity-cli/cache/onboarding.json", ONBOARDING));
+                        "/home/agent/.gemini/antigravity-cli/cache/onboarding.json", ONBOARDING),
+                hooks);
     }
 
-    private static List<ContainerFile> signedInFiles(String token, String workspace) {
+    private static List<ContainerFile> signedInFiles(
+            String token, String workspace, ContainerFile hooks) {
         final String settings =
                 """
                 {
@@ -118,7 +150,8 @@ public final class AgyContainerSetup implements ContainerSetup {
                 ContainerFile.of(
                         "/home/agent/.gemini/antigravity-cli/cache/onboarding.json", ONBOARDING),
                 ContainerFile.of(
-                        "/home/agent/.gemini/antigravity-cli/jetski_state.pbtxt", POST_ONBOARDING));
+                        "/home/agent/.gemini/antigravity-cli/jetski_state.pbtxt", POST_ONBOARDING),
+                hooks);
     }
 
     private static String trustedWorkspace(String workspace) {

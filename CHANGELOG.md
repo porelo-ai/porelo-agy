@@ -9,6 +9,7 @@
 
 ### Added
 
+- A task's agent starts no subagent, and a task allowing one is refused, since nothing here can count them.
 - The definition names how its sign-in is answered, `login.flow: paste-code`, so a person signing
   in on a host over SSH can be told to paste the code Google's page shows; the Porelo it builds
   against reads the key, and its agent listing names the flow.

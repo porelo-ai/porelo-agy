@@ -10,4 +10,4 @@ code no test notices, sorted into real gaps and harmless ones.
 - It runs on a VM where tests call real tools.
 - A report sorts the survivors into real gaps and harmless ones.
 
-**The model.** The trial in the messaging repository, on its branch `pit-try`, and later its pushed profile.
+**The model.** The `pit` profile in the messaging repository's `pom.xml`.

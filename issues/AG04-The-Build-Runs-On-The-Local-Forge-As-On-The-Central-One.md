@@ -36,7 +36,7 @@ of it: there is no `artifactory-smoke.yml` and no `delete-runs.yml`, and `update
   deploys them there.
 - **Steps:**
   1. `settings.xml` gains the `forge` profile and the `porelo-forge` server as porelo-message-sluice has them
-     (activated by `MAVEN_SNAPSHOTS_URL`, the token from `PORELO_PUBLISHER_TOKEN`), and `standard` stays off where
+     (activated by `MAVEN_SNAPSHOTS_URL`, the token from `PORELO_PACKAGES_READ_TOKEN`), and `standard` stays off where
      `MAVEN_SNAPSHOTS_URL` is set. A profile's activation takes one property only, so `-Dporelo.release` no longer
      turns the snapshot repositories off: a tag's `MAVEN_ARGS` adds `-P!standard,!forge`. Every Maven call passes
      both values through the step's `env`, since a workflow's `env` cannot read a secret: the `pinned-jdk` action's,

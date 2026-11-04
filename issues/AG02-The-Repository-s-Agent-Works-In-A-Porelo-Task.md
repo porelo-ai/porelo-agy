@@ -24,8 +24,8 @@ image*) and `doc/running.md` (the agent's layer), and porelo-project's `project.
   project's, in porelo-project's `project.yml`; the image, the agent's CLI with it, is built on the host outside the
   task's firewall. The forge's registry refuses a task today (the organization is private), so
   until then the task's build reads Sonatype's snapshots.
-- **The sub-agent reading:** no sub-agent CLI is in the task's image, since a project file names one
-  agent per repository and porelo describes no second sign-in inside a task. Until Porelo has a task that reviews, an agent outside the task reads the pull request's diff against the skills, as today's sub-agent reading does, and posts its
+- **The review:** only Claude Code runs in the task, and no sub-agent CLI is in its image. A review comes from a new agent
+  started apart, by the host's forge or by hand, which reads the pull request's diff against the skills and posts its
   findings in the room.
 - **The CLI:** Claude Code runs the agent in the task, as it runs this repository's agent today: woken by a
   message, its subscription brokered from the vault. Antigravity CLI itself runs it in an issue of its own, afterwards.
@@ -67,7 +67,8 @@ image*) and `doc/running.md` (the agent's layer), and porelo-project's `project.
   start then finds no copy of the repository on the host's forge.
 - What porelo-message-sluice's dry run showed, each to hold here before the start:
   - That the task's Claude writes `Assisted-by: Claude Code, <model>` and no `Co-Authored-By` line, set in the image or
-    the task's settings, since check-commits refuses the other.
+    the task's settings, since the shared rules ask for `Assisted-by`, and check-commits lets a `Co-authored-by`
+    trailer through.
   - Whether a fix after the outside reading lands as a new commit on top, so no force push is needed (the sluice's recommendation, a question for the operator with the move), or as an amend pushed with `git push --force` to the
     task's own unmerged branch, which the gate passes on.
   - That a revoked sign-in is renewed with `porelo vault login claude --force` and a stop and start of the task: a

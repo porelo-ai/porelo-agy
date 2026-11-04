@@ -1,9 +1,9 @@
 # AG04 — The Build Runs On The Local Forge As On The Central One
 
-**Status:** Implementing; measured on a local Forgejo.
+**Status:** Review; on a local Forgejo the Build runs green; on the central forge it waits for its push, and what only
+a host shows is named below.
 **Size:** S - the workflows, the `pinned-jdk` action, `settings.xml` and one test of this one repository, no contract another repository reads; about
-2 hours of work once porelo-claude-code has set the shape, plus the runs
-on the host's forge.
+2 hours of work once porelo-claude-code has set the shape, plus the runs on a local Forgejo.
 
 **What must be true.** `porelo-agy`'s workflows run green on the local Forgejo and on the central forge on the same
 commit, with no edit between them: the machines its legs rent are asked for by kind, and the registry and the
@@ -77,11 +77,34 @@ of it: there is no `artifactory-smoke.yml` and no `delete-runs.yml`, and `update
 - A Build on the local forge with `MAVEN_SNAPSHOTS_URL` unset is seen to fail at its first step, naming the variable;
   on GitHub the Build is unchanged.
 
+## Measured on a local Forgejo
+
+Forgejo 17 and its runner 13.2.0, pinned as the host's forge pins them, with the host's job image `act-24.04` as root and
+a JDK mounted as `JAVA_HOME_25_X64`; the registry held the snapshots this Build resolves, copied in from a Maven cache.
+
+- **Red first:** `check-providers` and `SnapshotTokenTest` on the tree before; the same forge stopped porelo-claude-code's
+  Build at Maven's http blocker on a `MAVEN_SNAPSHOTS_URL` of `http://<host>.localhost`, at a denied read that root reads
+  through, at the `rpm` the image lacks and at `actions/upload-artifact`, which refuses every server but GitHub's. This
+  Build takes the same answers.
+- **Beyond the plan:** the packages are uploaded only where `vars.PORELO_PUBLISH` is `true`; *The tools the packages are
+  built and read with* installs only what is missing; and each `check-pin` step blanks `GITHUB_TOKEN`, since a forge's
+  runner puts its own token there for every step and the check would hand it to GitHub.
+- **Green:** the Build, with the `acceptance`, `proof` and `release` jobs skipped, nothing published and every snapshot read from the forge's registry.
+
+- **The reading against `security-audit`, `clean-code`, `java-code-review` and `test-quality` (2026.906.3)** declined three
+  findings: that the read-only token's place on each Maven step is not guarded, since a step without it fails on the
+  forge with a `401` and gives no write token away; that *Whether this forge publishes* and the index step's condition
+  are not guarded, since removing either is a change to the workflow read as such, and a missing variable stops the
+  Build today; and that a workflow's `MAVEN_SNAPSHOTS_URL` binding is not guarded, since on a forge the action's first
+  step stops a job without it, and on the central forge the fallback reads the same repository.
+
+## What only a host shows
+
+- The registry through the host's proxy and gate, with `MAVEN_SNAPSHOTS_URL` as the host sets it, and the runner's jobs in
+  their own containers rather than in the runner's.
+- `porelo`'s, `porelo-parent`'s and `porelo-buildtools`' snapshots deployed there by their own Builds, not copied.
+
 ## To be checked
 
-- That the host's Forgejo runner serves `actions/checkout` v7, `actions/upload-artifact` v7,
-  `actions/download-artifact` v8 and `actions/cache` v6, and that the `pinned-jdk` action (`JAVA_HOME_25_X64`, `porelo-machines jdk --github`) works there.
-- That the runner reaches GitHub where the checks still read it: `check-citations` fetches the other repositories'
-  indexes from `raw.githubusercontent.com`, so a cited issue pushed only to the host's forge fails it, and
-  `check-pin` asks `api.github.com` without a token, inside the limit of 60 requests an hour per address.
-- That the runner has `python3` with `yaml` for `workflows.yml`'s load check.
+- That this repository may read `vars.PORELO_PUBLISH`, `vars.MAVEN_SNAPSHOTS_URL` and `secrets.PORELO_PACKAGES_READ_TOKEN`
+  on the central forge, and `secrets.PORELO_MACHINES_API` and `secrets.PORELO_MACHINES_SSH`: the organization's access lists are separate, and only the operator can read them.

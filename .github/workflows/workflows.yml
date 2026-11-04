@@ -11,6 +11,9 @@ on:
 permissions:
     contents: read
 
+env:
+    MAVEN_SNAPSHOTS_URL: ${{ vars.MAVEN_SNAPSHOTS_URL }}
+
 jobs:
     check:
         name: Workflow check
@@ -22,9 +25,13 @@ jobs:
                   persist-credentials: false
 
             - name: The pinned GraalVM
+              env:
+                  PORELO_PACKAGES_READ_TOKEN: ${{ secrets.PORELO_PACKAGES_READ_TOKEN }}
               uses: ./.github/actions/pinned-jdk
 
             - name: Resolve the release tooling
+              env:
+                  PORELO_PACKAGES_READ_TOKEN: ${{ secrets.PORELO_PACKAGES_READ_TOKEN }}
               run: |
                   ./mvnw -B -q -Pci-tools -s settings.xml dependency:build-classpath \
                       -Dmdep.outputFile=target/cp.txt

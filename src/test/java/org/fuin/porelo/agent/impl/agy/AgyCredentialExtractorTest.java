@@ -2,6 +2,7 @@ package org.fuin.porelo.agent.impl.agy;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -345,6 +346,8 @@ class AgyCredentialExtractorTest {
         final Path file = Files.writeString(directory.resolve(".client-secrets"), CLIENT_SECRET);
         Files.setPosixFilePermissions(file, PosixFilePermissions.fromString("---------"));
         try {
+            // The forge's runner is root, which reads through any mode.
+            assumeFalse(Files.isReadable(file), "this account reads through a mode");
             refuses(extractor());
         } finally {
             Files.setPosixFilePermissions(file, PosixFilePermissions.fromString("rw-------"));

@@ -37,6 +37,7 @@ class WorkflowRulesTest {
         env.put("PATH", dir + ":" + System.getenv("PATH"));
         env.put("GITHUB_REF_TYPE", "branch");
         env.put("OS", "ubuntu");
+        env.put("PORELO_PUBLISH", "true");
         env.put("GEMINI_API_KEY", "");
         Files.writeString(dir.resolve("pom.xml"), "<agent.cli.version>1.4.5</agent.cli.version>\n");
 
@@ -54,7 +55,18 @@ class WorkflowRulesTest {
         assertThat(keyed.exit()).as("exit of the leg with a key:%n%s", keyed.output()).isZero();
         assertThat(Files.readString(calls))
                 .as("what the leg ran with a key")
-                .contains("acceptance --os ubuntu --package porelo-agent-agy --cucumber .");
+                .contains(
+                        "acceptance --os ubuntu --kind amd64 --package porelo-agent-agy --cucumber .");
+
+        // Prevents a leg on a forge that publishes nothing testing what Artifactory held before.
+        env.put("PORELO_PUBLISH", "false");
+        final Run local = WorkflowSteps.run(steps.getFirst(), dir, env, WorkflowSteps.LIMIT);
+        assertThat(local.exit())
+                .as("exit of the leg on such a forge:%n%s", local.output())
+                .isZero();
+        assertThat(Files.readString(calls))
+                .as("what the leg ran where nothing is published")
+                .contains("--package porelo-agent-agy --candidate candidate --cucumber .");
         assertThat(Files.readString(Path.of(".github/workflows/build.yml")))
                 .as("the acceptance leg's refused-key setting in build.yml")
                 .contains("PORELO_E2E_REFUSED_KEY: porelo-acceptance-not-a-key");

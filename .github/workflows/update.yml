@@ -5,6 +5,7 @@ on:
     workflow_dispatch:
 env:
     MAVEN_ARGS: -U
+    MAVEN_SNAPSHOTS_URL: ${{ vars.MAVEN_SNAPSHOTS_URL }}
 permissions:
     contents: read
 concurrency:
@@ -19,12 +20,21 @@ jobs:
               with:
                   persist-credentials: false
             - name: The pinned GraalVM
+              env:
+                  PORELO_PACKAGES_READ_TOKEN: ${{ secrets.PORELO_PACKAGES_READ_TOKEN }}
               uses: ./.github/actions/pinned-jdk
             - name: Build the artifact checks
+              env:
+                  PORELO_PACKAGES_READ_TOKEN: ${{ secrets.PORELO_PACKAGES_READ_TOKEN }}
               run: ./mvnw -U -B -s settings.xml test
             - name: Resolve the shared tooling
+              env:
+                  PORELO_PACKAGES_READ_TOKEN: ${{ secrets.PORELO_PACKAGES_READ_TOKEN }}
               run: ./mvnw -U -B -q -Pci-tools -s settings.xml dependency:build-classpath -Dmdep.outputFile=target/cp.txt
+            # A forge's runner puts its own token into GITHUB_TOKEN for every step, and the check would hand it to GitHub.
             - name: The publisher digest agrees with the pin
+              env:
+                  GITHUB_TOKEN: ''
               run: |
                   set -eu
                   java -cp "$(cat target/cp.txt)" org.fuin.porelo.release.Main check-pin --pin agy --definition target/classes/agent/agy.yaml

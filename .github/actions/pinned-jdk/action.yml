@@ -10,6 +10,18 @@ description: Installs the GraalVM Porelo pins, checked against its digest, as JA
 runs:
     using: composite
     steps:
+        # Without it settings.xml falls back to Central's snapshots, and the forge's own are never built against.
+        - name: The forge names its snapshot repository
+          shell: bash
+          run: |
+              set -eu
+              server="${GITHUB_SERVER_URL:-}"
+              url="${MAVEN_SNAPSHOTS_URL:-}"
+              if [ "${server%/}" != https://github.com ] && [ -z "${url//[[:space:]]/}" ]; then
+                  echo "::error::vars.MAVEN_SNAPSHOTS_URL is empty on ${server:-this forge}, which must name its snapshot repository"
+                  exit 1
+              fi
+
         # What setup-graalvm's 'cache: maven' did.
         - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
           with:
@@ -26,6 +38,8 @@ runs:
                   exit 1
               fi
               export JAVA_HOME="$JAVA_HOME_25_X64"
-              # MAVEN_ARGS, from the workflow, says -U or -Dporelo.release: the cache above is keyed on pom.xml alone.
+              # MAVEN_ARGS, where the workflow sets it, says -U or -P!standard,!forge: the cache above is keyed on pom.xml
+              # alone. MAVEN_SNAPSHOTS_URL from the workflow and PORELO_PACKAGES_READ_TOKEN from this step say where
+              # snapshots come from.
               ./mvnw -B -q -Pci-tools -s settings.xml dependency:build-classpath -Dmdep.outputFile=target/jdk-cp.txt
               "$JAVA_HOME/bin/java" -cp "$(cat target/jdk-cp.txt)" org.fuin.porelo.machines.Main jdk --github

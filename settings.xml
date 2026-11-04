@@ -18,19 +18,32 @@
             <password>${env.OSS_SONATYPE_TOKEN}</password>
         </server>
 
+        <!-- The id porelo-parent's settings give the forge's registry, read with the publisher account's token of scope
+             read:package, since the organisation there is private and a branch's code runs where it is held; nothing
+             here deploys to it. Where none is needed it is a placeholder, sent only when a server asks. -->
+
+        <server>
+            <id>porelo-forge</id>
+            <username>porelo-publisher</username>
+            <password>${env.PORELO_PACKAGES_READ_TOKEN}</password>
+        </server>
+
     </servers>
 
     <profiles>
+
+        <!-- Where no forge names its snapshot repository - a developer's machine, a VM, a Porelo task - they come from
+             Central's snapshots. A workflow names it in MAVEN_SNAPSHOTS_URL, set on every forge: Sonatype on GitHub,
+             its own registry on the local Forgejo. A tag's build passes -P!standard,!forge, and then no snapshot
+             repository is read: a release is built from releases only. -->
 
         <profile>
 
             <id>standard</id>
 
-            <!-- Central's snapshots, for everything between releases. A tag's build sets porelo.release, and then
-                 nothing comes from them: a release is built from releases only. -->
             <activation>
                 <property>
-                    <name>!porelo.release</name>
+                    <name>!env.MAVEN_SNAPSHOTS_URL</name>
                 </property>
             </activation>
 
@@ -70,7 +83,52 @@
 
         </profile>
 
-    </profiles>
+        <profile>
 
+            <id>forge</id>
+
+            <activation>
+                <property>
+                    <name>env.MAVEN_SNAPSHOTS_URL</name>
+                </property>
+            </activation>
+
+            <repositories>
+
+                <repository>
+                    <id>porelo-forge</id>
+                    <name>The forge's snapshot repository</name>
+                    <url>${env.MAVEN_SNAPSHOTS_URL}</url>
+                    <releases>
+                        <enabled>false</enabled>
+                    </releases>
+                    <snapshots>
+                        <updatePolicy>always</updatePolicy>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </repository>
+
+            </repositories>
+
+            <pluginRepositories>
+
+                <pluginRepository>
+                    <id>porelo-forge</id>
+                    <name>The forge's snapshot repository</name>
+                    <url>${env.MAVEN_SNAPSHOTS_URL}</url>
+                    <releases>
+                        <enabled>false</enabled>
+                    </releases>
+                    <snapshots>
+                        <updatePolicy>always</updatePolicy>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </pluginRepository>
+
+            </pluginRepositories>
+
+        </profile>
+
+    </profiles>
 
 </settings>

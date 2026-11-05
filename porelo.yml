@@ -1,7 +1,7 @@
 # Tools only: no task policy or credentials. Automatic repository-image discovery is not implemented.
 image:
-    base_image: "docker.io/library/ubuntu:24.04@sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac"
-    snippet: |
+    from: "docker.io/library/ubuntu:24.04@sha256:68ee22004a9109b44973313b02ff7b1de250f1de0f5ecb628d73f579aaff33ac"
+    run: |
         RUN apt-get update \
             && apt-get install -y --no-install-recommends build-essential zlib1g-dev ca-certificates curl git unzip binutils dpkg rpm \
             && rm -rf /var/lib/apt/lists/*

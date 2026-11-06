@@ -29,6 +29,12 @@ runs:
               key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
               restore-keys: maven-${{ runner.os }}-
 
+        # The wrapper's Maven, fetched once per pin: without it every job fetches it with one unretried download.
+        - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+          with:
+              path: ~/.m2/wrapper
+              key: maven-wrapper-${{ runner.os }}-${{ hashFiles('.mvn/wrapper/maven-wrapper.properties') }}
+
         - name: Install the pinned GraalVM
           shell: bash
           run: |
@@ -38,6 +44,19 @@ runs:
                   exit 1
               fi
               export JAVA_HOME="$JAVA_HOME_25_X64"
+              # The wrapper checks its Maven against distributionSha256Sum and installs it only whole, so asking again
+              # after a failed fetch is a retry; a cached one answers at once.
+              for attempt in 1 2 3 4 5; do
+                  if ./mvnw -B -q --version >/dev/null; then
+                      break
+                  fi
+                  if [ "$attempt" = 5 ]; then
+                      echo "::error::the wrapper could not fetch its Maven in 5 attempts"
+                      exit 1
+                  fi
+                  echo "::warning::the wrapper's Maven did not arrive (attempt $attempt); trying again"
+                  sleep $((attempt * 10))
+              done
               # MAVEN_ARGS, where the workflow sets it, says -U or -P!standard,!forge: the cache above is keyed on pom.xml
               # alone. MAVEN_SNAPSHOTS_URL from the workflow and PORELO_PACKAGES_READ_TOKEN from this step say where
               # snapshots come from.

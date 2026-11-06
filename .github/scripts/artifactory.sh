@@ -17,7 +17,7 @@ art_login() {
 # art_curl ARGS...: curl with the token's header on standard input. Tracing is off while the token is printed.
 art_curl() {
     case $- in *x*) art_trace=1; set +x ;; *) art_trace=0 ;; esac
-    printf 'header = "Authorization: Bearer %s"\n' "$JF_ACCESS_TOKEN" | curl -fsS -K - "$@"
+    printf 'header = "Authorization: Bearer %s"\n' "$JF_ACCESS_TOKEN" | curl -fsS --retry 5 --retry-all-errors -K - "$@"
     art_status=$?
     [ "$art_trace" = 0 ] || set -x
     return "$art_status"

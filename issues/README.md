@@ -27,6 +27,7 @@ Within a group, the order is the priority. The number is identity, not sequence.
 
 | # | Size | Blocked by | What it covers |
 |---|---|---|---|
+| <a id="ag11"></a>[AG11](AG11-The-Acceptance-Legs-Run-Side-By-Side.md) |  | — | a Build's acceptance legs run at the same time, two machines held at once instead of one, the Build done about one leg sooner |
 | <a id="ag06"></a>[AG06](AG06-A-Sign-In-Without-A-Browser-Is-Tested-On-Every-CLI-Update.md) |  | — | the sign-in at a terminal without a browser, checked on every CLI update so a release that drops it fails its pin bump |
 | <a id="ag05"></a>[AG05](AG05-The-Acceptance-Legs-Run-On-The-Host-s-Forge.md) |  | [AG04](#ag04) | the acceptance legs on the host's pool again, once it lends a forge job a machine by kind |
 | <a id="ag10"></a>[AG10](AG10-Depend-On-The-Agent-Protocol-Porelo-Provides.md) |  | — | the agent contract named at install time |

@@ -34,8 +34,8 @@
 
         <!-- Where no forge names its snapshot repository - a developer's machine, a VM, a Porelo task - they come from
              Central's snapshots. A workflow names it in MAVEN_SNAPSHOTS_URL, set on every forge: Sonatype on GitHub,
-             its own registry on the local Forgejo. A tag's build passes -P!standard,!forge, and then no snapshot
-             repository is read: a release is built from releases only. -->
+             its own registry on the local Forgejo. A tag's build passes -P!standard,!forge,!upstream, and then no
+             snapshot repository is read: a release is built from releases only. -->
 
         <profile>
 
@@ -116,6 +116,55 @@
                     <id>porelo-forge</id>
                     <name>The forge's snapshot repository</name>
                     <url>${env.MAVEN_SNAPSHOTS_URL}</url>
+                    <releases>
+                        <enabled>false</enabled>
+                    </releases>
+                    <snapshots>
+                        <updatePolicy>always</updatePolicy>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </pluginRepository>
+
+            </pluginRepositories>
+
+        </profile>
+
+        <!-- A forge's registry holds only what its own organization publishes; every other Porelo snapshot comes from
+             the repository MAVEN_UPSTREAM_SNAPSHOTS_URL names. Its id has no server, so no token is sent there. -->
+
+        <profile>
+
+            <id>upstream</id>
+
+            <activation>
+                <property>
+                    <name>env.MAVEN_UPSTREAM_SNAPSHOTS_URL</name>
+                </property>
+            </activation>
+
+            <repositories>
+
+                <repository>
+                    <id>porelo-upstream-snapshots</id>
+                    <name>The snapshots the forge does not hold</name>
+                    <url>${env.MAVEN_UPSTREAM_SNAPSHOTS_URL}</url>
+                    <releases>
+                        <enabled>false</enabled>
+                    </releases>
+                    <snapshots>
+                        <updatePolicy>always</updatePolicy>
+                        <enabled>true</enabled>
+                    </snapshots>
+                </repository>
+
+            </repositories>
+
+            <pluginRepositories>
+
+                <pluginRepository>
+                    <id>porelo-upstream-snapshots</id>
+                    <name>The snapshots the forge does not hold</name>
+                    <url>${env.MAVEN_UPSTREAM_SNAPSHOTS_URL}</url>
                     <releases>
                         <enabled>false</enabled>
                     </releases>

@@ -57,8 +57,8 @@ runs:
                   echo "::warning::the wrapper's Maven did not arrive (attempt $attempt); trying again"
                   sleep $((attempt * 10))
               done
-              # MAVEN_ARGS, where the workflow sets it, says -U or -P!standard,!forge: the cache above is keyed on pom.xml
-              # alone. MAVEN_SNAPSHOTS_URL from the workflow and PORELO_PACKAGES_READ_TOKEN from this step say where
-              # snapshots come from.
+              # MAVEN_ARGS, where the workflow sets it, says -U or -P!standard,!forge,!upstream: the cache above is
+              # keyed on pom.xml alone. MAVEN_SNAPSHOTS_URL and MAVEN_UPSTREAM_SNAPSHOTS_URL from the workflow and
+              # PORELO_PACKAGES_READ_TOKEN from this step say where snapshots come from.
               ./mvnw -B -q -Pci-tools -s settings.xml dependency:build-classpath -Dmdep.outputFile=target/jdk-cp.txt
               "$JAVA_HOME/bin/java" -cp "$(cat target/jdk-cp.txt)" org.fuin.porelo.machines.Main jdk --github

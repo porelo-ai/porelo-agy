@@ -17,6 +17,7 @@ on:
 env:
     MAVEN_ARGS: -U
     MAVEN_SNAPSHOTS_URL: ${{ vars.MAVEN_SNAPSHOTS_URL }}
+    MAVEN_UPSTREAM_SNAPSHOTS_URL: ${{ vars.MAVEN_UPSTREAM_SNAPSHOTS_URL }}
 
 # Read-only: nothing in this workflow writes to the repository with its token.
 permissions:

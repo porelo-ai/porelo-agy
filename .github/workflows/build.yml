@@ -13,10 +13,12 @@ on:
     workflow_dispatch:
 
 env:
-    # On a tag -P!standard,!forge: no snapshot repository, so a release is built from releases only. The same file runs on
-    # GitHub and on the local Forgejo; what differs is only the values of variables and secrets present on both.
-    MAVEN_ARGS: ${{ startsWith(github.ref, 'refs/tags/v') && '-P!standard,!forge' || '-U' }}
+    # On a tag -P!standard,!forge,!upstream: no snapshot repository, so a release is built from releases only. The
+    # same file runs on GitHub and on the local Forgejo; what differs is only the values of variables and secrets
+    # present on both.
+    MAVEN_ARGS: ${{ startsWith(github.ref, 'refs/tags/v') && '-P!standard,!forge,!upstream' || '-U' }}
     MAVEN_SNAPSHOTS_URL: ${{ vars.MAVEN_SNAPSHOTS_URL }}
+    MAVEN_UPSTREAM_SNAPSHOTS_URL: ${{ vars.MAVEN_UPSTREAM_SNAPSHOTS_URL }}
 permissions:
     contents: read
 concurrency:

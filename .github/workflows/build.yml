@@ -90,10 +90,11 @@ jobs:
                   fi
                   java -cp "$(cat target/cp.txt)" org.fuin.porelo.release.Main \
                       check-commits "$start..$GITHUB_SHA"
-            # A forge's runner puts its own token into GITHUB_TOKEN for every step, and the check would hand it to GitHub.
+            # The job's token on GitHub, so its API answers the check; empty elsewhere, since a forge's runner puts
+            # its own token into GITHUB_TOKEN for every step, and the check would hand it to GitHub.
             - name: The publisher digest agrees with the pin
               env:
-                  GITHUB_TOKEN: ''
+                  GITHUB_TOKEN: ${{ github.server_url == 'https://github.com' && github.token || '' }}
               run: |
                   set -eu
                   java -cp "$(cat target/cp.txt)" org.fuin.porelo.release.Main check-pin --pin agy --definition target/classes/agent/agy.yaml

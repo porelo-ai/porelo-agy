@@ -32,10 +32,11 @@ jobs:
               env:
                   PORELO_PACKAGES_READ_TOKEN: ${{ secrets.PORELO_PACKAGES_READ_TOKEN }}
               run: ./mvnw -U -B -q -Pci-tools -s settings.xml dependency:build-classpath -Dmdep.outputFile=target/cp.txt
-            # A forge's runner puts its own token into GITHUB_TOKEN for every step, and the check would hand it to GitHub.
+            # The job's token on GitHub, so its API answers the check; empty elsewhere, since a forge's runner puts
+            # its own token into GITHUB_TOKEN for every step, and the check would hand it to GitHub.
             - name: The publisher digest agrees with the pin
               env:
-                  GITHUB_TOKEN: ''
+                  GITHUB_TOKEN: ${{ github.server_url == 'https://github.com' && github.token || '' }}
               run: |
                   set -eu
                   java -cp "$(cat target/cp.txt)" org.fuin.porelo.release.Main check-pin --pin agy --definition target/classes/agent/agy.yaml

@@ -22,6 +22,7 @@ Within a group, the order is the priority. The number is identity, not sequence.
 
 | # | Size | Blocked by | What it covers |
 |---|---|---|---|
+| <a id="ag15"></a>[AG15](AG15-The-Tests-Follow-The-Pyramid.md) | XS | — | the suites by level with measured times; the refused hosts held in the unit phase, and the timeout test waits 100 ms |
 | <a id="ag09"></a>[AG09](AG09-Mutation-Testing-With-PIT.md) |  | — | mutation testing by hand: a `pit` profile outside CI with no threshold, and a report sorting survivors into real gaps and harmless ones |
 
 ## Idea

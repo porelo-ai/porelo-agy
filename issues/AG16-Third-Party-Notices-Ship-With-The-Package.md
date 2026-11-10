@@ -5,7 +5,7 @@
   "$schema": "issue-1.json",
   "id": "AG16",
   "title": "Third-Party Notices Ship With The Package",
-  "state": "Implementing",
+  "state": "Review",
   "size": "S",
   "priority": "Medium",
   "rank": 7,
@@ -17,7 +17,7 @@
 **Why this size.** `pom.xml`'s `dist` profile, `copyright` and one package check of this one repository, no contract
 another repository reads.
 
-**How it stands.** Backlog (operator, 2026-11-10); Implementing.
+**How it stands.** Backlog (operator, 2026-11-10); built, in Review.
 
 **What must be true.** Whoever installs `porelo-agent-agy` finds the license texts of every component compiled into its
 executable from outside Porelo in one file, `/usr/share/doc/porelo-agent-agy/THIRD-PARTY-NOTICES`, named in `debian/copyright`
@@ -52,6 +52,7 @@ texts travel with the binary, and today neither package carries them.
 - `-Pnative,dist verify` builds both packages and `PackageNoticesCheck` passes; it fails on a package without the
   file, and on a bill component the file has no section for.
 
-## To be checked
+## Reading
 
-- That SnakeYAML is compiled into this repository's executable, read in the native build.
+- The change is porelo-claude-code's, the same lines with this package's name; it was read there by another model
+  against `java-code-review`, `test-quality`, `clean-code`, `security-audit` and `graal`, and its fixes are in here.

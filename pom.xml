@@ -221,6 +221,27 @@
             <build>
                 <plugins>
 
+                    <!-- What the executable compiles in, for the notices below. Declared before the
+                         exec plugin, since both bind to package. -->
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>runtime-classpath</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>build-classpath</goal>
+                                </goals>
+                                <configuration>
+                                    <includeScope>runtime</includeScope>
+                                    <outputFile>${project.build.directory}/runtime-classpath.txt</outputFile>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
@@ -244,6 +265,33 @@
                                         <argument>agy</argument>
                                         <argument>--pom</argument>
                                         <argument>${project.basedir}/pom.xml</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <!-- The license texts of what the executable compiles in from outside
+                                 Porelo, the GraalVM runtime's among them. Porelo's agent API and wire
+                                 classes are its own; their licenses stand in copyright and the LICENSE
+                                 files. -->
+                            <execution>
+                                <id>third-party-notices</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>${java.home}/bin/java</executable>
+                                    <includePluginDependencies>true</includePluginDependencies>
+                                    <arguments>
+                                        <argument>-classpath</argument>
+                                        <classpath/>
+                                        <argument>org.fuin.porelo.release.Main</argument>
+                                        <argument>third-party-notices</argument>
+                                        <argument>${project.build.directory}/runtime-classpath.txt</argument>
+                                        <argument>${project.build.directory}/${project.artifactId}.cdx.json</argument>
+                                        <argument>${java.home}</argument>
+                                        <argument>${project.build.directory}/THIRD-PARTY-NOTICES</argument>
+                                        <argument>--own</argument>
+                                        <argument>org\.fuin\.porelo:.*</argument>
                                     </arguments>
                                 </configuration>
                             </execution>
@@ -354,6 +402,17 @@
                                                 <group>root</group>
                                             </mapper>
                                         </data>
+                                        <data>
+                                            <src>${project.build.directory}/THIRD-PARTY-NOTICES</src>
+                                            <type>file</type>
+                                            <mapper>
+                                                <type>perm</type>
+                                                <prefix>/usr/share/doc/${project.artifactId}</prefix>
+                                                <filemode>644</filemode>
+                                                <user>root</user>
+                                                <group>root</group>
+                                            </mapper>
+                                        </data>
                                     </dataSet>
                                 </configuration>
                             </execution>
@@ -431,6 +490,14 @@
                                     <group>root</group>
                                     <license>true</license>
                                 </entry>
+                                <entry>
+                                    <name>/usr/share/licenses/${project.artifactId}/THIRD-PARTY-NOTICES</name>
+                                    <file>${project.build.directory}/THIRD-PARTY-NOTICES</file>
+                                    <mode>0644</mode>
+                                    <user>root</user>
+                                    <group>root</group>
+                                    <license>true</license>
+                                </entry>
                             </entries>
                         </configuration>
                     </plugin>
@@ -448,6 +515,7 @@
                                 <configuration>
                                     <includes>
                                         <include>**/PackageVersionCheck.java</include>
+                                        <include>**/PackageNoticesCheck.java</include>
                                         <include>**/FetchedArtifactsCheck.java</include>
                                     </includes>
                                     <reportsDirectory>${project.build.directory}/surefire-reports-package-version</reportsDirectory>

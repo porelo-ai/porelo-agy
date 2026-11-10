@@ -102,7 +102,7 @@ class PackageVersionCheck {
      * The newest file in the target directory whose name starts and ends so - a build may leave
      * older ones.
      */
-    private static Path newest(final String prefix, final String suffix) throws IOException {
+    static Path newest(final String prefix, final String suffix) throws IOException {
         try (Stream<Path> files = Files.list(TARGET)) {
             return files.filter(
                             f ->
@@ -128,7 +128,7 @@ class PackageVersionCheck {
     /**
      * Runs a command and returns what it printed; what it says on stderr only shows when it fails.
      */
-    private static String run(final String... command) throws IOException, InterruptedException {
+    static String run(final String... command) throws IOException, InterruptedException {
         final ProcessBuilder builder = new ProcessBuilder(command);
         builder.environment().put("LC_ALL", "C");
         // To files rather than pipes: reading a pipe to its end would wait out a hang, not the

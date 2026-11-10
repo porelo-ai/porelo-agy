@@ -29,6 +29,7 @@
   wrapper collects them only in a throwaway login container. `AgyContainerSetup` writes a
   phantom-only `antigravity-oauth-token` and completed post-onboarding state for signed-in tasks.
   The task firewall also refuses `www.googleapis.com` and `antigravity-unleash.goog`.
+- The package carries the full license texts of what its executable compiles in from outside Porelo - SnakeYAML, JSpecify and the GraalVM runtime - in `THIRD-PARTY-NOTICES`, in its doc directory and as an RPM license file, and its Debian copyright names them.
 
 ### Fixed
 

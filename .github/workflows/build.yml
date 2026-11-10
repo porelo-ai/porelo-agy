@@ -4,7 +4,7 @@ name: Build
 # content builds with it.
 on:
     push:
-        branches: ['**']
+        branches: [main]
         tags: ['v*']
         paths-ignore: ['**/*.md', 'mkdocs.yml', 'doc/**', 'issues/**', '.github/**', 'porelo.yml']
     pull_request:

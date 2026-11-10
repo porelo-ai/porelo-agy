@@ -1,7 +1,20 @@
 # AG15 — The Tests Follow The Pyramid
 
-**Status:** Accepted.
-**Size:** XS - two test classes, no contract.
+```json
+{
+  "$schema": "issue-1.json",
+  "id": "AG15",
+  "title": "The Tests Follow The Pyramid",
+  "state": "Accepted",
+  "size": "XS",
+  "priority": "Medium",
+  "rank": 1,
+  "blockedBy": [],
+  "covers": "the suites by level with measured times; the refused hosts held in the unit phase, and the timeout test waits 100 ms"
+}
+```
+
+**Why this size.** two test classes, no contract.
 
 **What must be true.** Every flow this adapter owns is proven by unit tests that run in seconds, and no test waits
 longer than the thing it checks needs.

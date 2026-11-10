@@ -1,6 +1,18 @@
 # AG11 — The Acceptance Legs Run Side By Side
 
-**Status:** Idea.
+```json
+{
+  "$schema": "issue-1.json",
+  "id": "AG11",
+  "title": "The Acceptance Legs Run Side By Side",
+  "state": "Idea",
+  "size": "-",
+  "priority": "Medium",
+  "rank": 3,
+  "blockedBy": [],
+  "covers": "a Build's acceptance legs run at the same time, two machines held at once instead of one, the Build done about one leg sooner"
+}
+```
 
 **What must be true.** A Build's acceptance legs, one per operating system, run at the same time instead of one
 after the other, so a Build that runs them is done about one leg sooner.

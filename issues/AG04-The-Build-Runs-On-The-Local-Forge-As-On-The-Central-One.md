@@ -1,9 +1,23 @@
 # AG04 — The Build Runs On The Local Forge As On The Central One
 
-**Status:** Review; on a local Forgejo the Build runs green; on the central forge it waits for its push, and what only
-a host shows is named below.
-**Size:** S - the workflows, the `pinned-jdk` action, `settings.xml` and one test of this one repository, no contract another repository reads; about
+```json
+{
+  "$schema": "issue-1.json",
+  "id": "AG04",
+  "title": "The Build Runs On The Local Forge As On The Central One",
+  "state": "Review",
+  "size": "S",
+  "priority": "Medium",
+  "rank": 3,
+  "blockedBy": [],
+  "covers": "the workflows run 1:1 on the local Forgejo and the central forge, legs asked by kind, before the move"
+}
+```
+
+**Why this size.** the workflows, the `pinned-jdk` action, `settings.xml` and one test of this one repository, no contract another repository reads; about
 2 hours of work once porelo-claude-code has set the shape, plus the runs on a local Forgejo.
+
+**How it stands.** On a local Forgejo the Build runs green; on the central forge it waits for its push, and what only a host shows is named below.
 
 **What must be true.** `porelo-agy`'s workflows run green on the local Forgejo and on the central forge on the same
 commit, with no edit between them: the machines its legs rent are asked for by kind, and the registry and the

@@ -1,6 +1,18 @@
 # AG14 — The Subagent Scenario Proves The Denial By What Ran
 
-**Status:** Idea.
+```json
+{
+  "$schema": "issue-1.json",
+  "id": "AG14",
+  "title": "The Subagent Scenario Proves The Denial By What Ran",
+  "state": "Idea",
+  "size": "-",
+  "priority": "Medium",
+  "rank": 1,
+  "blockedBy": [],
+  "covers": "the subagent scenario decides by what the task ran, not by the word the model answers; it failed once on ubuntu and passed on its re-run"
+}
+```
 
 **What must be true.** The scenario "a task that allows no subagents has the start of one denied" (`session.feature`)
 passes or fails by what the task ran, not by the word the model chooses to answer: a start of a subagent that the

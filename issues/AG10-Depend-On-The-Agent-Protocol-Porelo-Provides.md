@@ -1,6 +1,18 @@
 # AG10 — Depend On The Agent Protocol Porelo's Package Provides
 
-**Status:** Idea.
+```json
+{
+  "$schema": "issue-1.json",
+  "id": "AG10",
+  "title": "Depend On The Agent Protocol Porelo's Package Provides",
+  "state": "Idea",
+  "size": "-",
+  "priority": "Medium",
+  "rank": 6,
+  "blockedBy": [],
+  "covers": "the agent contract named at install time"
+}
+```
 
 **What must be true.** Installing this adapter beside a Porelo that speaks another agent protocol is refused by the
 package manager, not at the first task.

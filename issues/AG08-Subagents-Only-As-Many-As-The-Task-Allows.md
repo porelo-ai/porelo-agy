@@ -1,7 +1,20 @@
 # AG08 — Subagents Only As Many As The Task Allows
 
-**Status:** Review.
-**Size:** S - one module and its tests, one more file the setup writes; about 45 minutes: this repository's
+```json
+{
+  "$schema": "issue-1.json",
+  "id": "AG08",
+  "title": "Subagents Only As Many As The Task Allows",
+  "state": "Review",
+  "size": "S",
+  "priority": "Medium",
+  "rank": 2,
+  "blockedBy": [],
+  "covers": "no subagent in a task unless the task allows it, switched off by a hook, measured to hold at the pin; a task allowing more is refused by Porelo"
+}
+```
+
+**Why this size.** one module and its tests, one more file the setup writes; about 45 minutes: this repository's
 median of 35, raised by the scenario on the VM, the check that an inline hook command runs through a shell,
 and the attended check.
 

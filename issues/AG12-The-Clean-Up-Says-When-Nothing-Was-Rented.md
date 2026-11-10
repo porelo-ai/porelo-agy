@@ -1,6 +1,18 @@
 # AG12 — The Clean-Up Says When Nothing Was Rented
 
-**Status:** Idea.
+```json
+{
+  "$schema": "issue-1.json",
+  "id": "AG12",
+  "title": "The Clean-Up Says When Nothing Was Rented",
+  "state": "Idea",
+  "size": "-",
+  "priority": "Medium",
+  "rank": 2,
+  "blockedBy": [],
+  "covers": "a leg that failed before resolving the machine tooling rented nothing, and its clean-up says so instead of failing on a missing class"
+}
+```
 
 **What must be true.** An acceptance leg that fails before it resolved the machine tooling (a download that does not
 answer, a checkout that fails) has rented nothing, and its *Delete what this run created* says so and passes, instead

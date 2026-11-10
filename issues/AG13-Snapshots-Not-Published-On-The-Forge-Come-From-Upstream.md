@@ -1,7 +1,20 @@
 # AG13 — Snapshots Not Published On The Forge Come From Upstream
 
-**Status:** Review.
-**Size:** S - the change `porelo-claude-code`, `porelo-pi` and `porelo-omp` carry since 2026-11-08, carried over.
+```json
+{
+  "$schema": "issue-1.json",
+  "id": "AG13",
+  "title": "Snapshots Not Published On The Forge Come From Upstream",
+  "state": "Review",
+  "size": "S",
+  "priority": "Medium",
+  "rank": 1,
+  "blockedBy": [],
+  "covers": "on a forge whose registry holds only its organization's packages, the other Porelo snapshots come from the anonymous repository `MAVEN_UPSTREAM_SNAPSHOTS_URL` names, the forge's token sent to the forge alone"
+}
+```
+
+**Why this size.** the change `porelo-claude-code`, `porelo-pi` and `porelo-omp` carry since 2026-11-08, carried over.
 
 **What must be true.** On a forge whose registry holds only its organization's packages, the other Porelo snapshots
 come from the anonymous repository `MAVEN_UPSTREAM_SNAPSHOTS_URL` names, and the forge's token goes to the forge's

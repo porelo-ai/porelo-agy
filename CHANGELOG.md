@@ -4,11 +4,15 @@
 
 ### Changed
 
+- Unattended tasks use stream-json output, with step text, final outcomes and session discovery
+  read from its nested records.
 - The package says that the `porelo-wire` classes in its executable are under Apache-2.0, in its
   Debian copyright and its RPM license, with the license's text beside the GPL's in the RPM.
 
 ### Added
 
+- Tool-call events report call identity, kind, shell commands and measured durations. Task status
+  and cancellation records correlate background job ends without copying tool output.
 - A task's agent starts no subagent, and a task allowing one is refused, since nothing here can count them.
 - The definition names how its sign-in is answered, `login.flow: paste-code`, so a person signing
   in on a host over SSH can be told to paste the code Google's page shows; the Porelo it builds

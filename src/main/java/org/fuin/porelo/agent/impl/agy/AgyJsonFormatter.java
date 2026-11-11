@@ -34,14 +34,27 @@ public final class AgyJsonFormatter implements LogFormatter {
             }
             return sanitize("Error: " + trimmed.substring(ERROR_PREFIX.length()).strip());
         }
-        final Map<?, ?> record = parseObject(trimmed);
+        Map<?, ?> record = parseObject(trimmed);
         if (record == null) {
             return null;
         }
-        if ("step_update".equals(record.get("event"))
-                && record.get("content") instanceof String content
-                && !content.isBlank()) {
-            return sanitize(content);
+        if ("step_update".equals(record.get("event"))) {
+            if (record.get("step_update") instanceof Map<?, ?> step) {
+                return "agent_response".equals(step.get("step_type"))
+                                && step.get("text_delta") instanceof String delta
+                                && !delta.isBlank()
+                        ? sanitize(delta)
+                        : null;
+            }
+            return record.get("content") instanceof String content && !content.isBlank()
+                    ? sanitize(content)
+                    : null;
+        }
+        if (record.get("event") != null && !"result".equals(record.get("event"))) {
+            return null;
+        }
+        if (record.get("result") instanceof Map<?, ?> result) {
+            record = result;
         }
         if ("ERROR".equals(record.get("status"))) {
             final String error =
@@ -79,13 +92,16 @@ public final class AgyJsonFormatter implements LogFormatter {
             return new AgentEnd(
                     false, message, status == null ? AgentEnd.AGENT : AgentEnd.PROVIDER, status);
         }
-        final Map<?, ?> record = parseObject(trimmed);
+        Map<?, ?> record = parseObject(trimmed);
         if (record == null) {
             return null;
         }
         final Object event = record.get("event");
         if (event != null && !"result".equals(event)) {
             return null;
+        }
+        if (record.get("result") instanceof Map<?, ?> result) {
+            record = result;
         }
         final Object status = record.get("status");
         if ("SUCCESS".equals(status)) {
@@ -122,7 +138,7 @@ public final class AgyJsonFormatter implements LogFormatter {
         return null;
     }
 
-    private static @Nullable Map<?, ?> parseObject(String text) {
+    static @Nullable Map<?, ?> parseObject(String text) {
         if (!text.startsWith("{")) {
             return null;
         }

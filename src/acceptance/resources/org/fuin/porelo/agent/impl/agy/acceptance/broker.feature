@@ -33,7 +33,7 @@ Feature: The brokering path works end to end, without an account
         # The provider rejection that follows is Google's, so the command's own exit says nothing here.
         When the task's container runs:
             """
-            timeout 240 agy --output-format json --dangerously-skip-permissions --model gemini-3.6-flash-low -p "Reply with exactly the word PORELOLIVE and nothing else." || true
+            timeout 240 agy --output-format stream-json --dangerously-skip-permissions --model gemini-3.6-flash-low -p "Reply with exactly the word PORELOLIVE and nothing else." || true
             """
         Then the task's broker saw a request
         And its output contains "from the provider"

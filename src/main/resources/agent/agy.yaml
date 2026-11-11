@@ -26,7 +26,7 @@ headless:
     prompt_flag: "-p"
     model_flag: "--model"
     verbose_flag: "--verbose"
-    output_format_flags: ["--output-format", "json"]
+    output_format_flags: ["--output-format", "stream-json"]
 
 session:
     supports_resume: true
@@ -46,8 +46,8 @@ session:
               in_last_lines: 5
               for: "a selection"
     session_id:
-        record: { status: SUCCESS }
-        key: conversation_id
+        record: { event: result, result.status: SUCCESS }
+        key: result.conversation_id
         directory: ".gemini/antigravity-cli/conversations"
         suffix: ".db"
 

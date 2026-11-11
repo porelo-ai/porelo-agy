@@ -1,8 +1,12 @@
 package org.fuin.porelo.agent.impl.agy;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.fuin.porelo.agent.impl.agy.AgyStreamFixtures.recorded;
 
+import java.io.IOException;
+import java.util.List;
 import org.fuin.porelo.agent.api.AgentEnd;
+import org.fuin.porelo.wire.Json;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -12,6 +16,52 @@ import org.junit.jupiter.api.Test;
 class AgyJsonFormatterTest {
 
     private final AgyJsonFormatter formatter = new AgyJsonFormatter();
+
+    @Test
+    void theRecordedStreamEndsSuccessfullyAndNamesTheSession() throws IOException {
+        final String line = recorded("result");
+
+        assertThat(formatter.format(line))
+                .as("the final response is read from the nested result")
+                .isEqualTo("1. **Maven build:** Background build process started.");
+        assertThat(new AgyAgent().ended(line))
+                .as("the actual result shape must finish an unattended turn")
+                .isEqualTo(new AgentEnd(true, "", AgentEnd.AGENT, null));
+        assertThat(new AgyAgent().definition().sessionIds().of(List.of(Json.parse(line))))
+                .as("resume must still discover the conversation from a successful stream result")
+                .isEqualTo("0b5d5a8d-336c-43dc-b4d5-b8543aeb2892");
+    }
+
+    @Test
+    void recordedStepDeltasAreReadableButDoNotEndTheTurn() throws IOException {
+        final String line = recorded("response");
+
+        assertThat(formatter.format(line))
+                .as("text_delta holds the response text in real step updates")
+                .isEqualTo("1.");
+        assertThat(new AgyAgent().ended(line))
+                .as("a step update cannot finish the entire run")
+                .isNull();
+        assertThat(formatter.format(recorded("read-end")))
+                .as("tool output is not promoted to response text")
+                .isNull();
+    }
+
+    @Test
+    void aNestedErrorResultStillReportsTheProviderFailure() throws IOException {
+        final String line =
+                recorded("result")
+                        .replace(
+                                "\"status\":\"SUCCESS\"",
+                                "\"status\":\"ERROR\",\"error_code\":429,\"error\":\"Quota exhausted\"");
+
+        assertThat(formatter.format(line))
+                .as("a nested error is displayed rather than a stale success response")
+                .isEqualTo("Error: Quota exhausted");
+        assertThat(new AgyAgent().ended(line))
+                .as("the nested provider code survives end detection")
+                .isEqualTo(new AgentEnd(false, "Quota exhausted", AgentEnd.PROVIDER, 429));
+    }
 
     @Test
     void formatsCompletedJsonRecordAndReportsSuccessfulTurnEnd() {

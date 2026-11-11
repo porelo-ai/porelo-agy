@@ -85,8 +85,8 @@ class AgyAgentTest {
                 .as("session discovery metadata must be declared for resume")
                 .isEqualTo(
                         new SessionIds(
-                                Map.of("status", "SUCCESS"),
-                                "conversation_id",
+                                Map.of("event", "result", "result.status", "SUCCESS"),
+                                "result.conversation_id",
                                 ".gemini/antigravity-cli/conversations",
                                 ".db"));
     }
@@ -116,7 +116,7 @@ class AgyAgentTest {
                                         null,
                                         true,
                                         true)))
-                .as("fresh unattended command uses json output and -p")
+                .as("fresh unattended command uses stream-json output and -p")
                 .isEqualTo(
                         List.of(
                                 "agy",
@@ -125,7 +125,7 @@ class AgyAgentTest {
                                 "gemini-4-argon-medium",
                                 "--verbose",
                                 "--output-format",
-                                "json",
+                                "stream-json",
                                 "-p",
                                 "Summarize the repository"));
 
@@ -148,7 +148,7 @@ class AgyAgentTest {
                                 "--model",
                                 "gemini-4-argon-medium",
                                 "--output-format",
-                                "json",
+                                "stream-json",
                                 "-p",
                                 "--help"));
     }

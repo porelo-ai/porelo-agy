@@ -12,7 +12,7 @@ Feature: The agy agent runs against the live provider without holding the creden
     When a task is started in "broker" for the "agy" agent through "google" and left running
     And the task's container runs:
       """
-      timeout 240 agy --model "${PORELO_E2E_MODEL}" --output-format json --dangerously-skip-permissions -p "Reply with the single word PORELOLIVE and nothing else."
+      timeout 240 agy --model "${PORELO_E2E_MODEL}" --output-format stream-json --dangerously-skip-permissions -p "Reply with the single word PORELOLIVE and nothing else."
       """
     Then its output contains "PORELOLIVE"
     And the task's container environment does not contain the value of "GEMINI_API_KEY"
@@ -37,7 +37,7 @@ Feature: The agy agent runs against the live provider without holding the creden
     When a task is started in "refused" for the "agy" agent through "google" and left running
     And the task's container runs:
       """
-      timeout 120 agy --model "${PORELO_E2E_MODEL}" --output-format json --dangerously-skip-permissions -p "Reply with the single word PORELONEVER."
+      timeout 120 agy --model "${PORELO_E2E_MODEL}" --output-format stream-json --dangerously-skip-permissions -p "Reply with the single word PORELONEVER."
       """
     Then it exits non-zero
     And its output does not contain "PORELONEVER"

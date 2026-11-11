@@ -33,9 +33,10 @@ its own time gets, the masking of a command line and where the entry is kept are
   for the final status, where today it reads one final object.
 - A `step_update` with `step_type: tool` and `state: ACTIVE` is START, the same `step_index` with `state: DONE` is END;
   `id` = `<conversation_id>/<step_index>`, `tool` = `tool_name`, the input in `tool_info.parameters`. DONE carries
-  `duration_seconds` and `output`, no clock time; `at` stays empty and Porelo stamps the line when it arrives.
+  `duration_seconds` and `output`, no clock time; `at` stays empty and the END passes `durationMs` =
+  `duration_seconds` × 1000, from which porelod dates the start.
 - `AgyAgent` overrides `Agent#toolEvents(String line)`; `AgyToolEvents` maps one output line to its
-  `ToolEvent(line, id, phase, tool, kind, command, background, jobId, at, name, parent)`. It keeps no state between
+  `ToolEvent(line, id, phase, tool, kind, command, background, jobId, at, name, parent, durationMs)`. It keeps no state between
   lines: Porelo joins a start to its end by `id`, a background job's by `jobId`, and a call to its sub-agent by
   `parent`.
 - Kinds: `run_command` -> shell (`command` = `parameters.CommandLine`), `edit_file`/`write_file` -> edit, `read_file` -> read, `grep_search`/`find_by_name`/`list_dir` -> search, `browser_*`/`read_url_content`/`search_web` -> web, any other (`manage_task`, `schedule`, ...) -> other.
@@ -62,7 +63,6 @@ its own time gets, the masking of a command line and where the entry is kept are
 
 - No line flags a step as moved to the background; it is told from the task id in a later `manage_task`.
 - A failed step's `state` was not seen in the measured run.
-- The task's log then holds every step's output: a larger log than today's one object.
 
 ## Decisions
 
@@ -71,7 +71,9 @@ its own time gets, the masking of a command line and where the entry is kept are
 - A shell call keeps its whole command line, not only its program. Porelo masks it before it is stored; the adapter
   passes the line as the stream gives it.
 - A task gives each issue a sub-agent of its own, named by the issue's id; an issue's time is its sub-agent's span.
+- agy's sub-agents stay off, so an agy task's time is shared evenly among its issues.
+- The task's log holds every step's output with `stream-json`; the larger log is accepted.
 
 ## To be checked
 
-- The agent API with `name` and `parent` on `ToolEvent`, installed locally to build against.
+- The agent API with `name`, `parent` and `durationMs` on `ToolEvent`, installed locally to build against.

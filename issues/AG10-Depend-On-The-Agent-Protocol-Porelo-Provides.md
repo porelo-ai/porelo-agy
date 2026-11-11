@@ -5,7 +5,7 @@
   "$schema": "issue-1.json",
   "id": "AG10",
   "title": "Depend On The Agent Protocol Porelo's Package Provides",
-  "state": "Idea",
+  "state": "Accepted",
   "size": "-",
   "priority": "Medium",
   "rank": 6,

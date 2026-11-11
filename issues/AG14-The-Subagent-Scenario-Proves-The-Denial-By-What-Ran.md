@@ -5,7 +5,7 @@
   "$schema": "issue-1.json",
   "id": "AG14",
   "title": "The Subagent Scenario Proves The Denial By What Ran",
-  "state": "Idea",
+  "state": "Accepted",
   "size": "-",
   "priority": "Medium",
   "rank": 1,

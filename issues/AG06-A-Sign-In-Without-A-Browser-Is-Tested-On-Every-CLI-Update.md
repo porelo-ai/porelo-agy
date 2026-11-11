@@ -5,13 +5,13 @@
   "$schema": "issue-1.json",
   "id": "AG06",
   "title": "A Sign-In Without A Browser Is Tested On Every CLI Update",
-  "state": "Analyzed",
+  "state": "Estimated",
   "size": "M",
   "priority": "Medium",
   "rank": 4,
-  "blockedBy": [],
+  "blockedBy": ["AG19"],
   "covers": "the sign-in at a terminal without a browser, checked on every CLI update so a release that drops it fails its pin bump",
-  "openQuestions": 1
+  "openQuestions": 0
 }
 ```
 
@@ -59,10 +59,8 @@ can reach.
   fails; against the real login it passes.
 - **Level**: acceptance only, on a local VM, then one green leg pair on rented machines. No unit test: there is no
   logic of the adapter's in it.
-- **If the update job is built here**: `update.yml` becomes the job of `porelo-claude-code` (detect with
-  `upstream-version`, pin with `update`, unit suite, `check-pin`, packages, `compare-bills`, both acceptance legs on the
-  candidate packages, sweep, pull request, merge or say why not), named "Follow Antigravity CLI" so `proven-legs`
-  finds it; `pom.xml` already holds the `porelo.release.pin.agy.*` properties it reads.
+- **The update job** is [AG19](README.md#ag19)'s. Once it stands, this scenario runs in its acceptance legs on every
+  proposed Antigravity CLI version, as in every other Build.
 
 ## Acceptance
 
@@ -78,12 +76,11 @@ can reach.
   sign-in.
 - A cosmetic change of the menu or prompt stops a pin bump until the scenario follows.
 
-## Open questions
 
-- The weekly update job here only checks the pinned digest; it proposes no new Antigravity CLI release and runs no
-  acceptance, and no issue here builds one. Is that job (as in `porelo-claude-code`: pin the release, run both
-  acceptance legs on its packages, open the pull request) built in this issue, which makes it L, or in an issue of its
-  own that this one waits for?
+## Decisions
+
+- The operator, 2026-11-11: the update job that proposes new Antigravity CLI versions is an issue of its own,
+  [AG19](README.md#ag19); this issue waits on it and stays M.
 
 ## To be checked
 

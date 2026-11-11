@@ -26,7 +26,7 @@ Feature: An unattended task continues its recorded conversation
         When a script runs "timeout 120 porelo task start talk --project cont --repository cont --agent agy --provider google --model ${PORELO_E2E_MODEL} --prompt 'Remember the word PAPAYA. Reply with OK only.'"
         Then it exits zero
         And porelo says task "talk" of "cont" has a session to continue
-        When a script runs "porelo task stop porelo-cont-talk"
+        When a script runs "porelo task stop talk"
         And a script runs "timeout 120 porelo task start talk --project cont --repository cont --agent agy --provider google --model ${PORELO_E2E_MODEL} --prompt 'Which word did I ask you to remember? Reply with the word only.'"
         Then it exits zero
         And its output contains "session   continuing"

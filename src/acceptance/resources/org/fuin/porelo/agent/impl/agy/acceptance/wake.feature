@@ -15,17 +15,17 @@ Feature: A mailbox message wakes the composer without interrupting work
         And a terminal on the machine
         When I run "porelo task start wake --project wake --repository wake --agent agy --provider google --model ${PORELO_E2E_MODEL} --clearance deny"
         Then the "agy" agent in task "wake" of "wake" reaches work without being asked anything
-        When a script runs "echo 'What is 1234 plus 4321? Reply with the digits only.' | porelo talk tell porelo-wake-wake"
+        When a script runs "echo 'What is 1234 plus 4321? Reply with the digits only.' | porelo talk tell wake"
         Then it exits zero
         And within 120 seconds this script exits zero:
             """
-            held=$(porelo talk held porelo-wake-wake)
+            held=$(porelo talk held wake)
             for id in $(printf '%s\n' "$held" | awk '$1 ~ /\.json$/ && $2 == "held" {print $1}'); do
-              porelo talk read porelo-wake-wake "$id" | grep -qE '5,?555' && exit 0
+              porelo talk read wake "$id" | grep -qE '5,?555' && exit 0
             done
-            podman exec porelo-wake-wake tmux capture-pane -p -S - -t porelo | grep -qE '5,?555'
+            podman exec "$(porelo task status wake --json | grep -o '"name": *"[^"]*"' | head -n 1 | cut -d'"' -f4)" tmux capture-pane -p -S - -t porelo | grep -qE '5,?555'
             """
-        When a script runs "porelo task remove porelo-wake-wake --force"
+        When a script runs "porelo task remove wake --force"
         And a script runs "porelo project remove wake --force"
         Then it exits zero
 
@@ -42,18 +42,18 @@ Feature: A mailbox message wakes the composer without interrupting work
         And I press Enter
         Then within 60 seconds this script exits zero:
             """
-            podman exec porelo-busy-busy tmux capture-pane -p -t porelo | grep -qF 'esc to cancel'
+            podman exec "$(porelo task status busy --json | grep -o '"name": *"[^"]*"' | head -n 1 | cut -d'"' -f4)" tmux capture-pane -p -t porelo | grep -qF 'esc to cancel'
             """
-        When a script runs "echo 'What is 1234 plus 4321? Reply with the digits only.' | porelo talk tell porelo-busy-busy"
+        When a script runs "echo 'What is 1234 plus 4321? Reply with the digits only.' | porelo talk tell busy"
         Then it exits zero
         And within 120 seconds this script exits zero:
             """
-            held=$(porelo talk held porelo-busy-busy)
+            held=$(porelo talk held busy)
             for id in $(printf '%s\n' "$held" | awk '$1 ~ /\.json$/ && $2 == "held" {print $1}'); do
-              porelo talk read porelo-busy-busy "$id" | grep -qE '5,?555' && exit 0
+              porelo talk read busy "$id" | grep -qE '5,?555' && exit 0
             done
-            podman exec porelo-busy-busy tmux capture-pane -p -S - -t porelo | grep -qE '5,?555'
+            podman exec "$(porelo task status busy --json | grep -o '"name": *"[^"]*"' | head -n 1 | cut -d'"' -f4)" tmux capture-pane -p -S - -t porelo | grep -qE '5,?555'
             """
-        When a script runs "porelo task remove porelo-busy-busy --force"
+        When a script runs "porelo task remove busy --force"
         And a script runs "porelo project remove busy --force"
         Then it exits zero

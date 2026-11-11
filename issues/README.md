@@ -22,11 +22,11 @@ Within a group, the order is the priority. The number is identity, not sequence.
 | <a id="ag15"></a>[AG15](AG15-The-Tests-Follow-The-Pyramid.md) | XS | - | the suites by level with measured times; the refused hosts held in the unit phase, and the timeout test waits 100 ms |
 | <a id="ag09"></a>[AG09](AG09-Mutation-Testing-With-PIT.md) | - | - | mutation testing by hand: a `pit` profile outside CI with no threshold, and a report sorting survivors into real gaps and harmless ones |
 
-## Analyzed
+## Estimated
 
 | # | Size | Blocked by | What it covers | Open questions |
 |---|---|---|---|---|
-| <a id="ag18"></a>[AG18](AG18-The-Adapter-Reports-Each-Tool-Call-With-Its-Time.md) | M | - | the adapter reads each tool call from its agent's output and hands Porelo its tool, kind, start, end, a shell call's command line and whether it ran in the background, in Porelo's common entry | 0 |
+| <a id="ag18"></a>[AG18](AG18-The-Adapter-Reports-Each-Tool-Call-With-Its-Time.md) | M | - | the adapter reads each tool call from its agent's output and hands Porelo its tool, kind, start, end, a shell call's command line, whether it ran in the background, and a sub-agent's name and the calls made under it, in Porelo's common entry | 0 |
 
 ## Backlog
 

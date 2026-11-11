@@ -1,0 +1,63 @@
+# The distribution packages a job needs and the runner's image lacks, from the Actions cache. Which packages and
+# versions is resolved from fresh, signed apt metadata every time - the indexes stay live - while the .deb files are
+# kept under runner-apt-<runner image>-<manifest sha256>, so a run on an unchanged list fetches none from the mirrors.
+# Each file is checked against the hash the metadata names before it is kept or installed; a changed one is refused
+# and fetched again. GitHub removes an entry nobody read for 7 days, so the entry of an old list goes by itself.
+# Needs pinned.sh of the pinned-jdk action beside it.
+name: Runner packages
+description: Installs distribution packages from the Actions cache, each checked against the hash apt names for it.
+inputs:
+    packages:
+        description: The packages to install, separated by spaces.
+        required: true
+runs:
+    using: composite
+    steps:
+        - name: What the packages take
+          id: manifest
+          shell: bash
+          env:
+              PACKAGES: ${{ inputs.packages }}
+          run: |
+              set -euo pipefail
+              . "$GITHUB_ACTION_PATH/runner-apt.sh"
+              read -ra packages <<< "$PACKAGES"
+              manifest="$RUNNER_TEMP/runner-apt.manifest"
+              runner_apt_resolve "$manifest" "${packages[@]}"
+              cat "$manifest"
+              {
+                  echo "manifest=$manifest"
+                  echo "key=runner-apt-$(runner_apt_image)-$(sha256sum "$manifest" | cut -d' ' -f1)"
+              } >> "$GITHUB_OUTPUT"
+
+        - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+          id: cache
+          with:
+              path: ~/.cache/porelo-pinned/runner-apt
+              key: ${{ steps.manifest.outputs.key }}
+
+        - name: The packages, checked against their hashes
+          shell: bash
+          env:
+              MANIFEST: ${{ steps.manifest.outputs.manifest }}
+          run: |
+              set -euo pipefail
+              . "$GITHUB_ACTION_PATH/../pinned-jdk/pinned.sh"
+              . "$GITHUB_ACTION_PATH/runner-apt.sh"
+              runner_apt_fetch "$MANIFEST" "$HOME/.cache/porelo-pinned/runner-apt"
+
+        # Saved before apt installs from it, so the entry holds the checked files and nothing apt adds.
+        - if: steps.cache.outputs.cache-hit != 'true'
+          uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+          with:
+              path: ~/.cache/porelo-pinned/runner-apt
+              key: ${{ steps.manifest.outputs.key }}
+
+        - name: The packages installed
+          shell: bash
+          env:
+              MANIFEST: ${{ steps.manifest.outputs.manifest }}
+          run: |
+              set -euo pipefail
+              . "$GITHUB_ACTION_PATH/runner-apt.sh"
+              runner_apt_install "$MANIFEST" "$HOME/.cache/porelo-pinned/runner-apt"

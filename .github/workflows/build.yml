@@ -98,9 +98,10 @@ jobs:
               run: |
                   set -eu
                   java -cp "$(cat target/cp.txt)" org.fuin.porelo.release.Main check-pin --pin agy --definition target/classes/agent/agy.yaml
-            # What the native build and the package checks run, installed where the runner's image lacks it, from the
-            # distribution's signed archive: the local Forgejo's image carries no rpm.
+            # What the native build and the package checks run, where the runner's image lacks it: the local Forgejo's
+            # image carries no rpm. Installed from the distribution's signed archive by way of the Actions cache.
             - name: The tools the packages are built and read with
+              id: tools
               run: |
                   set -euo pipefail
                   missing=()
@@ -108,12 +109,12 @@ jobs:
                       command -v "${tool%%:*}" > /dev/null || missing+=("${tool#*:}")
                   done
                   dpkg-query -W -f='${Status}' zlib1g-dev 2> /dev/null | grep -q 'ok installed' || missing+=(zlib1g-dev)
-                  if [ ${#missing[@]} -gt 0 ]; then
-                      sudo=
-                      [ "$(id -u)" -eq 0 ] || sudo=sudo
-                      $sudo apt-get update -qq
-                      $sudo apt-get install -y -qq --no-install-recommends "${missing[@]}"
-                  fi
+                  echo "missing=${missing[*]}" >> "$GITHUB_OUTPUT"
+
+            - if: steps.tools.outputs.missing != ''
+              uses: ./.github/actions/runner-apt
+              with:
+                  packages: ${{ steps.tools.outputs.missing }}
 
             - name: Native binary, protocol and packages
               env:

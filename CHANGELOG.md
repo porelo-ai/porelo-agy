@@ -4,6 +4,7 @@
 
 ### Changed
 
+- The Build takes the runner's distribution packages from the Actions cache, keyed by the package list's hash, each file checked against the hash apt names before it is installed, so an outage of a package mirror fails only a Build on a new list; the agy archive the task image fetches on a rented machine stays uncached until the machines can take a staged file.
 - Unattended tasks use stream-json output, with step text, final outcomes and session discovery
   read from its nested records.
 - The package says that the `porelo-wire` classes in its executable are under Apache-2.0, in its

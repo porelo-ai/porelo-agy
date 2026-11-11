@@ -16,9 +16,8 @@
 ```
 
 **Why this size.** one acceptance scenario and no Java; Porelo's acceptance kit already has every step it needs. M
-because it is an acceptance step, written against the real CLI's screens and proven on a VM. It assumes the update job
-that proposes a new release behind the acceptance legs is built elsewhere (see *Open questions*); built here as well,
-it is L.
+because it is an acceptance step, written against the real CLI's screens and proven on a VM. The update job
+that proposes a new release behind the acceptance legs is [AG19](README.md#ag19)'s, as decided.
 
 **Estimate.** M: 53 min, the measured median of M over all repositories (n=113).
 

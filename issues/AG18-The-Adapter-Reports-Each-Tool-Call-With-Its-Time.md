@@ -5,7 +5,7 @@
   "$schema": "issue-1.json",
   "id": "AG18",
   "title": "The Adapter Reports Each Tool Call With Its Time",
-  "state": "Backlog",
+  "state": "Implementing",
   "size": "M",
   "priority": "High",
   "rank": 1,

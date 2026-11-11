@@ -33,6 +33,11 @@ Within a group, the order is the priority. The number is identity, not sequence.
 | # | Size | Blocked by | What it covers |
 |---|---|---|---|
 | <a id="ag02"></a>[AG02](AG02-The-Repository-s-Agent-Works-In-A-Porelo-Task.md) | S | [AG04](README.md#ag04) | the repository's agent moves into its own Porelo task, after a dry run on this machine |
+
+## Implementing
+
+| # | Size | Blocked by | What it covers |
+|---|---|---|---|
 | <a id="ag20"></a>[AG20](AG20-The-Build-Takes-Its-Downloads-From-A-Cache.md) | S | - | the runner's packages come from the Actions cache, keyed by their package manifest, and the agy archive the task image needs is named as cacheable only once the rented machines can take a staged file; what must stay live is named, and an entry nobody reads for 7 days is removed by GitHub |
 
 ## Review

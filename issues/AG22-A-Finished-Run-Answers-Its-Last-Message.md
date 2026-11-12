@@ -5,7 +5,7 @@
   "$schema": "issue-1.json",
   "id": "AG22",
   "title": "A Finished Run Answers Its Last Message",
-  "state": "Backlog",
+  "state": "Implementing",
   "size": "S",
   "priority": "High",
   "rank": 1,

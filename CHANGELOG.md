@@ -13,6 +13,7 @@
 
 ### Added
 
+- The daily shared rules check also holds every issue head to its schema and each index to its heads.
 - A finished unattended run answers what it replied, `session.waiting.last_message` over the
   successful result record's `result.response`; Antigravity CLI 1.4.5 holds whole text for sure
   only there, so the answer is every reply of the run joined, ending in the last.

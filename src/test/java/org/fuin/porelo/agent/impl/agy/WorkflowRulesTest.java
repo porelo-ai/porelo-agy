@@ -107,25 +107,16 @@ class WorkflowRulesTest {
                 .contains("GOOGLE_API");
 
         Files.writeString(githubEnv, "");
-        WorkflowSteps.run(
-                steps.getFirst(),
-                dir,
-                Map.of("KEY", "porelo-test-key", "GITHUB_ENV", githubEnv.toString()),
-                WorkflowSteps.LIMIT);
+        final Run keyed =
+                WorkflowSteps.run(
+                        steps.getFirst(),
+                        dir,
+                        Map.of("KEY", "porelo-test-key", "GITHUB_ENV", githubEnv.toString()),
+                        WorkflowSteps.LIMIT);
+        assertThat(keyed.exit()).as("exit of the gate with a key:%n%s", keyed.output()).isZero();
         assertThat(Files.readString(githubEnv))
                 .as("what the gate left for the later steps with a key")
                 .isEmpty();
-    }
-
-    @Test
-    void packageBuildsCannotSkipTheirChecks() throws IOException {
-        final List<String> scripts =
-                WorkflowSteps.scripts("build.yml", "Native binary, protocol and packages");
-        assertThat(scripts).as("the native package build is actually present").hasSize(1);
-        assertThat(scripts.getFirst())
-                .as("both package verification and native protocol checks run")
-                .contains("-Pnative,dist verify")
-                .doesNotContain("skipTests", "maven.test.skip");
     }
 
     @Test

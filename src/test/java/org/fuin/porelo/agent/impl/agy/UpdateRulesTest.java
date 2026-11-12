@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,7 +23,8 @@ class UpdateRulesTest {
     @Test
     void aReleaseIsTakenOnceItIsThreeDaysOld() throws IOException {
 
-        assertThat(minAge(Files.readString(Path.of("pom.xml")))).contains("3d");
+        assertThat(minAge(Files.readString(RepositoryDocuments.root().resolve("pom.xml"))))
+                .contains("3d");
     }
 
     @Test
@@ -33,7 +33,7 @@ class UpdateRulesTest {
         // The other half: a pom that sets no age must not read as one that does.
         assertThat(
                         minAge(
-                                "<properties><porelo.release.channel>x</porelo.release.channel></properties>"))
+                                "<properties><porelo.release.pin.agy.label>x</porelo.release.pin.agy.label></properties>"))
                 .isEmpty();
     }
 

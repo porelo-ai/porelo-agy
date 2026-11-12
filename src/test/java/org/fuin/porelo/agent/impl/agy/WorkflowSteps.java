@@ -51,17 +51,31 @@ final class WorkflowSteps {
             if (!lines.get(i).strip().equals("- name: " + name)) {
                 continue;
             }
+            // Its run: is in the step itself; a step without one (a uses:) has no script, and
+            // reading on would take the next step's.
+            final int item = indentOf(lines.get(i));
             int j = i + 1;
-            while (!lines.get(j).strip().startsWith("run: ")) {
+            while (j < lines.size()
+                    && !lines.get(j).strip().startsWith("run: ")
+                    && (lines.get(j).isBlank() || indentOf(lines.get(j)) > item)) {
                 j++;
             }
-            // A one-line step is its own script; reading on would take the next step's block.
-            final String inline = lines.get(j).strip().substring("run: ".length()).strip();
-            if (!inline.equals("|")) {
-                result.add(inline + "\n");
+            if (j == lines.size() || !lines.get(j).strip().startsWith("run: ")) {
                 continue;
             }
             final int key = indentOf(lines.get(j));
+            final String inline = lines.get(j).strip().substring("run: ".length()).strip();
+            if (!inline.equals("|") && !inline.equals("|-")) {
+                // A plain scalar, folded onto the more-indented lines under it.
+                final StringBuilder folded = new StringBuilder(inline);
+                for (int k = j + 1;
+                        k < lines.size() && !lines.get(k).isBlank() && indentOf(lines.get(k)) > key;
+                        k++) {
+                    folded.append(' ').append(lines.get(k).strip());
+                }
+                result.add(folded + "\n");
+                continue;
+            }
             final StringBuilder script = new StringBuilder();
             int body = -1;
             for (int k = j + 1;

@@ -114,8 +114,9 @@ jobs:
             # ------------------------------------------------------------------ no update: the weekly digest check
 
             # A week with nothing to pin still checks what is pinned, as this job did before it followed releases.
+            # A rollback's STOP stands, and the check still runs: a withdrawn release is when the pin matters most.
             - name: Build the artifact checks
-              if: steps.plan.outputs.proceed != 'yes' && !env.STOP
+              if: steps.plan.outputs.proceed != 'yes'
               env:
                   PORELO_PACKAGES_READ_TOKEN: ${{ secrets.PORELO_PACKAGES_READ_TOKEN }}
               run: |
@@ -124,7 +125,7 @@ jobs:
             # The job's token on GitHub, so its API answers the check; empty elsewhere, since a forge's runner puts
             # its own token into GITHUB_TOKEN for every step, and the check would hand it to GitHub.
             - name: The publisher digest agrees with the pin
-              if: steps.plan.outputs.proceed != 'yes' && !env.STOP
+              if: steps.plan.outputs.proceed != 'yes'
               env:
                   GITHUB_TOKEN: ${{ github.server_url == 'https://github.com' && github.token || '' }}
               run: |
@@ -184,8 +185,9 @@ jobs:
                   # In a file as well, so the pull request can carry it rather than only the run log.
                   cat target/bill-change.txt
 
+            # After the gates, and only when none stopped: an earlier STOP says more and is kept.
             - name: The major version moved
-              if: steps.plan.outputs.proceed == 'yes' && steps.detect.outputs.major == 'moved'
+              if: steps.plan.outputs.proceed == 'yes' && !env.STOP && steps.detect.outputs.major == 'moved'
               env:
                   WAS: ${{ steps.detect.outputs.pinned }}
                   TARGET: ${{ steps.plan.outputs.target }}
@@ -195,29 +197,6 @@ jobs:
                   echo "A major release changes flags, configuration or an extension API by definition."
 
             # Without the key the credential scenarios are skipped, and a green leg would prove less.
-            # The tree these legs verify, named by an artifact only this run can make, so the Build of the same
-            # tree on main takes these legs (porelo-release proven-legs) instead of renting them again.
-            - name: Name the tree this run verifies
-              id: tree
-              if: steps.plan.outputs.proceed == 'yes' && !env.STOP
-              run: |
-                  set -eu
-                  # A scratch index, so the pin stays unstaged for the request below, which commits exactly this.
-                  export GIT_INDEX_FILE="$RUNNER_TEMP/verified.index"
-                  git read-tree HEAD
-                  git add -u
-                  TREE="$(git write-tree)"
-                  rm -f "$GIT_INDEX_FILE"
-                  echo "$TREE" > "$RUNNER_TEMP/verified-tree"
-                  echo "tree=$TREE" >> "$GITHUB_OUTPUT"
-
-            - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-              if: steps.tree.outputs.tree
-              with:
-                  name: porelo-verified-tree-${{ steps.tree.outputs.tree }}
-                  path: ${{ runner.temp }}/verified-tree
-                  retention-days: 2
-
             - name: The credential scenarios can run
               if: steps.plan.outputs.proceed == 'yes' && !env.STOP
               env:
@@ -260,6 +239,30 @@ jobs:
                       --os fedora --kind amd64 --package porelo-agent-agy \
                       --cucumber . --candidate target \
                       || echo "STOP=acceptance failed on fedora" >> "$GITHUB_ENV"
+
+            # The tree these legs verified, named by an artifact only this run can make, so the Build of the same
+            # tree on main takes these legs (porelo-release proven-legs) instead of renting them again. Named only
+            # after both legs passed, so no run that stopped leaves the name behind.
+            - name: Name the tree this run verifies
+              id: tree
+              if: steps.plan.outputs.proceed == 'yes' && !env.STOP
+              run: |
+                  set -eu
+                  # A scratch index, so the pin stays unstaged for the request below, which commits exactly this.
+                  export GIT_INDEX_FILE="$RUNNER_TEMP/verified.index"
+                  git read-tree HEAD
+                  git add -u
+                  TREE="$(git write-tree)"
+                  rm -f "$GIT_INDEX_FILE"
+                  echo "$TREE" > "$RUNNER_TEMP/verified-tree"
+                  echo "tree=$TREE" >> "$GITHUB_OUTPUT"
+
+            - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+              if: steps.tree.outputs.tree
+              with:
+                  name: porelo-verified-tree-${{ steps.tree.outputs.tree }}
+                  path: ${{ runner.temp }}/verified-tree
+                  retention-days: 2
 
             - name: Delete what this run created
               if: always() && steps.plan.outputs.proceed == 'yes'

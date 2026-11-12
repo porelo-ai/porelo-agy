@@ -56,11 +56,61 @@ class UpdateRequestTest {
 
         final Map<String, String> env = setUp(dir);
         env.put("JOB_STATUS", "cancelled");
-        WorkflowSteps.run(step(OPEN), dir.resolve("repo"), env, WorkflowSteps.LIMIT);
+        final Run open =
+                WorkflowSteps.run(step(OPEN), dir.resolve("repo"), env, WorkflowSteps.LIMIT);
+        assertThat(open.exit()).as("exit of the request:%n%s", open.output()).isZero();
         assertThat(Files.readString(dir.resolve("body"))).doesNotContain("Green");
-        WorkflowSteps.run(step(MERGE), dir.resolve("repo"), env, WorkflowSteps.LIMIT);
+        final Run merge =
+                WorkflowSteps.run(step(MERGE), dir.resolve("repo"), env, WorkflowSteps.LIMIT);
+        assertThat(merge.exit()).as("exit of the merge step:%n%s", merge.output()).isZero();
         assertThat(calls(dir))
                 .as("gh calls after a cancel")
+                .noneMatch(c -> c.startsWith("pr merge"));
+    }
+
+    @Test
+    void aGateThatStoppedTheRunNeitherSaysGreenNorMerges(@TempDir final Path dir) throws Exception {
+
+        // The ordinary failure: every gate catches its own and writes STOP, so the job itself
+        // still reads as a success when the request is opened.
+        final Map<String, String> env = setUp(dir);
+        env.put("JOB_STATUS", "success");
+        env.put("STOP", "acceptance failed on fedora");
+
+        final Run open =
+                WorkflowSteps.run(step(OPEN), dir.resolve("repo"), env, WorkflowSteps.LIMIT);
+        assertThat(open.exit()).as("exit of the request:%n%s", open.output()).isZero();
+        assertThat(Files.readString(dir.resolve("body")))
+                .as("the request's body after a gate stopped the run")
+                .doesNotContain("Green")
+                .contains("not ready to publish: acceptance failed on fedora");
+
+        final Run merge =
+                WorkflowSteps.run(step(MERGE), dir.resolve("repo"), env, WorkflowSteps.LIMIT);
+        assertThat(merge.exit()).as("exit of the merge step:%n%s", merge.output()).isZero();
+        assertThat(calls(dir))
+                .as("gh calls after a gate stopped the run")
+                .noneMatch(c -> c.startsWith("pr merge"));
+    }
+
+    @Test
+    void autoMergeWithoutItsTokenFailsRatherThanMergeUnseen(@TempDir final Path dir)
+            throws Exception {
+
+        // The job's own token merges without starting the Build, so nothing would be published
+        // while the run looked successful.
+        final Map<String, String> env = setUp(dir);
+        env.put("JOB_STATUS", "success");
+        env.put("HAVE_TOKEN", "false");
+        WorkflowSteps.run(step(OPEN), dir.resolve("repo"), env, WorkflowSteps.LIMIT);
+
+        final Run merge =
+                WorkflowSteps.run(step(MERGE), dir.resolve("repo"), env, WorkflowSteps.LIMIT);
+        assertThat(merge.exit())
+                .as("exit of the merge step without its token:%n%s", merge.output())
+                .isNotZero();
+        assertThat(calls(dir))
+                .as("gh calls without the merge token")
                 .noneMatch(c -> c.startsWith("pr merge"));
     }
 
@@ -219,7 +269,6 @@ class UpdateRequestTest {
                 #!/bin/sh
                 echo "$*" >> "$CALLS"
                 [ -n "${GIT_CONFIG_VALUE_0:-}" ] && echo "$1 $2" >> "$CALLS.header"
-                [ "$1 $2" = "pr view" ] && exit 1
                 while [ $# -gt 0 ]; do
                     [ "$1" = --body-file ] && cp "$2" "$BODY"
                     shift

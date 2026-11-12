@@ -5,7 +5,7 @@
   "$schema": "issue-1.json",
   "id": "AG21",
   "title": "An Attended Session Takes An Opening Text",
-  "state": "Implementing",
+  "state": "Review",
   "size": "S",
   "priority": "High",
   "rank": 1,
@@ -39,8 +39,6 @@ agent definition, never from the flag that runs the agent once and ends.
 - In a task on the local VM, attended, with the opening text "Name the file in /workspace that you read first":
   the first turn answers it, and afterwards the screen matches `at_rest` and the session is still open.
 - A text that begins with `-` or `@` is refused by Porelo before the agent starts, and the agent never sees it.
+- A task that already exists takes no opening text: Porelo refuses a resume paired with one, so no resumed session
+  receives it.
 
-## To be checked
-
-- Whether a resumed session (the definition's resume flag plus an opening text) takes the text too, or Porelo must
-  refuse that pair for Antigravity CLI.

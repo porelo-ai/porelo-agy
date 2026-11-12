@@ -12,6 +12,9 @@
 
 ### Added
 
+- The definition says how an attended session takes an opening text, `session.opening_flag: "-i"`, so
+  Porelo can open a discussion on Antigravity CLI with the person's text as its first turn, after which it waits
+  for them.
 - Tool-call events report call identity, kind, shell commands and measured durations. Task status
   and cancellation records correlate background job ends without copying tool output.
 - A task's agent starts no subagent, and a task allowing one is refused, since nothing here can count them.

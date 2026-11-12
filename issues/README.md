@@ -41,18 +41,13 @@ Within a group, the order is the priority. The number is identity, not sequence.
 | <a id="ag22"></a>[AG22](AG22-A-Finished-Run-Answers-Its-Last-Message.md) | S | - | a finished unattended Antigravity CLI run answers the text of its last message, declared in session.waiting.last_message, so a reader's answer is not empty; the declaration adds no screen rule and so changes nothing in how Porelo wakes the agent | - |
 | <a id="ag02"></a>[AG02](AG02-The-Repository-s-Agent-Works-In-A-Porelo-Task.md) | S | [AG04](README.md#ag04) | the repository's agent moves into its own Porelo task, after a dry run on this machine | - |
 
-## Implementing
-
-| # | Size | Blocked by | What it covers |
-|---|---|---|---|
-| <a id="ag21"></a>[AG21](AG21-An-Attended-Session-Takes-An-Opening-Text.md) | S | - | an attended session of Antigravity CLI opens on the person's opening text as its first turn and then waits for the person, the form (behind `-i`) declared in the agent definition and measured in a task |
-
 ## Review
 
 | # | Size | Blocked by | What it covers | Open questions |
 |---|---|---|---|---|
 | <a id="ag17"></a>[AG17](AG17-The-Acceptance-Takes-A-Task-s-Container-Name-From-Porelo.md) | XS | - | the acceptance scenarios name a task by its own name in Porelo's commands and take its container's name from `porelo task status --json`, never built as `porelo-<project>-<task>` | - |
 | <a id="ag18"></a>[AG18](AG18-The-Adapter-Reports-Each-Tool-Call-With-Its-Time.md) | M | - | the adapter reads each tool call from its agent's output and hands Porelo its tool, kind, start, end, a shell call's command line, whether it ran in the background, and a sub-agent's name and the calls made under it, in Porelo's common entry | 0 |
+| <a id="ag21"></a>[AG21](AG21-An-Attended-Session-Takes-An-Opening-Text.md) | S | - | an attended session of Antigravity CLI opens on the person's opening text as its first turn and then waits for the person, the form (behind `-i`) declared in the agent definition and measured in a task | - |
 | <a id="ag13"></a>[AG13](AG13-Snapshots-Not-Published-On-The-Forge-Come-From-Upstream.md) | S | - | on a forge whose registry holds only its organization's packages, the other Porelo snapshots come from the anonymous repository `MAVEN_UPSTREAM_SNAPSHOTS_URL` names, the forge's token sent to the forge alone | - |
 | <a id="ag08"></a>[AG08](AG08-Subagents-Only-As-Many-As-The-Task-Allows.md) | S | - | no subagent in a task unless the task allows it, switched off by a hook, measured to hold at the pin; a task allowing more is refused by Porelo | - |
 | <a id="ag20"></a>[AG20](AG20-The-Build-Takes-Its-Downloads-From-A-Cache.md) | S | - | the runner's packages come from the Actions cache, keyed by their package manifest, and the agy archive the task image needs is named as cacheable only once the rented machines can take a staged file; what must stay live is named, and an entry nobody reads for 7 days is removed by GitHub | - |

@@ -25,7 +25,6 @@ Within a group, the order is the priority. The number is identity, not sequence.
 | <a id="ag15"></a>[AG15](AG15-The-Tests-Follow-The-Pyramid.md) | XS | - | the suites by level with measured times, the refused hosts already held in the unit phase by AgyAgentTest; the timeout test waits 100 ms | - |
 | <a id="ag12"></a>[AG12](AG12-The-Clean-Up-Says-When-Nothing-Was-Rented.md) | XS | - | a leg that failed before resolving the machine tooling rented nothing, and its clean-up says so instead of failing on a missing class | 0 |
 | <a id="ag06"></a>[AG06](AG06-A-Sign-In-Without-A-Browser-Is-Tested-On-Every-CLI-Update.md) | M | [AG19](README.md#ag19) | the sign-in at a terminal without a browser, checked on every CLI update so a release that drops it fails its pin bump | 0 |
-| <a id="ag05"></a>[AG05](AG05-The-Acceptance-Legs-Run-On-The-Host-s-Forge.md) | S | [AG04](README.md#ag04) | the acceptance legs on the host's pool again, once it lends a forge job a machine by kind | 0 |
 | <a id="ag10"></a>[AG10](AG10-Depend-On-The-Agent-Protocol-Porelo-Provides.md) | S | - | the agent contract named at install time | 0 |
 
 ## Backlog
@@ -35,6 +34,7 @@ Within a group, the order is the priority. The number is identity, not sequence.
 | <a id="ag19"></a>[AG19](AG19-The-Update-Job-Proposes-New-Antigravity-CLI-Versions.md) | M | - | the weekly update job follows the Antigravity CLI as porelo-claude-code's follows Claude Code: it finds a new release, pins it, runs the unit suite and both acceptance legs on the candidate packages, and opens the pull request, instead of only re-checking the pinned digest | 0 |
 | <a id="ag22"></a>[AG22](AG22-A-Finished-Run-Answers-Its-Last-Message.md) | S | - | a finished unattended Antigravity CLI run answers the text of its last message, declared in session.waiting.last_message, so a reader's answer is not empty; the declaration adds no screen rule and so changes nothing in how Porelo wakes the agent | - |
 | <a id="ag02"></a>[AG02](AG02-The-Repository-s-Agent-Works-In-A-Porelo-Task.md) | S | [AG04](README.md#ag04) | the repository's agent moves into its own Porelo task, after a dry run on this machine | - |
+| <a id="ag05"></a>[AG05](AG05-The-Acceptance-Legs-Run-On-The-Host-s-Forge.md) | S | [AG04](README.md#ag04) | the acceptance legs on the host's pool again, once it lends a forge job a machine by kind | 0 |
 
 ## Review
 

@@ -5,7 +5,7 @@
   "$schema": "issue-1.json",
   "id": "AG21",
   "title": "An Attended Session Takes An Opening Text",
-  "state": "Backlog",
+  "state": "Implementing",
   "size": "S",
   "priority": "High",
   "rank": 1,

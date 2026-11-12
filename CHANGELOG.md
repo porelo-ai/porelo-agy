@@ -13,6 +13,9 @@
 
 ### Added
 
+- A finished unattended run answers what it replied, `session.waiting.last_message` over the
+  successful result record's `result.response`; Antigravity CLI 1.4.5 holds whole text for sure
+  only there, so the answer is every reply of the run joined, ending in the last.
 - The weekly update job follows Antigravity CLI: it takes a release once it is three days old, pins its version and digest, builds and tests the packages, runs both acceptance legs on them and opens the pull request, or says why not; a week with nothing newer still checks the pinned digest.
 - The definition says how an attended session takes an opening text, `session.opening_flag: "-i"`, so
   Porelo can open a discussion on Antigravity CLI with the person's text as its first turn, after which it waits

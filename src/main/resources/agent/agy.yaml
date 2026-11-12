@@ -49,6 +49,12 @@ session:
             - contains: "enter Select · esc Cancel"
               in_last_lines: 5
               for: "a selection"
+        # 1.4.5 streams each reply in pieces, and a reply's closing piece may be a bare newline;
+        # whole text stands for sure only in a successful result, whose response is every reply
+        # of the run joined, not the last one alone.
+        last_message:
+            record: { event: result, result.status: SUCCESS }
+            text: result.response
     session_id:
         record: { event: result, result.status: SUCCESS }
         key: result.conversation_id

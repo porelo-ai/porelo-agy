@@ -5,7 +5,7 @@
   "$schema": "issue-1.json",
   "id": "AG22",
   "title": "A Finished Run Answers Its Last Message",
-  "state": "Implementing",
+  "state": "Review",
   "size": "S",
   "priority": "High",
   "rank": 1,
@@ -34,10 +34,27 @@ definition declares no last message.
 
 ## Acceptance
 
-- Over a recorded run's end - a reply, a tool call, its reasoning, a later reply - the answer is the text of the last
-  reply, and a run without one answers nothing.
+- Over a recorded run's end - a reply, a tool call, its reasoning, a later reply - the answer is every reply of the
+  run joined, ending in the last, as the successful result's `result.response` holds them (the only record holding
+  whole text; accepted by the coordinator, 2026-11-12), and a run without a successful result answers nothing.
 - The declaration changes neither the agent's screen rules nor whether Porelo wakes it.
 
 ## To be checked
 
 - The record and field the agent's last reply stands in, read in a recorded unattended run at the pinned version.
+  Read in a run of 1.4.5 recorded unattended in a Porelo task on 2026-11-12 (`src/test/resources/streams/unattended-run-1.4.5.jsonl`):
+  a reply streams as `agent_response` records of `text_delta` pieces, and the piece that closes a step may be a bare
+  newline (the fifth record). The last reply's closing piece holds it whole, `ALL DONE`, only because it is short, so
+  no streamed record holds a reply for sure. Whole text stands for sure only in the `result` record of a successful
+  run, whose `result.response` is every reply of the run joined; the declaration names that record and field.
+- Deviation from the acceptance: the answer is all replies of the run joined, ending in the last, not the last reply
+  alone. Tool output is not in it. The recording holds no reasoning record (only a count of thinking tokens), so
+  its exclusion is not measured; the declaration matches the result record alone. A run cut before its result, or
+  whose result failed (status `ERROR`, empty response, as 1.5.7 wrote it for a refused run; 1.4.5's was not seen),
+  answers nothing.
+- The pin moved to 1.5.3 after the recording; 1.5.3's stream is not recorded, since agy is not run while its account
+  is disabled. The test holds the 1.4.5 records; whether 1.5.3 still ends in the same result record is open.
+- Read-only review by Codex `gpt-6.1-sol`, effort high (agy's account was locked): the claim that no streamed record
+  holds a whole reply was too wide, corrected; a failed result and the full screen rules were untested, now tested,
+  the failed-run test seen to fail without `result.status: SUCCESS`.
+- The declaration adds no screen rule: the test reads the screen rules unchanged.

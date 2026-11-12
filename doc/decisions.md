@@ -120,6 +120,17 @@ selection footers (`enter Confirm · esc Exit` and `enter Select · esc Cancel`)
 Waiting rules cover the measured workspace-trust (`enter Confirm · esc Exit`) and question
 (`enter Select · esc Cancel`) footers in the last five lines of the terminal.
 
+## Last message
+
+A finished unattended run answers its text from the `result` record of a successful run, field
+`result.response`. In 1.4.5 a reply streams as `agent_response` records of `text_delta` pieces, and
+the piece closing a step may be a bare newline. A short reply can stand whole in its closing piece,
+as the last one of the recorded run does, but a longer one does not, so no streamed record holds a
+reply for sure; the result's `response` holds every reply of the run joined. The answer is therefore
+all replies, ending in the last, rather than the last alone; tool output stays out. A run that ends
+without a successful result, failed or cut off, answers nothing. The declaration holds no screen
+rule.
+
 ## Build boundary
 
 The Java and resource layout follows the existing adapters: a small `YamlAgent` subclass, a

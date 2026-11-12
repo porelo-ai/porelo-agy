@@ -35,12 +35,6 @@ Within a group, the order is the priority. The number is identity, not sequence.
 | <a id="ag05"></a>[AG05](AG05-The-Acceptance-Legs-Run-On-The-Host-s-Forge.md) | S | [AG04](README.md#ag04) | the acceptance legs on the host's pool again, once it lends a forge job a machine by kind | 0 |
 | <a id="ag24"></a>[AG24](AG24-The-Issue-Heads-Are-Checked-Every-Day.md) | XS | - | a daily run checks this repository's issue heads and index with the released porelo-release, as buildtools' shared rules do | - |
 
-## Implementing
-
-| # | Size | Blocked by | What it covers |
-|---|---|---|---|
-| <a id="ag22"></a>[AG22](AG22-A-Finished-Run-Answers-Its-Last-Message.md) | S | - | a finished unattended Antigravity CLI run answers the text of its last message, declared in session.waiting.last_message, so a reader's answer is not empty; the declaration adds no screen rule and so changes nothing in how Porelo wakes the agent |
-
 ## Review
 
 | # | Size | Blocked by | What it covers | Open questions |
@@ -49,6 +43,7 @@ Within a group, the order is the priority. The number is identity, not sequence.
 | <a id="ag18"></a>[AG18](AG18-The-Adapter-Reports-Each-Tool-Call-With-Its-Time.md) | M | - | the adapter reads each tool call from its agent's output and hands Porelo its tool, kind, start, end, a shell call's command line, whether it ran in the background, and a sub-agent's name and the calls made under it, in Porelo's common entry | 0 |
 | <a id="ag19"></a>[AG19](AG19-The-Update-Job-Proposes-New-Antigravity-CLI-Versions.md) | M | - | the weekly update job follows the Antigravity CLI as porelo-claude-code's follows Claude Code: it finds a new release, pins it, runs the unit suite and both acceptance legs on the candidate packages, and opens the pull request, instead of only re-checking the pinned digest | 0 |
 | <a id="ag21"></a>[AG21](AG21-An-Attended-Session-Takes-An-Opening-Text.md) | S | - | an attended session of Antigravity CLI opens on the person's opening text as its first turn and then waits for the person, the form (behind `-i`) declared in the agent definition and measured in a task | - |
+| <a id="ag22"></a>[AG22](AG22-A-Finished-Run-Answers-Its-Last-Message.md) | S | - | a finished unattended Antigravity CLI run answers the text of its last message, declared in session.waiting.last_message, so a reader's answer is not empty; the declaration adds no screen rule and so changes nothing in how Porelo wakes the agent | - |
 | <a id="ag13"></a>[AG13](AG13-Snapshots-Not-Published-On-The-Forge-Come-From-Upstream.md) | S | - | on a forge whose registry holds only its organization's packages, the other Porelo snapshots come from the anonymous repository `MAVEN_UPSTREAM_SNAPSHOTS_URL` names, the forge's token sent to the forge alone | - |
 | <a id="ag08"></a>[AG08](AG08-Subagents-Only-As-Many-As-The-Task-Allows.md) | S | - | no subagent in a task unless the task allows it, switched off by a hook, measured to hold at the pin; a task allowing more is refused by Porelo | - |
 | <a id="ag20"></a>[AG20](AG20-The-Build-Takes-Its-Downloads-From-A-Cache.md) | S | - | the runner's packages come from the Actions cache, keyed by their package manifest, and the agy archive the task image needs is named as cacheable only once the rented machines can take a staged file; what must stay live is named, and an entry nobody reads for 7 days is removed by GitHub | - |

@@ -15,7 +15,7 @@
 
     <groupId>org.fuin.porelo</groupId>
     <artifactId>porelo-agent-agy</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.1.1-SNAPSHOT</version>
     <name>Porelo Agent Antigravity CLI</name>
     <description>Porelo agent for Antigravity CLI</description>
 
@@ -38,8 +38,8 @@
 
         <agent.snapshot.run>0</agent.snapshot.run>
 
-        <agent.cli.version>1.4.5</agent.cli.version>
-        <agent.cli.sha256>90cc1894b6862510869ad4cf1a6f4c043b7ae7c095bad8d5c355788a0ca935c7</agent.cli.sha256>
+        <agent.cli.version>1.5.3</agent.cli.version>
+        <agent.cli.sha256>1b4850599cce73a17f94ffb422df3bf9531531b77dbddc40c1a435e0c2c16807</agent.cli.sha256>
         <porelo.release.pin.agy.label>Antigravity CLI</porelo.release.pin.agy.label>
         <porelo.release.pin.agy.property>agent.cli.version</porelo.release.pin.agy.property>
         <porelo.release.pin.agy.upstream>github-latest https://api.github.com/repos/google-antigravity/antigravity-cli/releases/latest</porelo.release.pin.agy.upstream>

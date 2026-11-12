@@ -29,9 +29,14 @@ Within a group, the order is the priority. The number is identity, not sequence.
 
 ## Backlog
 
+| # | Size | Blocked by | What it covers |
+|---|---|---|---|
+| <a id="ag02"></a>[AG02](AG02-The-Repository-s-Agent-Works-In-A-Porelo-Task.md) | S | [AG04](README.md#ag04) | the repository's agent moves into its own Porelo task, after a dry run on this machine |
+
+## Implementing
+
 | # | Size | Blocked by | What it covers | Open questions |
 |---|---|---|---|---|
-| <a id="ag02"></a>[AG02](AG02-The-Repository-s-Agent-Works-In-A-Porelo-Task.md) | S | [AG04](README.md#ag04) | the repository's agent moves into its own Porelo task, after a dry run on this machine | - |
 | <a id="ag05"></a>[AG05](AG05-The-Acceptance-Legs-Run-On-The-Host-s-Forge.md) | S | [AG04](README.md#ag04) | the acceptance legs on the host's pool again, once it lends a forge job a machine by kind | 0 |
 
 ## Review

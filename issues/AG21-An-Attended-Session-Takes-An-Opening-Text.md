@@ -15,7 +15,7 @@
 ```
 
 **Why this size.** one definition field, a unit test and one attended check on the local VM; no contract another repository reads beyond
-the field Porelo's API names.
+the agreed `opening_flag`.
 
 **What must be true.** A person who starts an attended session of Antigravity CLI with an opening text, as a discussion does,
 sees the agent answer that text as its first turn and then wait at its prompt for them. Porelo takes the form from the
@@ -23,10 +23,11 @@ agent definition, never from the flag that runs the agent once and ends.
 
 ## Plan
 
-- The contract built against: Porelo's agent API hands an attended session an opening text only to an agent whose
-  definition says how its interactive session takes one, positionally or behind a flag of its own. The prompt flag of
-  a run that ends says nothing about it, so an agent that declares nothing is refused rather than guessed at. A text
-  that is blank, holds a NUL, or begins with `-` or `@` is refused for every agent.
+- The contract built against: the agent definition's session block takes `opening_flag`, beside `resume_flag`.
+  `""` hands an attended session its opening text as the last argument, positionally; any other value is one
+  argument beginning with `-`, which the text follows, last. Absent, the text is positional when the headless prompt
+  flag is empty and refused otherwise, before anything is made. A text that is blank, holds a NUL, or begins with `-`
+  or `@` is refused for every agent, after a flag too.
 - `src/main/resources/agent/agy.yaml` declares the opening text behind `-i` (`--prompt-interactive`): `agy --help`
   reads "Run an initial prompt interactively and continue the session", while its headless `-p` is print mode. Read
   on a newer agy than the pin, so the pin's help is read first.
@@ -41,6 +42,5 @@ agent definition, never from the flag that runs the agent once and ends.
 
 ## To be checked
 
-- The field's name and shape in Porelo's agent API, before the definition names it.
 - Whether a resumed session (the definition's resume flag plus an opening text) takes the text too, or Porelo must
   refuse that pair for Antigravity CLI.

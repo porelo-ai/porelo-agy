@@ -5,7 +5,7 @@
   "$schema": "issue-1.json",
   "id": "AG15",
   "title": "The Tests Follow The Pyramid",
-  "state": "Analyzed",
+  "state": "Estimated",
   "size": "XS",
   "priority": "Medium",
   "rank": 1,

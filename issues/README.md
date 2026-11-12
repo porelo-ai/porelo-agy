@@ -17,17 +17,12 @@ Within a group, the order is the priority. The number is identity, not sequence.
 |---|---|---|---|
 | <a id="ag09"></a>[AG09](AG09-Mutation-Testing-With-PIT.md) | - | - | mutation testing by hand: a `pit` profile outside CI with no threshold, and a report sorting survivors into real gaps and harmless ones |
 
-## Analyzed
-
-| # | Size | Blocked by | What it covers |
-|---|---|---|---|
-| <a id="ag15"></a>[AG15](AG15-The-Tests-Follow-The-Pyramid.md) | XS | - | the suites by level with measured times, the refused hosts already held in the unit phase by AgyAgentTest; the timeout test waits 100 ms |
-
 ## Estimated
 
 | # | Size | Blocked by | What it covers | Open questions |
 |---|---|---|---|---|
 | <a id="ag14"></a>[AG14](AG14-The-Subagent-Scenario-Proves-The-Denial-By-What-Ran.md) | S | [AG18](README.md#ag18) | the subagent scenario decides by what the task ran, not by the word the model answers; it failed once on ubuntu and passed on its re-run | 0 |
+| <a id="ag15"></a>[AG15](AG15-The-Tests-Follow-The-Pyramid.md) | XS | - | the suites by level with measured times, the refused hosts already held in the unit phase by AgyAgentTest; the timeout test waits 100 ms | - |
 | <a id="ag12"></a>[AG12](AG12-The-Clean-Up-Says-When-Nothing-Was-Rented.md) | XS | - | a leg that failed before resolving the machine tooling rented nothing, and its clean-up says so instead of failing on a missing class | 0 |
 | <a id="ag06"></a>[AG06](AG06-A-Sign-In-Without-A-Browser-Is-Tested-On-Every-CLI-Update.md) | M | [AG19](README.md#ag19) | the sign-in at a terminal without a browser, checked on every CLI update so a release that drops it fails its pin bump | 0 |
 | <a id="ag05"></a>[AG05](AG05-The-Acceptance-Legs-Run-On-The-Host-s-Forge.md) | S | [AG04](README.md#ag04) | the acceptance legs on the host's pool again, once it lends a forge job a machine by kind | 0 |

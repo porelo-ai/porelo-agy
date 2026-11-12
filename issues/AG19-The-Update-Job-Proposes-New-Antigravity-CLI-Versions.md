@@ -5,7 +5,7 @@
   "$schema": "issue-1.json",
   "id": "AG19",
   "title": "The Update Job Proposes New Antigravity CLI Versions",
-  "state": "Estimated",
+  "state": "Backlog",
   "size": "M",
   "priority": "High",
   "rank": 1,

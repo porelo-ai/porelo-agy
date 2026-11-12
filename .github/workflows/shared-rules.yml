@@ -64,6 +64,11 @@ jobs:
             - name: Every module directory has a README that links its submodules
               run: java -cp "$(cat target/cp.txt)" org.fuin.porelo.release.Main check-readmes .
 
+            # Snapshots read on a forge from its registry and from Sonatype, only this project's group asked of
+            # Sonatype; a filter that lost its switch or its file would ask Sonatype for every name.
+            - name: Refuse a snapshot filter that lets a private name out
+              run: java -cp "$(cat target/cp.txt)" org.fuin.porelo.release.Main check-snapshot-filter .
+
             # Every issue head held to issue-1.json and each index to its heads, on the checked-out commit, never on
             # a working tree: a head the planner's board refuses, one without a size or with a rank of null, is named
             # here by its file and its field: on a pull request at once, and the day after on what was pushed to main.

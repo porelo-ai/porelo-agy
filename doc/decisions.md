@@ -147,13 +147,17 @@ runs the acceptance suite on Ubuntu and Fedora with `GOOGLE_API` and `gemini-3.6
 ## Snapshot repositories
 
 `settings.xml` reads snapshots through one of three profiles, the same as in `porelo-claude-code`, `porelo-pi` and
-`porelo-omp`: `standard` (Central's snapshots) where no forge names its own, `forge` where `MAVEN_SNAPSHOTS_URL` does,
-read with the forge's read-only token under the server id `porelo-forge`, and `upstream` where
-`MAVEN_UPSTREAM_SNAPSHOTS_URL` names where the Porelo snapshots a forge's registry does not hold come from. The
-upstream repository's id has no `<server>`, so no token is sent there; `UpstreamSnapshotsTest` fails when any
-repository other than the forge's would get its credential. A tag's build passes `-P!standard,!forge,!upstream`, so a
-release reads no snapshot repository; `UpstreamSnapshotsTest` fails when a profile that reads snapshots is left out of
-it.
+`porelo-omp`: `standard` (Central's snapshots, under the id `central.sonatype.snapshots`, asked only for
+`org.fuin.porelo`) wherever the filter's switch in `.mvn/maven.config` and its file in `.mvn/rrf/` are, on a forge
+too, `forge` where `MAVEN_SNAPSHOTS_URL` does, read with the forge's read-only token under the server id
+`porelo-forge`, and `upstream` where `MAVEN_UPSTREAM_SNAPSHOTS_URL` names where the Porelo snapshots a forge's
+registry does not hold come from. On a forge Sonatype is so asked beside its registry: on the local Forgejo a newer
+snapshot of `main` on Sonatype can shadow one the forge published from a branch, and a forge that cannot reach
+Sonatype waits on it; on GitHub the forge's repository is Sonatype itself and unfiltered. Accepted with the filter, by
+the coordinator on 2026-11-12. The upstream repository's id has no `<server>`, so no token is sent there;
+`UpstreamSnapshotsTest` fails when any repository other than the forge's would get its credential. A tag's build
+passes `-P!standard,!forge,!upstream`, so a release reads no snapshot repository; `UpstreamSnapshotsTest` fails when a
+profile that reads snapshots is left out of it.
 
 Measured from an empty local repository, with `MAVEN_SNAPSHOTS_URL` naming a repository without Porelo's snapshots:
 the build resolves them from `porelo-upstream-snapshots` with `MAVEN_UPSTREAM_SNAPSHOTS_URL` set, and fails without it

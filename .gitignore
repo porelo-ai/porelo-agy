@@ -8,5 +8,3 @@
 target
 *.log
 *.iml
-# Which local-repository prefix this checkout installs under - one agent's, never committed.
-.mvn/maven.config

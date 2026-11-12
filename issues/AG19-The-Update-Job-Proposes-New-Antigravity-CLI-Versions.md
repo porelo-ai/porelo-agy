@@ -111,8 +111,16 @@ this job's legs, and today `update.yml` only re-checks the pinned digest. `pom.x
   `1b4850599cce73a17f94ffb422df3bf9531531b77dbddc40c1a435e0c2c16807`, the module's patch version and the changelog
   line; tags without a leading `v` are read. The published bill
   `porelo-dist-deb/pool/main/p/porelo-agent-agy/porelo-agent-agy.cdx.json` answers 200.
-- Still open, for whoever holds the repository's settings: that it has `PORELO_MACHINES_API`, `PORELO_MACHINES_SSH`,
-  `GOOGLE_API` and, for auto-merge, `PORELO_UPDATE_TOKEN` with the variable `PORELO_UPDATE_AUTO_MERGE`. `gh` is not
-  signed in here.
-- After the push: one dispatched run with `version=1.5.3` that opens a pull request, and one scheduled or
-  dispatched run with nothing to do.
+- The repository's settings, read by the coordinator through the runs: the legs sign in with `GOOGLE_API`, an API
+  key; `PORELO_UPDATE_AUTO_MERGE` is unset, so a green run asks for the merge rather than merging.
+- Run 43285715027 on 2026-11-12, dispatched with `version=1.5.3`: green; it opened pull request #1 from
+  `update/antigravity-cli-1.5.3` with one commit pinning 1.5.3 at the digest above, the patch version 0.1.1-SNAPSHOT
+  and the changelog line; its text says "Green." over the unit suite, the pin check, both packages, the unchanged
+  component set and the legs on Ubuntu and Fedora against these packages; nothing merged.
+- After the operator merged it, the Build of `main` (43291522045) found its legs proven by "Follow Antigravity CLI",
+  rented none, and published the snapshot with 1.5.3.
+- Run 43294210209 the same day, dispatched without a version: green and changed nothing; it found 1.5.7 newer than
+  the pinned 1.5.3 but not yet three days old ("It is taken from 2026-11-15T15:18:30Z on"), so pin, tests, legs and
+  request were skipped.
+- Not read here: a run whose leg fails or whose key is empty; that it leaves no machine rests on the sweep step the
+  runs end with.

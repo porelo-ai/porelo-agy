@@ -121,7 +121,8 @@ jobs:
                   PORELO_PACKAGES_READ_TOKEN: ${{ secrets.PORELO_PACKAGES_READ_TOKEN }}
               run: |
                   ./mvnw -B -s settings.xml -Pnative,dist verify -Dagent.snapshot.run=${{ github.run_number }}
-            # The action refuses every server but GitHub's; on a forge that publishes nothing no job reads the artifact yet.
+            # For the release job, which runs only where PORELO_PUBLISH is true; the action refuses every server but
+            # GitHub's.
             - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
               if: vars.PORELO_PUBLISH == 'true'
               with:
@@ -132,6 +133,21 @@ jobs:
                       target/*.cdx.json
                   if-no-files-found: error
 
+            # For this run's acceptance legs on either forge, where they install what this run built: GitHub's artifact
+            # actions refuse every other server, the Actions cache answers on both. Keyed by the run, so a leg never
+            # installs another run's, and by the attempt, so a full re-run saves what it rebuilt.
+            - name: The packages for this run's legs
+              if: github.ref_type == 'tag' || vars.PORELO_PUBLISH != 'true'
+              run: |
+                  mkdir -p candidate
+                  cp target/*.deb target/*.rpm target/*.cdx.json candidate/
+
+            - if: github.ref_type == 'tag' || vars.PORELO_PUBLISH != 'true'
+              uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+              with:
+                  path: candidate
+                  key: candidate-${{ github.run_id }}-${{ github.run_attempt }}
+
             # Only main and a tag v<version> publish, and a run that publishes nothing says so rather than skipping silently.
             - name: Not publishing
               if: "!(vars.PORELO_PUBLISH == 'true' && github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')))"
@@ -141,7 +157,7 @@ jobs:
               run: |
                   echo "Not publishing. This run is '$EVENT' on '$REF',"
                   echo "and only a push to main or a tag v<version> publishes, on a forge whose PORELO_PUBLISH is true. The packages were built and tested here;"
-                  echo "and attached to this run where the forge publishes; nothing reached Artifactory, so"
+                  echo "and are kept with this run for its acceptance legs; nothing reached Artifactory, so"
                   echo "'apt' will still offer whatever was published last."
 
             - name: Which channel
@@ -266,10 +282,10 @@ jobs:
         runs-on: ubuntu-24.04
         timeout-minutes: 55
         needs: [build, proof]
-        # Only on GitHub while the repository moves: the host's pool lends no forge job a machine by kind yet.
+        # On every forge: GitHub's rents a server, the host's lends a machine of its kind from its pool, told where by
+        # the forge.
         if: >-
             !cancelled() && needs.build.result == 'success' && needs.proof.outputs.proven != 'yes'
-            && github.server_url == 'https://github.com'
             && (github.event_name == 'workflow_dispatch'
             || (github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))))
 
@@ -283,12 +299,16 @@ jobs:
             - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   persist-credentials: false
+            # The same condition as the leg's --candidate. A re-run of the failed legs alone takes the last attempt's
+            # entry of this run; none at all fails the leg here rather than letting it install nothing.
             - name: The packages this run built
-              if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || vars.PORELO_PUBLISH != 'true'
-              uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+              if: github.ref_type == 'tag' || vars.PORELO_PUBLISH != 'true'
+              uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:
-                  name: packages
                   path: candidate
+                  key: candidate-${{ github.run_id }}-${{ github.run_attempt }}
+                  restore-keys: candidate-${{ github.run_id }}-
+                  fail-on-cache-miss: true
             - name: The pinned GraalVM
               env:
                   PORELO_PACKAGES_READ_TOKEN: ${{ secrets.PORELO_PACKAGES_READ_TOKEN }}
@@ -305,6 +325,8 @@ jobs:
                   PORELO_PACKAGES_READ_TOKEN: ${{ secrets.PORELO_PACKAGES_READ_TOKEN }}
                   PORELO_MACHINES_API: ${{ secrets.PORELO_MACHINES_API }}
                   PORELO_MACHINES_SSH: ${{ secrets.PORELO_MACHINES_SSH }}
+                  # The host's pool's run key; empty on GitHub, where the two above rent a server instead.
+                  PORELO_POOL_SSH: ${{ secrets.PORELO_POOL_SSH }}
                   PORELO_PUBLISH: ${{ vars.PORELO_PUBLISH }}
                   PORELO_CI_LEG: acc-${{ matrix.os }}
                   GEMINI_API_KEY: ${{ secrets.GOOGLE_API }}

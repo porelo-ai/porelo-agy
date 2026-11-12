@@ -81,10 +81,11 @@ Read in today's `.github/workflows/build.yml` (job `acceptance`, the `build` job
   4. *Delete what this run created* stays `sweep --mine` under `if: always()`; on the host's forge it does nothing,
      and the lease's close gives the account back after a failed leg too.
 - **Red first:** `WorkflowRulesTest` gains `theAcceptanceLegsRunOnEveryForge`, reading `build.yml` through
-  `WorkflowSteps`: the `acceptance` job's condition names no server, and *Acceptance on ...* passes
-  `PORELO_POOL_SSH`; it fails on today's file. Then a push's Build on the host's forge whose `acceptance` job is
-  skipped, and the same commit after the steps runs both legs. The workflow check (`workflows.yml`) and
-  `check-providers` stay green on the changed file.
+  `WorkflowSteps`: the `acceptance` job's condition names no server, and *Acceptance on ...* passes `PORELO_POOL_SSH`;
+  it fails on today's file. It also holds the cache pair: one key saved and restored, the restore's fallback to the
+  run and its `fail-on-cache-miss`, under the condition the leg passes `--candidate` on. Then a push's Build on the
+  host's forge whose `acceptance` job is skipped, and the same commit after the steps runs both legs. The workflow
+  check (`workflows.yml`) and `check-providers` stay green on the changed file.
 - **Level:** a unit test over the workflow file, then the Build itself on a host with the forge and a pool of an
   `ubuntu` and a `fedora` VM, and the same commit's Build on the central forge, which still rents.
 
@@ -100,10 +101,9 @@ Read in today's `.github/workflows/build.yml` (job `acceptance`, the `build` job
 
 - It cannot start before the two changes outside this repository above; if porelo-buildtools takes the larger way,
   one description of providers per kind as a variable, step 2 passes other secret names, which may move the size.
-- The packages' route on the host's forge is open: a forge-side copy of the artifact actions cannot sit in a file the
-  central forge also runs (`check-actions` takes only `owner/action@<commit>`, and the central forge resolves every
-  step's action), so the route may become a rebuild in the leg's job or a store both forges have, which could make
-  this M.
+- The packages' route on the host's forge, the Actions cache (see *To be checked*), is unproven there: if the
+  forge's cache refuses the pinned action or does not hand a job the entry an earlier job of the run saved, the
+  route becomes a rebuild in the leg's job, which could make this M.
 - The legs now run twice per change, once on the host's forge and once on the central forge after the gathered push
   (the central `proof` asks only the central forge's runs), so each change spends the model's tokens twice.
 - The pool is shared with porelo's and the other adapters' legs; a leg that waits for an account spends its 30
@@ -113,9 +113,13 @@ Read in today's `.github/workflows/build.yml` (job `acceptance`, the `build` job
 
 ## To be checked
 
-- How a leg gets the packages its run built on the host's forge: whether Forgejo's artifact store answers any
-  pinned version of GitHub's artifact actions, or else a cache keyed by the run, or the leg's job building the
-  packages itself.
+- How a leg gets the packages its run built on the host's forge: settled on the Actions cache, which both forges
+  answer. The `build` job saves `candidate/` under `candidate-<run id>-<attempt>` with `actions/cache/save`, the
+  leg restores it with `actions/cache/restore`, falling back to the run's last attempt for a re-run of the failed
+  legs alone, and `fail-on-cache-miss`, so a missing entry fails the leg instead of installing nothing; both run
+  under the leg's own condition for `--candidate`, a tag or `PORELO_PUBLISH` not `true`. `actions/upload-artifact`
+  stays for the release job on GitHub. Still to see on the host's forge: that its cache answers the pinned v6.1.0
+  and that the entry reaches the `acceptance` job.
 - That the host's VM pool holds an `ubuntu` and a `fedora` VM: a rented server once reported a pool of 0 KiB.
 - That a forge job reaches the pool VMs over ssh, for the leg's install and for the Cucumber half run from the job
   as a person at a terminal.

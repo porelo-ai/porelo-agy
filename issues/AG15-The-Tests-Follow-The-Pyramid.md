@@ -5,16 +5,16 @@
   "$schema": "issue-1.json",
   "id": "AG15",
   "title": "The Tests Follow The Pyramid",
-  "state": "Accepted",
+  "state": "Analyzed",
   "size": "XS",
   "priority": "Medium",
   "rank": 1,
   "blockedBy": [],
-  "covers": "the suites by level with measured times; the refused hosts held in the unit phase, and the timeout test waits 100 ms"
+  "covers": "the suites by level with measured times, the refused hosts already held in the unit phase by AgyAgentTest; the timeout test waits 100 ms"
 }
 ```
 
-**Why this size.** two test classes, no contract.
+**Why this size.** one test class, no contract.
 
 **What must be true.** Every flow this adapter owns is proven by unit tests that run in seconds, and no test waits
 longer than the thing it checks needs.
@@ -44,10 +44,6 @@ shell and are proven by running them with stand-in tools, which is their lowest 
 - **The native executable's protocol** (`NativeProtocolCheck`): that the built executable answers `describe` and
   keeps a sign-in's renewal attributes is checked against the native build only, since only the native image shows
   what its reflection configuration kept. The same reading in Java is unit-tested in `AgyCredentialExtractorTest`.
-- **The refused hosts**: that the definition refuses the CLI's self-updater, `play.googleapis.com`,
-  `www.googleapis.com` and `antigravity-unleash.goog` is held only by `NativeProtocolCheck` against the native build, and
-  seen by a person only in *The deliberately refused telemetry host is visible*. No unit test reads them, so a change
-  that drops one fails only in the `dist` build.
 - **End-to-end only:** no other flow of this adapter. Every other scenario's adapter fact - the composer's screen at
   rest and at work, the recorded conversation, the subagent switch, the login's arguments, the run's end on a
   refused key, the broker's address - has a unit test over the recorded screen or file. What the scenarios add is
@@ -62,14 +58,15 @@ shell and are proven by running them with stand-in tools, which is their lowest 
 
 ## Plan
 
-- **The refused hosts are held in the unit phase** (XS): `AgyAgentTest` holds that the definition refuses exactly
-  those four hosts, seen red first with one taken out. `NativeProtocolCheck` keeps its reading of the native
-  executable.
 - **The timeout test waits 100 ms** (XS): `WorkflowStepsTest` with a limit of 100 ms, seen red first by a limit
   the sleep does not reach.
 
 ## Acceptance
 
 - The unit suite stays under a minute, and no flow of the adapter is reached only from an integration or an
-  end-to-end run; it fails when a refused host leaves the definition.
+  end-to-end run.
 - `WorkflowStepsTest` takes under 0.5 s.
+
+## Open questions
+
+- None.

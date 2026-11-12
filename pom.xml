@@ -45,6 +45,8 @@
         <porelo.release.pin.agy.upstream>github-latest https://api.github.com/repos/google-antigravity/antigravity-cli/releases/latest</porelo.release.pin.agy.upstream>
         <porelo.release.pin.agy.digest>github-asset https://api.github.com/repos/google-antigravity/antigravity-cli/releases/tags/{version} ^agy_cli_linux_x64[.]tar[.]gz$</porelo.release.pin.agy.digest>
         <porelo.release.pin.agy.sha256>agent.cli.sha256</porelo.release.pin.agy.sha256>
+        <!-- The rule: a release is taken once it is three days old. -->
+        <porelo.release.min-age>3d</porelo.release.min-age>
 
         <porelo.version>0.5.1-SNAPSHOT</porelo.version>
         <porelo.minimum.version>0.5.1~snapshot.318</porelo.minimum.version>

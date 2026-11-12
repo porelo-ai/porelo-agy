@@ -34,7 +34,8 @@ final class WorkflowSteps {
     record Run(int exit, String output) {}
 
     /**
-     * Returns the run block of each step with the given name, its indentation removed.
+     * Returns the run block of each step with the given name, its indentation removed; a one-line
+     * {@code run:} is its own script.
      *
      * @param workflow File name under {@code .github/workflows}.
      * @param name The step's {@code name:}.
@@ -51,8 +52,14 @@ final class WorkflowSteps {
                 continue;
             }
             int j = i + 1;
-            while (!lines.get(j).strip().equals("run: |")) {
+            while (!lines.get(j).strip().startsWith("run: ")) {
                 j++;
+            }
+            // A one-line step is its own script; reading on would take the next step's block.
+            final String inline = lines.get(j).strip().substring("run: ".length()).strip();
+            if (!inline.equals("|")) {
+                result.add(inline + "\n");
+                continue;
             }
             final int key = indentOf(lines.get(j));
             final StringBuilder script = new StringBuilder();

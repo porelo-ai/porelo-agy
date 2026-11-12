@@ -5,7 +5,7 @@
   "$schema": "issue-1.json",
   "id": "AG19",
   "title": "The Update Job Proposes New Antigravity CLI Versions",
-  "state": "Implementing",
+  "state": "Review",
   "size": "M",
   "priority": "High",
   "rank": 1,
@@ -106,7 +106,13 @@ this job's legs, and today `update.yml` only re-checks the pinned digest. `pom.x
 
 ## To be checked
 
-- `upstream-version --pin agy` and `update 1.4.5 --pin agy --dry-run` run locally against the real releases.
-- That the repository on GitHub holds `PORELO_MACHINES_API`, `PORELO_MACHINES_SSH`, `GOOGLE_API` and, for auto-merge,
-  `PORELO_UPDATE_TOKEN` with the variable `PORELO_UPDATE_AUTO_MERGE`, as porelo-omp's does.
-- The published bill's address under `porelo-dist-deb/pool/main/p/porelo-agent-agy/` for `compare-bills`.
+- Measured on 2026-11-12: `upstream-version --pin agy` finds 1.5.3 as the newest release that has stood 3 days
+  (1.5.7 is newer), and `update 1.5.3 --pin agy --dry-run` writes the version, the asset's digest
+  `1b4850599cce73a17f94ffb422df3bf9531531b77dbddc40c1a435e0c2c16807`, the module's patch version and the changelog
+  line; tags without a leading `v` are read. The published bill
+  `porelo-dist-deb/pool/main/p/porelo-agent-agy/porelo-agent-agy.cdx.json` answers 200.
+- Still open, for whoever holds the repository's settings: that it has `PORELO_MACHINES_API`, `PORELO_MACHINES_SSH`,
+  `GOOGLE_API` and, for auto-merge, `PORELO_UPDATE_TOKEN` with the variable `PORELO_UPDATE_AUTO_MERGE`. `gh` is not
+  signed in here.
+- After the push: one dispatched run with `version=1.5.3` that opens a pull request, and one scheduled or
+  dispatched run with nothing to do.

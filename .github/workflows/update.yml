@@ -1,42 +1,409 @@
-name: Verify pinned Antigravity CLI artifact
+# Follows Antigravity CLI, so nobody has to.
+name: Agent version update
+
 on:
     schedule:
+        # Weekly, Monday 04:29 UTC: each agent repository has a weekday of its own.
         - cron: '29 4 * * 1'
     workflow_dispatch:
+        inputs:
+            version:
+                description: 'Pin this exact version instead of asking upstream'
+                required: false
+
+# Read by every Maven call, the pinned-jdk action's too: Maven asks for a newer snapshot once a day, and a
+# cache restored the day Porelo publishes would keep yesterday's. Never run on a tag. As in the Build workflow:
+# the snapshot repository Maven reads, a variable present on GitHub and the local Forgejo.
 env:
     MAVEN_ARGS: -U
     MAVEN_SNAPSHOTS_URL: ${{ vars.MAVEN_SNAPSHOTS_URL }}
     MAVEN_UPSTREAM_SNAPSHOTS_URL: ${{ vars.MAVEN_UPSTREAM_SNAPSHOTS_URL }}
+
+# Read-only for the workflow; the job below takes the two it needs to write, and no more.
 permissions:
     contents: read
+
+# Never two at once.
 concurrency:
-    group: ${{ github.workflow }}-${{ github.ref }}
-    cancel-in-progress: true
+    group: update
+    cancel-in-progress: false
+
 jobs:
+
     update:
-        runs-on: ubuntu-26.04
-        timeout-minutes: 25
+        name: Follow Antigravity CLI
+        runs-on: ubuntu-24.04
+        timeout-minutes: 105
+        # It updates the central forge only - its pull request, its merge and the bill it compares with are
+        # GitHub's and Artifactory's - so it runs only where PORELO_PUBLISH is true.
+        if: vars.PORELO_PUBLISH == 'true'
+        # Pushes the pin's branch and opens its pull request: these two, for this job only.
+        permissions:
+            contents: write
+            pull-requests: write
+
         steps:
+
             - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   persist-credentials: false
+
+            # Before the lookup, which is Porelo's release tool; and before anything is rented, so the
+            # cleanup below always has something to run.
             - name: The pinned GraalVM
               env:
                   PORELO_PACKAGES_READ_TOKEN: ${{ secrets.PORELO_PACKAGES_READ_TOKEN }}
               uses: ./.github/actions/pinned-jdk
+
+            - name: Resolve the release and machine tooling
+              env:
+                  PORELO_PACKAGES_READ_TOKEN: ${{ secrets.PORELO_PACKAGES_READ_TOKEN }}
+              run: |
+                  ./mvnw -B -q -Pci-tools -s settings.xml dependency:build-classpath \
+                      -Dmdep.outputFile=target/cp.txt
+
+            # ------------------------------------------------------------------ detect
+
+            # Through env, never interpolated into the script, so no value can become shell.
+            - name: What does upstream publish
+              id: detect
+              env:
+                  VERSION: ${{ inputs.version }}
+                  # 60 unauthenticated GitHub requests an hour per address is a shared runner's budget.
+                  GITHUB_TOKEN: ${{ github.token }}
+              run: |
+                  set -eu
+                  # A dispatch answers for upstream, so 'major' is still measured against what is pinned.
+                  if [ -n "${VERSION:-}" ]; then
+                      java -cp "$(cat target/cp.txt)" org.fuin.porelo.release.Main upstream-version --pin agy --upstream "$VERSION"
+                  else
+                      java -cp "$(cat target/cp.txt)" org.fuin.porelo.release.Main upstream-version --pin agy
+                  fi
+
+            - name: What this run will do
+              id: plan
+              env:
+                  UPDATE: ${{ steps.detect.outputs.update }}
+                  UPSTREAM: ${{ steps.detect.outputs.upstream }}
+                  PINNED: ${{ steps.detect.outputs.pinned }}
+                  SOURCE: ${{ steps.detect.outputs.source }}
+                  WAITING: ${{ steps.detect.outputs.waiting }}
+              run: |
+                  set -eu
+                  if [ "$UPDATE" = "yes" ]; then
+                      echo "target=$UPSTREAM" >> "$GITHUB_OUTPUT"
+                      echo "proceed=yes" >> "$GITHUB_OUTPUT"
+                      echo "This module pins $PINNED; the target is $UPSTREAM."
+                  elif [ "$UPDATE" = "rollback" ]; then
+                      # Nothing is built or rented: a verified downgrade is not what decides this.
+                      echo "proceed=no" >> "$GITHUB_OUTPUT"
+                      echo "STOP=$SOURCE points at $UPSTREAM, older than the pinned $PINNED" >> "$GITHUB_ENV"
+                      echo "Either upstream withdrew $PINNED, or it was pinned from another pointer."
+                      echo "To go back deliberately, dispatch this workflow with version=$UPSTREAM."
+                      echo "Until one of the two moves, every scheduled run stops here."
+                  elif [ -n "${WAITING:-}" ]; then
+                      echo "proceed=no" >> "$GITHUB_OUTPUT"
+                      echo "Antigravity CLI $UPSTREAM is out, but younger than the pom's porelo.release.min-age."
+                      echo "It is taken from $WAITING on. $PINNED stays pinned until then."
+                  else
+                      echo "proceed=no" >> "$GITHUB_OUTPUT"
+                      echo "Antigravity CLI $PINNED is still the newest release."
+                      echo "Nothing to do. This is the ordinary outcome of this job."
+                  fi
+
+            # ------------------------------------------------------------------ no update: the weekly digest check
+
+            # A week with nothing to pin still checks what is pinned, as this job did before it followed releases.
             - name: Build the artifact checks
+              if: steps.plan.outputs.proceed != 'yes' && !env.STOP
               env:
                   PORELO_PACKAGES_READ_TOKEN: ${{ secrets.PORELO_PACKAGES_READ_TOKEN }}
-              run: ./mvnw -U -B -s settings.xml test
-            - name: Resolve the shared tooling
-              env:
-                  PORELO_PACKAGES_READ_TOKEN: ${{ secrets.PORELO_PACKAGES_READ_TOKEN }}
-              run: ./mvnw -U -B -q -Pci-tools -s settings.xml dependency:build-classpath -Dmdep.outputFile=target/cp.txt
+              run: |
+                  ./mvnw -B -s settings.xml test
+
             # The job's token on GitHub, so its API answers the check; empty elsewhere, since a forge's runner puts
             # its own token into GITHUB_TOKEN for every step, and the check would hand it to GitHub.
             - name: The publisher digest agrees with the pin
+              if: steps.plan.outputs.proceed != 'yes' && !env.STOP
               env:
                   GITHUB_TOKEN: ${{ github.server_url == 'https://github.com' && github.token || '' }}
               run: |
                   set -eu
                   java -cp "$(cat target/cp.txt)" org.fuin.porelo.release.Main check-pin --pin agy --definition target/classes/agent/agy.yaml
+
+            # ------------------------------------------------------------------ apply
+
+            - name: Pin it
+              if: steps.plan.outputs.proceed == 'yes'
+              env:
+                  TARGET: ${{ steps.plan.outputs.target }}
+              run: java -cp "$(cat target/cp.txt)" org.fuin.porelo.release.Main update "$TARGET" --pin agy
+
+            # ------------------------------------------------------------------ verify
+
+            # Gates write STOP rather than failing, so the run can still clean up after itself.
+            - name: Unit tests
+              env:
+                  PORELO_PACKAGES_READ_TOKEN: ${{ secrets.PORELO_PACKAGES_READ_TOKEN }}
+              if: steps.plan.outputs.proceed == 'yes'
+              run: |
+                  ./mvnw -B -s settings.xml verify || echo "STOP=the unit suite failed" >> "$GITHUB_ENV"
+
+            # Nothing else enforces that the version and the digest agree;
+            # The job's token on GitHub, so its API answers the check; empty elsewhere, since a forge's runner puts
+            # its own token into GITHUB_TOKEN for every step, and the check would hand it to GitHub.
+            - name: The pin agrees everywhere it is written
+              if: steps.plan.outputs.proceed == 'yes' && !env.STOP
+              env:
+                  GITHUB_TOKEN: ${{ github.server_url == 'https://github.com' && github.token || '' }}
+              run: |
+                  java -cp "$(cat target/cp.txt)" org.fuin.porelo.release.Main check-pin --pin agy \
+                      --definition target/classes/agent/agy.yaml \
+                      || echo "STOP=the pinned version and digest disagree" >> "$GITHUB_ENV"
+
+            # Not -DskipTests: that also skips NativeLinkageCheck, the one test that needs the binary.
+            - name: Native binary and packages
+              env:
+                  PORELO_PACKAGES_READ_TOKEN: ${{ secrets.PORELO_PACKAGES_READ_TOKEN }}
+              if: steps.plan.outputs.proceed == 'yes' && !env.STOP
+              run: |
+                  ./mvnw -B -s settings.xml -Pnative,dist verify \
+                      -Dagent.snapshot.run=${{ github.run_number }} \
+                      || echo "STOP=the packages did not build" >> "$GITHUB_ENV"
+
+            # The bill records the fetched CLI, so that one component moves; anything else that does stops the run.
+            - name: What else changed in the shipped tree
+              if: steps.plan.outputs.proceed == 'yes' && !env.STOP
+              run: |
+                  java -cp "$(cat target/cp.txt)" org.fuin.porelo.release.Main compare-bills \
+                      target/porelo-agent-agy.cdx.json \
+                      https://fuinorg.jfrog.io/artifactory/porelo-dist-deb/pool/main/p/porelo-agent-agy/porelo-agent-agy.cdx.json \
+                      --expect-moved agy \
+                      > target/bill-change.txt 2>&1 \
+                      || echo "STOP=third-party components or licenses changed" >> "$GITHUB_ENV"
+                  # In a file as well, so the pull request can carry it rather than only the run log.
+                  cat target/bill-change.txt
+
+            - name: The major version moved
+              if: steps.plan.outputs.proceed == 'yes' && steps.detect.outputs.major == 'moved'
+              env:
+                  WAS: ${{ steps.detect.outputs.pinned }}
+                  TARGET: ${{ steps.plan.outputs.target }}
+              run: |
+                  echo "STOP=the upstream major version moved" >> "$GITHUB_ENV"
+                  echo "::warning::$WAS -> $TARGET"
+                  echo "A major release changes flags, configuration or an extension API by definition."
+
+            # Without the key the credential scenarios are skipped, and a green leg would prove less.
+            # The tree these legs verify, named by an artifact only this run can make, so the Build of the same
+            # tree on main takes these legs (porelo-release proven-legs) instead of renting them again.
+            - name: Name the tree this run verifies
+              id: tree
+              if: steps.plan.outputs.proceed == 'yes' && !env.STOP
+              run: |
+                  set -eu
+                  # A scratch index, so the pin stays unstaged for the request below, which commits exactly this.
+                  export GIT_INDEX_FILE="$RUNNER_TEMP/verified.index"
+                  git read-tree HEAD
+                  git add -u
+                  TREE="$(git write-tree)"
+                  rm -f "$GIT_INDEX_FILE"
+                  echo "$TREE" > "$RUNNER_TEMP/verified-tree"
+                  echo "tree=$TREE" >> "$GITHUB_OUTPUT"
+
+            - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+              if: steps.tree.outputs.tree
+              with:
+                  name: porelo-verified-tree-${{ steps.tree.outputs.tree }}
+                  path: ${{ runner.temp }}/verified-tree
+                  retention-days: 2
+
+            - name: The credential scenarios can run
+              if: steps.plan.outputs.proceed == 'yes' && !env.STOP
+              env:
+                  KEY: ${{ secrets.GOOGLE_API }}
+              run: |
+                  [ -n "$KEY" ] || echo "STOP=the secret GOOGLE_API is empty, so the credential scenarios would be skipped" >> "$GITHUB_ENV"
+
+            - name: Acceptance - ubuntu
+              timeout-minutes: 30
+              if: steps.plan.outputs.proceed == 'yes' && !env.STOP
+              env:
+                  PORELO_PACKAGES_READ_TOKEN: ${{ secrets.PORELO_PACKAGES_READ_TOKEN }}
+                  PORELO_MACHINES_API: ${{ secrets.PORELO_MACHINES_API }}
+                  PORELO_MACHINES_SSH: ${{ secrets.PORELO_MACHINES_SSH }}
+                  PORELO_CI_LEG: upd-ubuntu
+                  GEMINI_API_KEY: ${{ secrets.GOOGLE_API }}
+                  PORELO_E2E_REFUSED_KEY: porelo-acceptance-not-a-key
+                  PORELO_E2E_MODEL: gemini-3.6-flash-low
+                  PORELO_E2E_EXPECT_CLI: ${{ steps.plan.outputs.target }}
+              run: |
+                  java -cp "$(cat target/cp.txt)" org.fuin.porelo.machines.Main acceptance \
+                      --os ubuntu --kind amd64 --package porelo-agent-agy \
+                      --cucumber . --candidate target \
+                      || echo "STOP=acceptance failed on ubuntu" >> "$GITHUB_ENV"
+
+            - name: Acceptance - fedora
+              timeout-minutes: 30
+              if: steps.plan.outputs.proceed == 'yes' && !env.STOP
+              env:
+                  PORELO_PACKAGES_READ_TOKEN: ${{ secrets.PORELO_PACKAGES_READ_TOKEN }}
+                  PORELO_MACHINES_API: ${{ secrets.PORELO_MACHINES_API }}
+                  PORELO_MACHINES_SSH: ${{ secrets.PORELO_MACHINES_SSH }}
+                  PORELO_CI_LEG: upd-fedora
+                  GEMINI_API_KEY: ${{ secrets.GOOGLE_API }}
+                  PORELO_E2E_REFUSED_KEY: porelo-acceptance-not-a-key
+                  PORELO_E2E_MODEL: gemini-3.6-flash-low
+                  PORELO_E2E_EXPECT_CLI: ${{ steps.plan.outputs.target }}
+              run: |
+                  java -cp "$(cat target/cp.txt)" org.fuin.porelo.machines.Main acceptance \
+                      --os fedora --kind amd64 --package porelo-agent-agy \
+                      --cucumber . --candidate target \
+                      || echo "STOP=acceptance failed on fedora" >> "$GITHUB_ENV"
+
+            - name: Delete what this run created
+              if: always() && steps.plan.outputs.proceed == 'yes'
+              env:
+                  PORELO_MACHINES_API: ${{ secrets.PORELO_MACHINES_API }}
+                  PORELO_CI_LEG: upd-ubuntu
+              run: java -cp "$(cat target/cp.txt)" org.fuin.porelo.machines.Main sweep --mine
+
+            - name: Delete what this run created - fedora leg
+              if: always() && steps.plan.outputs.proceed == 'yes'
+              env:
+                  PORELO_MACHINES_API: ${{ secrets.PORELO_MACHINES_API }}
+                  PORELO_CI_LEG: upd-fedora
+              run: java -cp "$(cat target/cp.txt)" org.fuin.porelo.machines.Main sweep --mine
+
+            # ------------------------------------------------------------------ ask, or publish
+
+            - name: Open the pull request
+              id: request
+              if: always() && steps.plan.outputs.proceed == 'yes'
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  TARGET: ${{ steps.plan.outputs.target }}
+                  WAS: ${{ steps.detect.outputs.pinned }}
+                  JOB_STATUS: ${{ job.status }}
+              run: |
+                  set -eu
+                  # A step ended by its time limit or a cancel writes no STOP: anything but success is one.
+                  if [ "$JOB_STATUS" != success ] && [ -z "${STOP:-}" ]; then
+                      STOP="a step before this one ended as $JOB_STATUS"
+                  fi
+                  git config user.name 'porelo-update'
+                  git config user.email 'noreply@fuin.org'
+                  if git diff --quiet; then
+                      echo "nothing was written - there is no change to propose"
+                      exit 0
+                  fi
+                  BRANCH="update/antigravity-cli-$TARGET"
+                  git checkout -b "$BRANCH"
+                  git commit -am "Pin Antigravity CLI $TARGET"
+                  # A branch moves only from its own main: one left by a closed request, or under an open one made
+                  # on an older main, holds that main's workflows, and moving it would move them, which this job's
+                  # token may never do. Such a branch is deleted first; its open request is closed and named by the
+                  # fresh one.
+                  OPEN="$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')"
+                  REPLACES=""
+                  if git ls-remote --exit-code --heads origin "$BRANCH" >/dev/null; then
+                      BEHIND=""
+                      if [ -n "$OPEN" ]; then
+                          BEHIND="$(gh api "repos/$GITHUB_REPOSITORY/compare/$GITHUB_SHA...$BRANCH" --jq .behind_by)"
+                      fi
+                      if [ "$BEHIND" != 0 ]; then
+                          if [ -n "$OPEN" ]; then
+                              gh pr close "$OPEN" --comment "Made on an older main; run $GITHUB_RUN_NUMBER opens a fresh request."
+                              REPLACES="$OPEN"
+                              OPEN=""
+                          fi
+                          gh api -X DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/$BRANCH" >/dev/null
+                      fi
+                  fi
+                  # The checkout keeps no token, so the push alone gets it: through its environment, masked,
+                  # never on a command line or in .git/config, and gone before anything else runs.
+                  BASIC="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
+                  echo "::add-mask::$BASIC"
+                  export GIT_CONFIG_COUNT=1
+                  export GIT_CONFIG_KEY_0=http.https://github.com/.extraheader
+                  GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $BASIC"
+                  export GIT_CONFIG_VALUE_0
+                  git push --force origin "$BRANCH"
+                  unset GIT_CONFIG_COUNT GIT_CONFIG_KEY_0 GIT_CONFIG_VALUE_0 BASIC
+
+                  {
+                    echo "\`$WAS\` -> \`$TARGET\`, applied by Porelo's release tool: the"
+                    echo "\`agent.cli.version\` property and the SHA-256 GitHub publishes for the"
+                    echo "release asset \`agy_cli_linux_x64.tar.gz\`. Everything else naming the"
+                    echo "version is filtered from the property and could not drift."
+                    echo
+                    if [ -n "${STOP:-}" ]; then
+                        echo "**This is not ready to publish: $STOP.**"
+                        echo "Automation is not allowed to decide this one - see the run log above."
+                        if [ -s target/bill-change.txt ]; then
+                            echo
+                            echo "<details><summary>What changed in the shipped tree</summary>"
+                            echo
+                            echo '```'
+                            cat target/bill-change.txt
+                            echo '```'
+                            echo
+                            echo "</details>"
+                        fi
+                    else
+                        echo "**Green.** Unit suite, the pin check against the digest GitHub publishes, both"
+                        echo "packages, an unchanged third-party component set, and the acceptance suites"
+                        echo "on Ubuntu and Fedora against these packages rather than the published ones."
+                    fi
+                  } > "$RUNNER_TEMP/body.md"
+                  # A weekly job reaches the same version twice whenever the first attempt stopped.
+                  if [ -n "$REPLACES" ]; then
+                      printf '\nReplaces #%s, made on an older `main`.\n' "$REPLACES" >> "$RUNNER_TEMP/body.md"
+                  fi
+                  if [ -n "$OPEN" ]; then
+                      gh pr comment "$BRANCH" --body-file "$RUNNER_TEMP/body.md"
+                      echo "the request for $TARGET was already open - re-verified, and said so on it"
+                  else
+                      gh pr create --title "Pin Antigravity CLI $TARGET" --body-file "$RUNNER_TEMP/body.md" \
+                                   --head "$BRANCH" --base main
+                  fi
+                  echo "opened=yes" >> "$GITHUB_OUTPUT"
+
+            # Auto-merge needs its own token: the default one does not trigger a further workflow.
+            - name: Merge, or say why not
+              if: always() && steps.request.outputs.opened == 'yes'
+              env:
+                  GH_TOKEN: ${{ secrets.PORELO_UPDATE_TOKEN || github.token }}
+                  AUTO: ${{ vars.PORELO_UPDATE_AUTO_MERGE }}
+                  HAVE_TOKEN: ${{ secrets.PORELO_UPDATE_TOKEN != '' }}
+                  TARGET: ${{ steps.plan.outputs.target }}
+                  JOB_STATUS: ${{ job.status }}
+              run: |
+                  set -eu
+                  # As in the request: a step ended by its time limit or a cancel writes no STOP.
+                  if [ "$JOB_STATUS" != success ] && [ -z "${STOP:-}" ]; then
+                      STOP="a step before this one ended as $JOB_STATUS"
+                  fi
+                  if [ -n "${STOP:-}" ]; then
+                      echo "Not merging: $STOP."
+                      echo "The branch is open for whoever decides it."
+                  elif [ "$AUTO" != "true" ]; then
+                      echo "Not merging: the repository variable PORELO_UPDATE_AUTO_MERGE is '${AUTO:-unset}'."
+                      echo "Everything passed. Merging the pull request publishes Antigravity CLI $TARGET."
+                      echo "Set the variable to 'true' when these runs have been watched enough."
+                  elif [ "$HAVE_TOKEN" != "true" ]; then
+                      echo "::error::PORELO_UPDATE_AUTO_MERGE is on but the secret PORELO_UPDATE_TOKEN is not set."
+                      echo "Merging with the workflow's own token triggers no build, so nothing would be"
+                      echo "published and the run would look successful. Refusing to merge."
+                      exit 1
+                  else
+                      gh pr merge --merge --delete-branch "update/antigravity-cli-$TARGET"
+                      echo "Merged. The push to main builds and publishes Antigravity CLI $TARGET."
+                  fi
+
+            # Red means there is something to look at, and only that.
+            - name: Stop
+              if: always() && env.STOP
+              run: |
+                  echo "::error::$STOP"
+                  exit 1

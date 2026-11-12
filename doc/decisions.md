@@ -7,7 +7,7 @@
 | Command grammar | Unattended and resumed turns use the declarative flag builder; turn limits are refused | [Commands](#commands) |
 | Task-local profile | Phantom-only OAuth state and completed onboarding suppress interactive setup | [Profile](#profile) |
 | Terminal state | Measured composer, busy and dialog boundaries gate wake input | [Terminal state](#terminal-state) |
-| Artifact checks | Shared named-pin calls check and record the fetched CLI component | [Artifact checks](#artifact-checks) |
+| Artifact checks | Shared named-pin calls check and record the fetched CLI component; the weekly job follows the release | [Artifact checks](#artifact-checks) |
 | Build boundary | Packages require `porelo >= 0.5.1~snapshot.318`, publish to Artifactory and run acceptance against `GOOGLE_API` | [Build boundary](#build-boundary) |
 | Snapshot repositories | The forge's token goes to the forge's registry alone; what it does not hold comes from an anonymous upstream | [Snapshot repositories](#snapshot-repositories) |
 
@@ -79,6 +79,13 @@ recorder selects the artifact by its named pin and records `agy` in the bill of 
 Maven plugin dependency only, never a dependency of the adapter or its tests. The package checks
 read the actual generated bill and require the fetched component, its built version, checked digest,
 download URL and fetched-at-image-build provenance.
+
+The weekly job "Follow Antigravity CLI" in `update.yml` follows the release through the same named pin. It takes
+the newest release once it is three days old (`porelo.release.min-age`), pins its version and the digest GitHub
+publishes for `agy_cli_linux_x64.tar.gz`, and proposes it in a pull request only after the unit suite, the pin check,
+the packages, the bill comparison and both acceptance legs on the candidate packages. It stops, opens a request
+that says why and merges nothing when a gate fails, the key `GOOGLE_API` is empty, the major version moved or upstream
+points below the pin. A week with nothing to take still checks the pinned digest.
 
 ## Profile
 

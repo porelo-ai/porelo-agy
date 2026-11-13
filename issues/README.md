@@ -31,6 +31,7 @@ Within a group, the order is the priority. The number is identity, not sequence.
 
 | # | Size | Blocked by | What it covers |
 |---|---|---|---|
+| <a id="ag25"></a>[AG25](AG25-Agy-Is-Installed-Root-Owned.md) | M | - | the antigravity binary a task starts and the agy wrapper that execs it are installed by root and owned by root, so the agent in a task cannot replace what Porelo starts as agy next time; the version stays pinned by the definition and moves only through the update job, and a self-update inside a task fails |
 | <a id="ag02"></a>[AG02](AG02-The-Repository-s-Agent-Works-In-A-Porelo-Task.md) | S | [AG04](README.md#ag04) | the repository's agent moves into its own Porelo task, after a dry run on this machine |
 
 ## Implementing

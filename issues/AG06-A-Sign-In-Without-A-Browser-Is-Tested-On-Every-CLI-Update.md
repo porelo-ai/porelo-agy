@@ -7,7 +7,7 @@
   "title": "A Sign-In Without A Browser Is Tested On Every CLI Update",
   "state": "Estimated",
   "size": "M",
-  "priority": "Medium",
+  "priority": "Low",
   "rank": 4,
   "blockedBy": ["AG19"],
   "covers": "the sign-in at a terminal without a browser, checked on every CLI update so a release that drops it fails its pin bump",

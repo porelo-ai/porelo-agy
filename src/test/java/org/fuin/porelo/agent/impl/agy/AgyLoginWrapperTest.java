@@ -166,14 +166,16 @@ class AgyLoginWrapperTest {
         Files.setPosixFilePermissions(cli, PosixFilePermissions.fromString("rwxr-xr-x"));
         final String install =
                 new AgyAgent()
-                        .imageLayer().asAgent().stream()
+                        .imageLayer().asRoot().stream()
                                 .filter(line -> line.contains("printf '%s\\n' '#!/bin/sh'"))
                                 .findFirst()
                                 .orElseThrow();
         final int start = install.indexOf("printf '%s\\n' '#!/bin/sh'");
-        final int end = install.indexOf("chmod 0755 /home/agent/.local/bin/agy;");
+        final int end = install.indexOf("chmod 0755 /usr/local/bin/agy;");
         final String command =
-                install.substring(start, end + "chmod 0755 /home/agent/.local/bin/agy;".length())
+                install.substring(start, end + "chmod 0755 /usr/local/bin/agy;".length())
+                        .replace("/usr/local/lib/agy/antigravity", cli.toString())
+                        .replace("/usr/local/bin/agy", bin.resolve("agy").toString())
                         .replace("/home/agent", directory.resolve("agent").toString())
                         .replace("/run/porelo", directory.resolve("runtime").toString());
         final Process process =

@@ -25,7 +25,7 @@ regular and contain no symbolic links along their path, reads `antigravity-oauth
 one mebibyte, validates the consumer access and refresh tokens and converts its ISO-8601 expiry to
 epoch milliseconds. It collects every client ID and every client secret from `.client-ids` and
 `.client-secrets` first, then a profile-local `antigravity` binary, then
-`.local/bin/antigravity` in the agent's home; a single `.client-id` or `.client-secret` from an older image is
+the installed `/usr/local/lib/agy/antigravity`; a single `.client-id` or `.client-secret` from an older image is
 ignored. The candidate files are limited to 4096 bytes and every line must be a whole id or secret;
 binary scans stream at most 512 mebibytes and keep a value split across chunk boundaries whole and
 once. Candidates are kept distinct in the binary's order, and more than eight of one kind is refused.
@@ -52,8 +52,8 @@ tasks never receive either renewal secret.
 Antigravity CLI publishes `agy_cli_linux_x64.tar.gz` on GitHub Releases with a publisher SHA-256
 digest matching its Google Cloud Storage manifest. The archive contains a single statically linked
 binary named `antigravity`. The definition verifies the archive digest and member list before
-installing `.local/bin/antigravity` in the agent's home and a mode `0755` POSIX shell wrapper at
-`.local/bin/agy` in the agent's home. With neither broker URL set and no `/run/porelo`, the wrapper uses
+installing `/usr/local/lib/agy/antigravity` and a mode `0755` POSIX shell wrapper at
+`/usr/local/bin/agy`, both root's, so the agent in a task cannot replace what the next start runs. With neither broker URL set and no `/run/porelo`, the wrapper uses
 `set -eu`, `umask 077`, removes any preexisting `.client-id`, `.client-secret`, `.client-ids` and
 `.client-secrets`, and writes every matching client ID and client secret with `set -C` (`noclobber`);
 when `grep` finds none of either, it stops the wrapper before the CLI runs. In a task it immediately executes the CLI

@@ -45,13 +45,17 @@ public final class AgyCredentialExtractor implements CredentialExtractor {
             "Antigravity CLI OAuth client ID could not be read from the installed CLI";
     private static final String NO_CLIENT_SECRET =
             "Antigravity CLI OAuth client secret could not be read from the installed CLI";
+
+    /** Where the task image installs the CLI, root's. */
+    static final String INSTALLED_CLI = "/usr/local/lib/agy/antigravity";
+
     private final Path cliBinary;
     private final Pattern binaryClientId;
     private final Pattern binaryClientSecret;
 
     /** Creates an extractor using the installed container CLI. */
     public AgyCredentialExtractor() {
-        this(Path.of("/home/agent/.local/bin/antigravity"));
+        this(Path.of(INSTALLED_CLI));
     }
 
     /**

@@ -164,6 +164,37 @@ class AgyAgentTest {
     }
 
     @Test
+    void theBinaryAndItsWrapperAreRootsSoTheAgentCannotReplaceWhatTheNextStartRuns() {
+        assertThat(agent.definition().artifacts())
+                .as("the archive is fetched by root, outside the agent's home")
+                .singleElement()
+                .satisfies(
+                        artifact -> {
+                            assertThat(artifact.rootOwned()).isTrue();
+                            assertThat(artifact.target()).doesNotStartWith("/home/agent");
+                        });
+        assertThat(agent.imageLayer().asRoot())
+                .as("root installs the binary and writes the wrapper that execs it")
+                .anyMatch(
+                        line ->
+                                line.contains("/usr/local/lib/agy/antigravity;")
+                                        && line.contains("> /usr/local/bin/agy;")
+                                        && line.contains("exec /usr/local/lib/agy/antigravity"));
+        assertThat(agent.imageLayer().asRoot())
+                .as(
+                        "root's step sets its umask, so the agent can reach the binary whatever the base sets")
+                .anyMatch(
+                        line ->
+                                line.startsWith("RUN set -eux; umask 022;")
+                                        && line.contains("/usr/local/lib/agy/antigravity;"));
+        assertThat(agent.imageLayer().asAgent())
+                .as("no fetch, install or wrapper as the agent")
+                .noneMatch(line -> line.contains("curl ") || line.contains("install -D"))
+                .noneMatch(line -> line.contains("antigravity \"$@\""))
+                .noneMatch(line -> line.contains("/usr/local/"));
+    }
+
+    @Test
     void theTaskImageDisablesAutoUpdateAndLinksStandingInstructions() {
         assertThat(agent.imageLayer().asAgent())
                 .as("auto-updater is disabled and standing instructions point at Porelo's guide")

@@ -83,34 +83,43 @@ refused_domains:
 
 install:
     version: "${agent.cli.version}"
+    # Root's, outside the home: fetched and unpacked in the root part of the image, and the wrapper written
+    # there too, so what the agent in a task writes never picks what the next start runs, and a self-update
+    # fails to write over it.
     artifacts:
         - url: https://github.com/google-antigravity/antigravity-cli/releases/download/${agent.cli.version}/agy_cli_linux_x64.tar.gz
           sha256: "${agent.cli.sha256}"
           license: "SEE LICENSE IN README.md"
-          target: /home/agent/.cache/porelo/agy/agy.tar.gz
+          target: /var/cache/porelo/agy/agy.tar.gz
           mode: "0644"
-    as_agent:
-        - ENV AGY_CLI_DISABLE_AUTO_UPDATE=true
+          owner: root
+    as_root:
+        # umask 022: the agent must read the binary and enter its directory whatever umask the base image sets.
         - >-
           RUN set -eux;
-          mkdir -p /home/agent/.gemini/antigravity-cli/cache;
-          chmod 0700 /home/agent/.gemini;
-          ln -s /run/porelo/guide/README.md /home/agent/.gemini/GEMINI.md;
+          umask 022;
           staging=$(mktemp -d);
           trap 'rm -rf "$staging"' EXIT;
-          test "$(tar -tzf /home/agent/.cache/porelo/agy/agy.tar.gz)" = antigravity;
-          tar -xzf /home/agent/.cache/porelo/agy/agy.tar.gz -C "$staging" --no-same-owner;
-          install -D -m 0755 "$staging/antigravity" /home/agent/.local/bin/antigravity;
+          test "$(tar -tzf /var/cache/porelo/agy/agy.tar.gz)" = antigravity;
+          tar -xzf /var/cache/porelo/agy/agy.tar.gz -C "$staging" --no-same-owner;
+          install -D -o root -g root -m 0755 "$staging/antigravity" /usr/local/lib/agy/antigravity;
           printf '%s\n' '#!/bin/sh'
           'set -eu'
           'if [ -z "${CLOUD_CODE_URL:-}" ] && [ -z "${GOOGLE_GEMINI_BASE_URL:-}" ] && [ ! -e /run/porelo ]; then'
           '  umask 077'
           '  mkdir -p /home/agent/.gemini/antigravity-cli'
           '  rm -f /home/agent/.gemini/antigravity-cli/.client-id /home/agent/.gemini/antigravity-cli/.client-secret /home/agent/.gemini/antigravity-cli/.client-ids /home/agent/.gemini/antigravity-cli/.client-secrets'
-          '  (set -C; grep -a -o '\''[0-9]\{1,20\}-[0-9a-z]\{16,64\}\.apps\.[g]oogleusercontent\.com'\'' /home/agent/.local/bin/antigravity > /home/agent/.gemini/antigravity-cli/.client-ids)'
-          '  (set -C; grep -a -o '\''[G]OCSPX-[A-Za-z0-9_-]\{28\}'\'' /home/agent/.local/bin/antigravity > /home/agent/.gemini/antigravity-cli/.client-secrets)'
+          '  (set -C; grep -a -o '\''[0-9]\{1,20\}-[0-9a-z]\{16,64\}\.apps\.[g]oogleusercontent\.com'\'' /usr/local/lib/agy/antigravity > /home/agent/.gemini/antigravity-cli/.client-ids)'
+          '  (set -C; grep -a -o '\''[G]OCSPX-[A-Za-z0-9_-]\{28\}'\'' /usr/local/lib/agy/antigravity > /home/agent/.gemini/antigravity-cli/.client-secrets)'
           'fi'
-          'exec /home/agent/.local/bin/antigravity "$@"'
-          > /home/agent/.local/bin/agy;
-          chmod 0755 /home/agent/.local/bin/agy;
-          rm /home/agent/.cache/porelo/agy/agy.tar.gz
+          'exec /usr/local/lib/agy/antigravity "$@"'
+          > /usr/local/bin/agy;
+          chmod 0755 /usr/local/bin/agy;
+          rm -r /var/cache/porelo/agy
+    as_agent:
+        - ENV AGY_CLI_DISABLE_AUTO_UPDATE=true
+        - >-
+          RUN set -eux;
+          mkdir -p /home/agent/.gemini/antigravity-cli/cache;
+          chmod 0700 /home/agent/.gemini;
+          ln -s /run/porelo/guide/README.md /home/agent/.gemini/GEMINI.md

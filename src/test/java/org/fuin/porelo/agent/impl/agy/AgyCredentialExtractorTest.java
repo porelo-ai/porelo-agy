@@ -416,6 +416,20 @@ class AgyCredentialExtractorTest {
     }
 
     @Test
+    void theDefaultExtractorScansTheBinaryTheImageInstalls() {
+        // A sign-in whose wrapper left no collected values falls back to the installed CLI; a path
+        // the image no longer writes fails that sign-in.
+        assertThat(new AgyAgent().imageLayer().asRoot())
+                .as("the image installs the CLI where the extractor looks")
+                .anyMatch(
+                        line ->
+                                line.contains(
+                                        "\"$staging/antigravity\" "
+                                                + AgyCredentialExtractor.INSTALLED_CLI
+                                                + ";"));
+    }
+
+    @Test
     void theDefaultExtractorDoesNotUseOrEchoUnsafeUserHomeProperties() throws IOException {
         writeLogin();
         final String originalHome = System.getProperty("user.home");

@@ -4,6 +4,7 @@
 
 ### Changed
 
+- agy is installed by root, the CLI at `/usr/local/lib/agy/antigravity` and its wrapper at `/usr/local/bin/agy`, so the agent in a task cannot replace what the next start runs, and a self-update fails to write over it.
 - The acceptance legs run on every forge, the host's lending each a machine of its kind from its pool through `PORELO_POOL_SSH`, and a leg takes the packages its run built from the Actions cache, keyed by the run; GitHub's artifact stays for the release job.
 - Central's snapshots (`central.sonatype.snapshots`) are asked only for `org.fuin.porelo`, the group listed in `.mvn/rrf/`, through the switch in the now committed `.mvn/maven.config`, on a forge too, where they are read beside its registry and the newest wins; the forge's own repository stays unfiltered. The daily shared rules check refuses a filter that would let another name out.
 - Antigravity CLI pinned to 1.5.3 (was 1.4.5).

@@ -5,7 +5,7 @@
   "$schema": "issue-1.json",
   "id": "AG25",
   "title": "Agy Is Installed Root-Owned",
-  "state": "Backlog",
+  "state": "Implementing",
   "size": "M",
   "priority": "High",
   "rank": 1,

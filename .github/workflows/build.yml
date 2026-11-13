@@ -137,12 +137,12 @@ jobs:
             # actions refuse every other server, the Actions cache answers on both. Keyed by the run, so a leg never
             # installs another run's, and by the attempt, so a full re-run saves what it rebuilt.
             - name: The packages for this run's legs
-              if: github.ref_type == 'tag' || vars.PORELO_PUBLISH != 'true'
+              if: "!(vars.PORELO_PUBLISH == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main')"
               run: |
                   mkdir -p candidate
                   cp target/*.deb target/*.rpm target/*.cdx.json candidate/
 
-            - if: github.ref_type == 'tag' || vars.PORELO_PUBLISH != 'true'
+            - if: "!(vars.PORELO_PUBLISH == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main')"
               uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:
                   path: candidate
@@ -299,10 +299,12 @@ jobs:
             - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   persist-credentials: false
+            # Only a push to main publishes before its legs; every other run - a tag, whose release waits for these legs,
+            # a dispatch, a forge that publishes nothing - installs what this run built, never what was published last.
             # The same condition as the leg's --candidate. A re-run of the failed legs alone takes the last attempt's
             # entry of this run; none at all fails the leg here rather than letting it install nothing.
             - name: The packages this run built
-              if: github.ref_type == 'tag' || vars.PORELO_PUBLISH != 'true'
+              if: "!(vars.PORELO_PUBLISH == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main')"
               uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
               with:
                   path: candidate
@@ -338,7 +340,7 @@ jobs:
                   PORELO_E2E_EXPECT_CLI="$(sed -n 's:.*<agent.cli.version>\(.*\)</agent.cli.version>.*:\1:p' pom.xml | head -n 1)"
                   [ -n "$PORELO_E2E_EXPECT_CLI" ] || { echo "::error::pom.xml names no agent.cli.version"; exit 1; }
                   export PORELO_E2E_EXPECT_CLI
-                  if [ "$GITHUB_REF_TYPE" = tag ] || [ "$PORELO_PUBLISH" != true ]; then FROM="--package porelo-agent-agy --candidate candidate"; else FROM="--package porelo-agent-agy"; fi
+                  if [ "$PORELO_PUBLISH" = true ] && [ "$GITHUB_EVENT_NAME" = push ] && [ "$GITHUB_REF" = refs/heads/main ]; then FROM="--package porelo-agent-agy"; else FROM="--package porelo-agent-agy --candidate candidate"; fi
                   java -cp "$(cat target/cp.txt)" org.fuin.porelo.machines.Main acceptance \
                       --os "$OS" --kind amd64 $FROM \
                       --cucumber .

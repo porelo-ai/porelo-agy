@@ -39,6 +39,7 @@ Within a group, the order is the priority. The number is identity, not sequence.
 
 | # | Size | Blocked by | What it covers | Open questions |
 |---|---|---|---|---|
+| <a id="ag28"></a>[AG28](AG28-The-Docs-Say-What-The-Code-Does.md) | S | - | every sentence of the user-facing documentation checked against the code on main, and each one the code does not bear out fixed | - |
 | <a id="ag18"></a>[AG18](AG18-The-Adapter-Reports-Each-Tool-Call-With-Its-Time.md) | M | - | the adapter reads each tool call from its agent's output and hands Porelo its tool, kind, start, end, a shell call's command line, whether it ran in the background, and a sub-agent's name and the calls made under it, in Porelo's common entry | 0 |
 | <a id="ag21"></a>[AG21](AG21-An-Attended-Session-Takes-An-Opening-Text.md) | S | - | an attended session of Antigravity CLI opens on the person's opening text as its first turn and then waits for the person, the form (behind `-i`) declared in the agent definition and measured in a task | - |
 | <a id="ag22"></a>[AG22](AG22-A-Finished-Run-Answers-Its-Last-Message.md) | S | - | a finished unattended Antigravity CLI run answers the text of its last message, declared in session.waiting.last_message, so a reader's answer is not empty; the declaration adds no screen rule and so changes nothing in how Porelo wakes the agent | - |

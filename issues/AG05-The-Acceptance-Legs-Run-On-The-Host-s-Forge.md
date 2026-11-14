@@ -5,7 +5,7 @@
   "$schema": "issue-1.json",
   "id": "AG05",
   "title": "The Acceptance Legs Run On The Host's Forge",
-  "state": "Implementing",
+  "state": "Backlog",
   "size": "S",
   "priority": "Medium",
   "rank": 5,
@@ -43,6 +43,11 @@ forge still runs them, so a change is tested there only after the gathered push.
 - `update.yml` is not one of them: it updates the central forge only and stays off on the host's forge.
 
 ## Plan
+
+- **How far it got.** The workflow part, steps 1 to 4 and `theAcceptanceLegsRunOnEveryForge` are on `main` (cf70f89);
+  what is left is the Acceptance: the Build on the host's forge with the pool, and the same commit's Build on the
+  central forge. A proof-only probe of the pool route without the Antigravity CLI lies on the local branch
+  `pool-proof-agy` (93131a3), never for `main`.
 
 Read in today's `.github/workflows/build.yml` (job `acceptance`, the `build` job's upload), porelo-buildtools'
 `porelo-machines` (`Main` `acceptance` and `sweep`, `doc/machines.md`) and porelo-host's `doc/local-forge.md` and

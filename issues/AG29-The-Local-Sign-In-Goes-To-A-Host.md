@@ -51,7 +51,9 @@ the fields and the carrying by stdin or environment; Agent Frontend files the wi
   since the file names none in plain text and a token is never decoded for one.
 - Tests: `AgyFindingsTest` and `AgySignInFactsTest`, one fixture per case, each checked against what the extractor
   does, and none of a finding's, a fact's or the shared sign-in's text holds a value of its fixture.
-- Porelo's fields are still to be mapped once Porelo's half posts its wire shape.
+- Mapped onto Porelo's listing of what can be carried, which asks the extractor per provider and refuses an answer
+  that names none: the extractor now answers `google-sign-in` with the sign-in, named, and any other provider with
+  nothing, by a test seen red first.
 - The reading by another model found nothing to fix.
 
 ## Acceptance
@@ -68,5 +70,6 @@ the fields and the carrying by stdin or environment; Agent Frontend files the wi
 
 ## To be checked
 
-- **Porelo's half.** Porelo seals the value it takes through this adapter's extractor, as an import does; the
-  listing that shows these facts is still to come from Porelo, and the facts are mapped onto it then.
+- **The facts on the wire.** Porelo's listing of what can be carried names agent, provider and kind, asked of this
+  adapter's extractor per provider; it carries no account, expiry or last change, so the facts stay in the adapter
+  until a listing takes them, and the third acceptance point is Porelo's walk.

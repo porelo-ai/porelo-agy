@@ -21,6 +21,7 @@ import org.fuin.porelo.agent.api.Credential;
 import org.fuin.porelo.agent.api.CredentialExtractor;
 import org.fuin.porelo.wire.Json;
 import org.fuin.porelo.wire.JsonException;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Collects Antigravity's consumer sign-in and every OAuth client of the installed CLI, so the login
@@ -76,6 +77,23 @@ public final class AgyCredentialExtractor implements CredentialExtractor {
         this.cliBinary = cliBinary;
         this.binaryClientId = binaryClientId;
         this.binaryClientSecret = binaryClientSecret;
+    }
+
+    /**
+     * Reads the sign-in for one provider: the one sign-in this file holds is {@code
+     * google-sign-in}'s, and named so, since Porelo asks per provider and refuses an answer that
+     * names none; any other provider is answered with nothing. Asked for none, it answers as {@link
+     * #extract(Path)}.
+     */
+    @Override
+    public Optional<Credential> extract(
+            final Path configDirectory, final @Nullable String provider) {
+        if (provider == null) {
+            return extract(configDirectory);
+        }
+        return AgyFindings.PROVIDER.equals(provider)
+                ? extract(configDirectory).map(found -> found.forProvider(AgyFindings.PROVIDER))
+                : Optional.empty();
     }
 
     /** {@inheritDoc} */

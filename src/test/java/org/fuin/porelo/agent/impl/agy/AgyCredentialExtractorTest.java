@@ -115,6 +115,26 @@ class AgyCredentialExtractorTest {
         assertCredential(extractor().extract(directory).orElseThrow(), EXPIRY);
     }
 
+    // Prevents Porelo's listing of what can be carried from missing the sign-in: it asks per
+    // provider and refuses an answer that names none.
+    @Test
+    void askedForGoogleSignInTheSignInNamesIt() throws IOException {
+        writeLogin();
+        Files.writeString(directory.resolve(".client-ids"), "\n" + CLIENT_ID + "\n");
+        Files.writeString(directory.resolve(".client-secrets"), "\n" + CLIENT_SECRET + "\n");
+
+        assertThat(extractor().extract(directory, "google-sign-in"))
+                .map(Credential::provider)
+                .contains("google-sign-in");
+        assertThat(extractor().extract(directory, "anthropic"))
+                .as("another provider is answered with nothing")
+                .isEmpty();
+        assertThat(extractor().extract(directory, null))
+                .as("asked for none, as before")
+                .map(Credential::provider)
+                .isEmpty();
+    }
+
     @Test
     void anIdCutByTheRetainedTailIsNotTakenForAnotherClient() throws IOException {
         writeLogin();

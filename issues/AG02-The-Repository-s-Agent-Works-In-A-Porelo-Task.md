@@ -39,9 +39,9 @@ image*) and `doc/running.md` (the agent's layer), and porelo-project's `project.
   project's, in porelo-project's `project.yml`; the image, the agent's CLI with it, is built on the host outside the
   task's firewall. The forge's registry refuses a task today (the organization is private), so
   until then the task's build reads Sonatype's snapshots.
-- **The review:** only Claude Code runs in the task, and no sub-agent CLI is in its image. A review comes from a new agent
-  started apart, by the host's forge or by hand, which reads the pull request's diff against the skills and posts its
-  findings in the room.
+- **The review:** only Claude Code runs in the task, and no sub-agent CLI is in its image. The reading before a hand-over
+  is done on the host, by a reader started apart from the task by the host's forge or by hand, which reads the pull
+  request's diff against the skills and posts its findings in the host's room.
 - **The CLI:** Claude Code runs the agent in the task, as it runs this repository's agent today: woken by a
   message, its subscription brokered from the vault. Antigravity CLI itself runs it in an issue of its own, afterwards.
 - **Steps:**
@@ -75,7 +75,7 @@ image*) and `doc/running.md` (the agent's layer), and porelo-project's `project.
 - That porelo-project's `project.yml` lets the task reach the hosts named under *Plan*.
 - Where the task's agent finds what the local setup gives it here (its name, the room in place of the channel, the
   operator's language and time zone): that setup is not committed, so it is not in the task.
-- That the outside reader can fetch `porelo/<task>` from the host's forge, not only from GitHub.
+- That the reader on the host can fetch `porelo/<task>` from the host's forge, not only from GitHub.
 - The way back, rehearsed once: the task's open work fetched from the host's forge into the checkout here.
 - That the host's inventory names `porelo-agy` in `forge_repositories`: the forge role skips the migration, `main`'s
   protection and the gate's identity where it names none (porelo-host `roles/forge/tasks/main.yml`), and a task
@@ -84,9 +84,7 @@ image*) and `doc/running.md` (the agent's layer), and porelo-project's `project.
   - That the task's Claude writes `Assisted-by: Claude Code, <model>` and no `Co-Authored-By` line, set in the image or
     the task's settings, since the shared rules ask for `Assisted-by`, and check-commits lets a `Co-authored-by`
     trailer through.
-  - Whether a fix after the outside reading lands as a new commit on top, so no force push is needed (the sluice's recommendation, a question for the operator with the move), or as an amend pushed with `git push --force` to the
+  - Whether a fix after the reading on the host lands as a new commit on top, so no force push is needed (the sluice's recommendation, a question for the operator with the move), or as an amend pushed with `git push --force` to the
     task's own unmerged branch, which the gate passes on.
   - That a revoked sign-in is renewed with `porelo vault login claude --force` and a stop and start of the task: a
     running task keeps the credential it started with.
-  - That the outside reader may join the room from its harness; otherwise it posts its findings in the channel and the
-    operator relays them.

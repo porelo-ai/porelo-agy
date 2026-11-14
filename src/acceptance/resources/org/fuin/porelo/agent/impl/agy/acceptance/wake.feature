@@ -23,7 +23,7 @@ Feature: A mailbox message wakes the composer without interrupting work
             for id in $(printf '%s\n' "$held" | awk '$1 ~ /\.json$/ && $2 == "held" {print $1}'); do
               porelo talk read wake "$id" | grep -qE '5,?555' && exit 0
             done
-            podman exec "$(porelo task status wake --json | grep -o '"name": *"[^"]*"' | head -n 1 | cut -d'"' -f4)" tmux capture-pane -p -S - -t porelo | grep -qE '5,?555'
+            podman exec --user root "$(porelo task status wake --json | grep -o '"name": *"[^"]*"' | head -n 1 | cut -d'"' -f4)" tmux -S /run/porelo-tmux/tmux capture-pane -p -S - -t porelo | grep -qE '5,?555'
             """
         When a script runs "porelo task remove wake --force"
         And a script runs "porelo project remove wake --force"
@@ -42,7 +42,7 @@ Feature: A mailbox message wakes the composer without interrupting work
         And I press Enter
         Then within 60 seconds this script exits zero:
             """
-            podman exec "$(porelo task status busy --json | grep -o '"name": *"[^"]*"' | head -n 1 | cut -d'"' -f4)" tmux capture-pane -p -t porelo | grep -qF 'esc to cancel'
+            podman exec --user root "$(porelo task status busy --json | grep -o '"name": *"[^"]*"' | head -n 1 | cut -d'"' -f4)" tmux -S /run/porelo-tmux/tmux capture-pane -p -t porelo | grep -qF 'esc to cancel'
             """
         When a script runs "echo 'What is 1234 plus 4321? Reply with the digits only.' | porelo talk tell busy"
         Then it exits zero
@@ -52,7 +52,7 @@ Feature: A mailbox message wakes the composer without interrupting work
             for id in $(printf '%s\n' "$held" | awk '$1 ~ /\.json$/ && $2 == "held" {print $1}'); do
               porelo talk read busy "$id" | grep -qE '5,?555' && exit 0
             done
-            podman exec "$(porelo task status busy --json | grep -o '"name": *"[^"]*"' | head -n 1 | cut -d'"' -f4)" tmux capture-pane -p -S - -t porelo | grep -qE '5,?555'
+            podman exec --user root "$(porelo task status busy --json | grep -o '"name": *"[^"]*"' | head -n 1 | cut -d'"' -f4)" tmux -S /run/porelo-tmux/tmux capture-pane -p -S - -t porelo | grep -qE '5,?555'
             """
         When a script runs "porelo task remove busy --force"
         And a script runs "porelo project remove busy --force"

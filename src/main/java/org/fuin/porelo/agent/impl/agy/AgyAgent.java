@@ -5,6 +5,7 @@ import org.fuin.porelo.agent.api.AgentEnd;
 import org.fuin.porelo.agent.api.AgentMain;
 import org.fuin.porelo.agent.api.ContainerSetup;
 import org.fuin.porelo.agent.api.CredentialExtractor;
+import org.fuin.porelo.agent.api.Finder;
 import org.fuin.porelo.agent.api.LogFormatter;
 import org.fuin.porelo.agent.api.ToolEvent;
 import org.fuin.porelo.agent.api.YamlAgent;
@@ -28,6 +29,16 @@ public final class AgyAgent extends YamlAgent {
     @Override
     public CredentialExtractor credentialExtractor() {
         return new AgyCredentialExtractor();
+    }
+
+    /**
+     * Says what Antigravity CLI finds of itself on the host, reading only its token file.
+     *
+     * @return Finder reading Antigravity CLI's own files.
+     */
+    @Override
+    public Finder finder() {
+        return new AgyFindings();
     }
 
     /** {@inheritDoc} */

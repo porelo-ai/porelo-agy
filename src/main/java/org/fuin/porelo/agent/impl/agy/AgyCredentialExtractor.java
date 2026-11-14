@@ -27,7 +27,12 @@ import org.fuin.porelo.wire.JsonException;
  * on the host can pick the client the sign-in was granted to.
  */
 public final class AgyCredentialExtractor implements CredentialExtractor {
-    private static final int MAX_TOKEN_BYTES = 1024 * 1024;
+    /** The file in the configuration directory that holds the consumer sign-in. */
+    static final String TOKEN_FILE = "antigravity-oauth-token";
+
+    /** Longest token file read, in bytes; a larger one is refused. */
+    static final int MAX_TOKEN_BYTES = 1024 * 1024;
+
     private static final int MAX_CANDIDATES = 8;
     private static final int MAX_CANDIDATE_FILE_BYTES = 4096;
     private static final long MAX_BINARY_BYTES = 512L * 1024 * 1024;
@@ -79,21 +84,13 @@ public final class AgyCredentialExtractor implements CredentialExtractor {
         final Path directory = realDirectory(configDirectory);
         final Optional<byte[]> bytes =
                 readSmallFile(
-                        directory.resolve("antigravity-oauth-token"),
+                        directory.resolve(TOKEN_FILE),
                         MAX_TOKEN_BYTES,
                         "Antigravity CLI OAuth token file");
         if (bytes.isEmpty()) {
             return Optional.empty();
         }
-        final Map<?, ?> root = object(new String(bytes.orElseThrow(), StandardCharsets.UTF_8));
-        if (!"consumer".equals(root.get("auth_method"))
-                || !(root.get("token") instanceof Map<?, ?> token)) {
-            throw new AgentException(
-                    "Antigravity CLI credential must hold a consumer OAuth sign-in");
-        }
-        final String access = token(token, "access_token");
-        final String refresh = token(token, "refresh_token");
-        final String expiresAt = expiry(token);
+        final ConsumerSignIn signIn = consumerSignIn(bytes.orElseThrow());
         final String clientIds =
                 candidates(directory, ".client-ids", binaryClientId, 112, NO_CLIENT_ID);
         final String clientSecrets =
@@ -101,18 +98,52 @@ public final class AgyCredentialExtractor implements CredentialExtractor {
         return Optional.of(
                 new Credential(
                         "oauth",
-                        access,
+                        signIn.access(),
                         Map.of(
                                 Credential.REFRESH_TOKEN,
-                                refresh,
+                                signIn.refresh(),
                                 Credential.EXPIRES_AT,
-                                expiresAt,
+                                signIn.expiresAt(),
                                 Credential.TOKEN_URL,
                                 "https://oauth2.googleapis.com/token",
                                 CLIENT_ID_CANDIDATES,
                                 clientIds,
                                 CLIENT_SECRET_CANDIDATES,
                                 clientSecrets)));
+    }
+
+    /**
+     * Returns the consumer sign-in a token file holds, exactly as an import takes it.
+     *
+     * @param bytes The token file's content.
+     * @return The sign-in.
+     * @throws AgentException If the file holds no sign-in an import takes; never with its content.
+     */
+    static ConsumerSignIn consumerSignIn(byte[] bytes) {
+        final Map<?, ?> root = object(new String(bytes, StandardCharsets.UTF_8));
+        if (!"consumer".equals(root.get("auth_method"))
+                || !(root.get("token") instanceof Map<?, ?> token)) {
+            throw new AgentException(
+                    "Antigravity CLI credential must hold a consumer OAuth sign-in");
+        }
+        return new ConsumerSignIn(
+                token(token, "access_token"), token(token, "refresh_token"), expiry(token));
+    }
+
+    /**
+     * A consumer sign-in as an import takes it.
+     *
+     * @param access The access token.
+     * @param refresh The refresh token.
+     * @param expiresAt When the access token expires, in epoch milliseconds.
+     */
+    record ConsumerSignIn(String access, String refresh, String expiresAt) {
+
+        @Override
+        public String toString() {
+            // A record's own text would name both tokens.
+            return "ConsumerSignIn[expiresAt=" + expiresAt + "]";
+        }
     }
 
     private static Map<?, ?> object(String json) {

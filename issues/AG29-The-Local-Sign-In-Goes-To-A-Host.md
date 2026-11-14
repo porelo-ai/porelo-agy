@@ -5,7 +5,7 @@
   "$schema": "issue-1.json",
   "id": "AG29",
   "title": "The Local Sign-In Goes To A Host",
-  "state": "Backlog",
+  "state": "Review",
   "size": "M",
   "priority": "High",
   "rank": 1,
@@ -35,6 +35,23 @@ the fields and the carrying by stdin or environment; Agent Frontend files the wi
 - The finder fills the fields Porelo's half adds to a finding; the extractor is the one an import already uses.
 - Tests: one fixture per route, each finding's fields asserted, and a test that no finding's text holds any value
   of its fixture. The definition's `config_dir` stays the place read.
+
+## What was built
+
+- Found: `AgyFindings`, the agent's finder, reads only `antigravity-oauth-token` in the definition's `config_dir`, by the
+  extractor's rules (no link followed, a regular file of at most one mebibyte); it runs no command, reaches no network and
+  reads no environment.
+- Said: the configuration directory; the token file as signed in to `google-sign-in`, kind subscription, when the
+  extractor's own rule takes it, not signed in when it refuses it (another `auth_method`, a missing or unusable token or
+  expiry, a broken or oversized file, a directory), and cannot say for an unreadable file or a link.
+- Carriable: exactly when an import takes the token, an expired access token included, since the refresh token renews
+  it. The OAuth clients the import also needs come from the installed CLI, which the finder never reads; whether the CLI
+  pinned on the host holds the client is the host's question.
+- Facts: `AgySignInFacts` gives the expiry, read by the extractor's own rule, and the file's last change; no account,
+  since the file names none in plain text and a token is never decoded for one.
+- Tests: `AgyFindingsTest` and `AgySignInFactsTest`, one fixture per case, each checked against what the extractor
+  does, and none of a finding's, a fact's or the shared sign-in's text holds a value of its fixture.
+- Porelo's fields are still to be mapped once Porelo's half posts its wire shape.
 
 ## Acceptance
 

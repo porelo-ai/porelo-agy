@@ -16,6 +16,7 @@
 
 ### Added
 
+- The adapter says what it finds of Antigravity CLI on the person's machine: its configuration and the consumer sign-in in its token file, with the provider, the kind, when the access token expires and when the file last changed, and whether an import takes it to carry to a host, never a value.
 - The daily shared rules check also holds every issue head to its schema and each index to its heads.
 - A finished unattended run answers what it replied, `session.waiting.last_message` over the
   successful result record's `result.response`; Antigravity CLI 1.4.5 holds whole text for sure

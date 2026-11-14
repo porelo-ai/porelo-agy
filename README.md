@@ -7,7 +7,7 @@
 Adapts [Antigravity CLI](https://github.com/google-antigravity/antigravity-cli) (`agy`) for
 [Porelo](https://github.com/porelo-ai/porelo): in a hardened container, reaching only what it needs,
 with your credential kept on the machine and its work waiting for your review.
-It is an adapter, not Porelo: it depends on Porelo's published agent API alone, never on Porelo's
+It is an adapter, not Porelo: it depends on Porelo's published agent API and wire artifacts alone, never on Porelo's
 implementation. Google Gemini API-key brokering and Google OAuth/Cloud Code Assist provider
 integration depend on Porelo's published provider contracts. See [the documentation](doc/index.md),
 [decisions](doc/decisions.md) and [issues/](issues/README.md).

@@ -41,5 +41,7 @@ of `porelo-agy` names is one the code on `main` has.
 
 ## What the reading found
 
-- 78 claims checked, 0 confirmed, 0 fixed, 0 filed as bugs.
+- 78 claims checked, 1 confirmed, 1 fixed, 0 filed as bugs.
 - Not checkable here, left as they stand: what Porelo answers in the attended sign-in walk, and Google's terms.
+- `README.md`: the adapter depends on Porelo's agent API and its wire artifacts, not the API
+  alone, as the pom shows.

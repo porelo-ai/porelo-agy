@@ -11,7 +11,7 @@
   "rank": 1,
   "blockedBy": [],
   "covers": "on the person's machine the adapter lists each Antigravity sign-in it finds - provider, kind, account where known, age and expiry where known, and whether it can be carried, never its value - and hands a chosen one to Porelo, which carries it into a rented host's vault",
-  "openQuestions": 2
+  "openQuestions": 1
 }
 ```
 
@@ -52,6 +52,7 @@ the fields and the carrying by stdin or environment; Agent Frontend files the wi
 - Tests: `AgyFindingsTest` and `AgySignInFactsTest`, one fixture per case, each checked against what the extractor
   does, and none of a finding's, a fact's or the shared sign-in's text holds a value of its fixture.
 - Porelo's fields are still to be mapped once Porelo's half posts its wire shape.
+- The reading by another model found nothing to fix.
 
 ## Acceptance
 
@@ -59,10 +60,13 @@ the fields and the carrying by stdin or environment; Agent Frontend files the wi
 - No finding holds a value of its fixture.
 - With Porelo's half in, a sign-in found on the person's machine is in the host's vault and a task there runs on it.
 
-## To be checked
+## Open questions
 
-- **Porelo's half.** The fields (account, age, expiry, carriable) and the carrying are Agent Core's issue; it goes in
-  `blockedBy` once filed.
 - **Two machines on one sign-in.** An OAuth sign-in whose refresh token is replaced at each renewal works on one
   machine at a time: the first to renew signs the other out. Whether a carried sign-in is said to sign the person's
   machine out, or is carried only as a kind that does not rotate, is the operator's call.
+
+## To be checked
+
+- **Porelo's half.** Porelo seals the value it takes through this adapter's extractor, as an import does; the
+  listing that shows these facts is still to come from Porelo, and the facts are mapped onto it then.

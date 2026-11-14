@@ -9,15 +9,15 @@
   "size": "M",
   "priority": "Low",
   "rank": 4,
-  "blockedBy": ["AG19"],
+  "blockedBy": [],
   "covers": "the sign-in at a terminal without a browser, checked on every CLI update so a release that drops it fails its pin bump",
   "openQuestions": 0
 }
 ```
 
 **Why this size.** one acceptance scenario and no Java; Porelo's acceptance kit already has every step it needs. M
-because it is an acceptance step, written against the real CLI's screens and proven on a VM. The update job
-that proposes a new release behind the acceptance legs is [AG19](README.md#ag19)'s, as decided.
+because it is an acceptance step, written against the real CLI's screens and proven on a VM. The weekly update job
+already proposes each new release behind the acceptance legs.
 
 **Estimate.** M: 53 min, the measured median of M over all repositories (n=113).
 
@@ -58,8 +58,8 @@ can reach.
   fails; against the real login it passes.
 - **Level**: acceptance only, on a local VM, then one green leg pair on rented machines. No unit test: there is no
   logic of the adapter's in it.
-- **The update job** is [AG19](README.md#ag19)'s. Once it stands, this scenario runs in its acceptance legs on every
-  proposed Antigravity CLI version, as in every other Build.
+- **The update job** "Follow Antigravity CLI" runs this scenario in its acceptance legs on every proposed Antigravity
+  CLI version, as in every other Build.
 
 ## Acceptance
 
@@ -70,16 +70,10 @@ can reach.
 
 ## What makes it uncertain
 
-- The weekly job that runs it does not exist yet; until it does, the scenario runs only after a pin change has landed.
 - The sign-in reaches Google from a rented machine on every run; a refusal of cloud addresses would read as a failed
   sign-in.
 - A cosmetic change of the menu or prompt stops a pin bump until the scenario follows.
 
-
-## Decisions
-
-- The operator, 2026-11-11: the update job that proposes new Antigravity CLI versions is an issue of its own,
-  [AG19](README.md#ag19); this issue waits on it and stays M.
 
 ## To be checked
 

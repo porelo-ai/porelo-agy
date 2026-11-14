@@ -10,6 +10,7 @@
 | Artifact checks | Shared named-pin calls check and record the fetched CLI component; the weekly job follows the release | [Artifact checks](#artifact-checks) |
 | Build boundary | Packages require `porelo >= 0.5.1~snapshot.318`, publish to Artifactory and run acceptance against `GOOGLE_API` | [Build boundary](#build-boundary) |
 | Snapshot repositories | The forge's token goes to the forge's registry alone; what it does not hold comes from an anonymous upstream | [Snapshot repositories](#snapshot-repositories) |
+| Subagent bound | The CLI holds it, and its shell can start another copy; a hard bound is Porelo's | [Accepted risk: a task's subagent bound is the agent's own](#accepted-risk-a-tasks-subagent-bound-is-the-agents-own) |
 
 ## Provider boundary
 
@@ -85,7 +86,9 @@ the newest release once it is three days old (`porelo.release.min-age`), pins it
 publishes for `agy_cli_linux_x64.tar.gz`, and proposes it in a pull request only after the unit suite, the pin check,
 the packages, the bill comparison and both acceptance legs on the candidate packages. It stops, opens a request
 that says why and merges nothing when a gate fails, the key `GOOGLE_API` is empty, the major version moved or upstream
-points below the pin. A week with nothing to take still checks the pinned digest.
+points below the pin. A week with nothing to take still checks the pinned digest. No gate checks that a new release
+still holds the OAuth client IDs and secrets the login wrapper collects: the legs sign in with an API key, so a
+release that moves them passes.
 
 ## Profile
 
@@ -166,3 +169,19 @@ and with `-P!standard,!forge,!upstream`.
 **Accepted risk:** for one snapshot version Maven takes the newest timestamp over every repository it reads, so where
 the forge and upstream hold the same version, upstream's can win. Nothing here builds against a snapshot it publishes
 itself; a forge that does would name only what it lacks upstream, or mirror upstream itself.
+
+## Accepted risk: a task's subagent bound is the agent's own
+
+Antigravity CLI has no setting that turns subagents off or counts them, so `agy.yaml` declares off alone. At 0,
+`AgyContainerSetup` writes a `PreToolUse` hook that denies `invoke_subagent`, `run_workflow`,
+`browser_subagent`, `define_subagent` and `manage_subagents`, and Porelo refuses a task that allows more.
+
+**The exposure:** the agent has a shell and can start another copy of the CLI. Its skills are not switched off: nothing
+measured at the pin hides them, and it reads one with `read_file`. The acceptance scenario rests on what the model
+says, since the CLI's output is the agent's text alone. Whether the CLI leaves something to count from outside was
+not measured.
+
+**Why it stays:** the container, not the CLI, is the boundary of a task, and a bound the agent cannot leave is Porelo's own to set, outside this repository.
+
+**What would change it:** a CLI setting that reaches its internal choice of allowed subagents, which would replace the
+hook, or a bound Porelo enforces from outside the agent.

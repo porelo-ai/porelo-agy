@@ -22,6 +22,14 @@ git_identity:
     name: Antigravity
     email: noreply@google.com
 
+# How agy takes a reasoning effort, for a Start that names one; none named passes nothing and agy
+# keeps its own default. 'agy --help' names --effort with low, medium, high, xhigh and max, read on
+# 1.5.9 on the build laptop on 2026-11-15; the pinned 1.5.3 was not at hand to read. Read by a
+# Porelo that knows the section, skipped by an older one.
+effort:
+    arguments: ["--effort", "{effort}"]
+    values: [low, medium, high, xhigh, max]
+
 headless:
     prompt_flag: "-p"
     model_flag: "--model"

@@ -5,7 +5,7 @@
   "$schema": "issue-1.json",
   "id": "AG31",
   "title": "Start Work Offers Antigravity CLI's Efforts",
-  "state": "Implementing",
+  "state": "Review",
   "size": "XS",
   "priority": "High",
   "rank": 1,
@@ -40,3 +40,16 @@ declaration does not break an older Porelo.
 
 - The definition declares the effort levels and how they are passed, in the contract's shape, and today's reader
   still reads the definition.
+
+## What was built
+
+- **The definition** (`agy.yaml`) declares `effort` with `arguments: ["--effort", "{effort}"]` and `values: [low, medium, high, xhigh, max]`, in the
+  contract's shape; an older Porelo's reader skips the section.
+- **Where the levels come from:** `agy --help` on 1.5.9 on the build laptop; the pinned 1.5.3 was not on the test VM, so the levels are unconfirmed on the pin.
+- **Test** `EffortDeclarationTest` reads the section from the definition itself: the arguments and the levels, in
+  their order. Both seen red before the section stood; dropping the last level turned `offersTheLevelsTheCliTakes`
+  red, restored identical.
+- **The reading by another model** found no fault: the shape, the reader of porelo 5328c5df4, the substitution and
+  the placement hold. Left: the test reads the YAML with a plain loader, so a duplicated `effort` key would pass it and fail the reader.
+- **Level:** unit tests; suite 230 run, 0 failures, 0 skipped. Whether the pinned CLI accepts each level in a
+  run is the operator's test.

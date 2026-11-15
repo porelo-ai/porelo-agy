@@ -6,11 +6,12 @@ Within a group, the order is the priority. The number is identity, not sequence.
 
 ## Idea
 
-| # | Size | Blocked by | What it covers |
-|---|---|---|---|
-| <a id="ag23"></a>[AG23](AG23-The-Agent-s-Own-Telemetry-Goes-To-Porelo.md) | - | - | the adapter declares Antigravity CLI's own OpenTelemetry export pointed at Porelo's local receiver in the task, with every switch that would carry content - prompts, tool arguments and output, responses - set explicitly off |
-| <a id="ag11"></a>[AG11](AG11-The-Acceptance-Legs-Run-Side-By-Side.md) | - | - | a Build's acceptance legs run at the same time, two machines held at once instead of one, the Build done about one leg sooner |
-| <a id="ag27"></a>[AG27](AG27-The-Update-Checks-The-Sign-In-Clients.md) | - | - | the weekly update job stops a new Antigravity CLI release whose binary no longer holds the OAuth client IDs and secrets the login wrapper collects, so a release that moves them is not pinned |
+| # | Size | Blocked by | What it covers | Open questions |
+|---|---|---|---|---|
+| <a id="ag30"></a>[AG30](AG30-A-Rotating-Sign-In-Is-Made-On-The-Host.md) | M | - | which of Antigravity's sign-ins rotate their refresh token, measured on the pinned CLI and declared per provider and kind, and how Antigravity signs in on a headless host instead of having a rotating sign-in carried there | 1 |
+| <a id="ag23"></a>[AG23](AG23-The-Agent-s-Own-Telemetry-Goes-To-Porelo.md) | - | - | the adapter declares Antigravity CLI's own OpenTelemetry export pointed at Porelo's local receiver in the task, with every switch that would carry content - prompts, tool arguments and output, responses - set explicitly off | - |
+| <a id="ag11"></a>[AG11](AG11-The-Acceptance-Legs-Run-Side-By-Side.md) | - | - | a Build's acceptance legs run at the same time, two machines held at once instead of one, the Build done about one leg sooner | - |
+| <a id="ag27"></a>[AG27](AG27-The-Update-Checks-The-Sign-In-Clients.md) | - | - | the weekly update job stops a new Antigravity CLI release whose binary no longer holds the OAuth client IDs and secrets the login wrapper collects, so a release that moves them is not pinned | - |
 
 ## Accepted
 

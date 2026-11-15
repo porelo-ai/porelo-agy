@@ -39,7 +39,6 @@ Within a group, the order is the priority. The number is identity, not sequence.
 
 | # | Size | Blocked by | What it covers | Open questions |
 |---|---|---|---|---|
-| <a id="ag28"></a>[AG28](AG28-The-Docs-Say-What-The-Code-Does.md) | S | - | every sentence of the user-facing documentation checked against the code on main, and each one the code does not bear out fixed | - |
 | <a id="ag18"></a>[AG18](AG18-The-Adapter-Reports-Each-Tool-Call-With-Its-Time.md) | M | - | the adapter reads each tool call from its agent's output and hands Porelo its tool, kind, start, end, a shell call's command line, whether it ran in the background, and a sub-agent's name and the calls made under it, in Porelo's common entry | 0 |
 | <a id="ag21"></a>[AG21](AG21-An-Attended-Session-Takes-An-Opening-Text.md) | S | - | an attended session of Antigravity CLI opens on the person's opening text as its first turn and then waits for the person, the form (behind `-i`) declared in the agent definition and measured in a task | - |
 | <a id="ag22"></a>[AG22](AG22-A-Finished-Run-Answers-Its-Last-Message.md) | S | - | a finished unattended Antigravity CLI run answers the text of its last message, declared in session.waiting.last_message, so a reader's answer is not empty; the declaration adds no screen rule and so changes nothing in how Porelo wakes the agent | - |
@@ -52,6 +51,7 @@ Within a group, the order is the priority. The number is identity, not sequence.
 
 | # | Title | What was built |
 |---|---|---|
+| <a id="ag28"></a>[AG28](README.md#ag28) | The Docs Say What The Code Does | The user-facing documentation was read sentence by sentence against the code on main: of 78 claims, the one it did not bear out was fixed in the README, and none was a fault of the code. |
 | <a id="ag08"></a>[AG08](README.md#ag08) | Subagents Only As Many As The Task Allows | Antigravity CLI in a task starts no subagent unless the task allows it: a `PreToolUse` hook denies its five subagent tools, and Porelo refuses a task that allows more than 0, since no CLI setting counts them. |
 | <a id="ag20"></a>[AG20](README.md#ag20) | The Build Takes Its Downloads From A Cache | A Build, an update run and the workflow check take the runner's packages from the Actions cache, each `.deb` checked against the hash its signed apt metadata names before it is installed; an entry of an old package list goes by itself. |
 | <a id="ag19"></a>[AG19](README.md#ag19) | The Update Job Proposes New Antigravity CLI Versions | The weekly job "Follow Antigravity CLI" pins a new Antigravity CLI release once it has stood three days, builds and tests its packages, runs both acceptance legs on them and opens a pull request that says whether it is ready, and still checks the pinned digest in a week with nothing new. |

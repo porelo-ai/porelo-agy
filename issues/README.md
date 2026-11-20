@@ -36,12 +36,6 @@ Within a group, the order is the priority. The number is identity, not sequence.
 | <a id="ag02"></a>[AG02](AG02-The-Repository-s-Agent-Works-In-A-Porelo-Task.md) | S | [AG04](README.md#ag04) | the repository's agent moves into its own Porelo task, after a dry run on this machine | - |
 | <a id="ag05"></a>[AG05](AG05-The-Acceptance-Legs-Run-On-The-Host-s-Forge.md) | S | [AG04](README.md#ag04) | the acceptance legs on the host's pool again, once it lends a forge job a machine by kind | 0 |
 
-## Implementing
-
-| # | Size | Blocked by | What it covers |
-|---|---|---|---|
-| <a id="ag32"></a>[AG32](AG32-The-Maven-Cache-Follows-What-The-Build-Resolves.md) | S | - | the Build's Maven cache is saved again when the versions it resolves move, so a Build after a cache hit fetches nothing from Maven Central |
-
 ## Review
 
 | # | Size | Blocked by | What it covers | Open questions |
@@ -51,6 +45,7 @@ Within a group, the order is the priority. The number is identity, not sequence.
 | <a id="ag22"></a>[AG22](AG22-A-Finished-Run-Answers-Its-Last-Message.md) | S | - | a finished unattended Antigravity CLI run answers the text of its last message, declared in session.waiting.last_message, so a reader's answer is not empty; the declaration adds no screen rule and so changes nothing in how Porelo wakes the agent | - |
 | <a id="ag25"></a>[AG25](AG25-Agy-Is-Installed-Root-Owned.md) | M | - | the antigravity binary a task starts and the agy wrapper that execs it are installed by root and owned by root, so the agent in a task cannot replace what Porelo starts as agy next time; the version stays pinned by the definition and moves only through the update job, and a self-update inside a task fails | - |
 | <a id="ag31"></a>[AG31](AG31-Start-Work-Offers-Antigravity-CLI-s-Efforts.md) | XS | - | the definition declares the reasoning efforts Antigravity CLI takes and how one is passed (`--effort {effort}`), so Start work offers them to pick instead of typing and an absent effort passes nothing | - |
+| <a id="ag32"></a>[AG32](AG32-The-Maven-Cache-Follows-What-The-Build-Resolves.md) | XS | - | the Build restores the Maven cache by a key holding the run and saves it in one job when that job fetched a jar or pom, so the next Build asks Central for nothing; the shared form, proven by the first two Builds after the push | - |
 | <a id="ag26"></a>[AG26](AG26-A-Leg-Installs-What-Its-Run-Built.md) | S | - | every acceptance leg of a run that publishes nothing - a dispatch, a tag - installs the packages that run built, so its result speaks for its own commit; only a push to main, which publishes its snapshot first, installs from the package repository | - |
 | <a id="ag04"></a>[AG04](AG04-The-Build-Runs-On-The-Local-Forge-As-On-The-Central-One.md) | S | - | the workflows run 1:1 on the local Forgejo and the central forge, legs asked by kind, before the move | - |
 

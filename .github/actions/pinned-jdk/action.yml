@@ -8,6 +8,10 @@
 # again by the one rule of pinned.sh, copied unchanged from porelo-buildtools (its doc/pinned-downloads.md).
 name: Pinned GraalVM
 description: Installs the GraalVM Porelo pins, checked against its digest, as JAVA_HOME for the rest of the job.
+outputs:
+    maven-cache-key:
+        description: The key the job saves ~/.m2/repository under with the maven-cache-save action.
+        value: ${{ steps.maven-cache.outputs.cache-primary-key }}
 runs:
     using: composite
     steps:
@@ -23,12 +27,20 @@ runs:
                   exit 1
               fi
 
-        # What setup-graalvm's 'cache: maven' did.
-        - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        # Keyed by the run and its attempt, so each one can save what it fetched: an existing key is never saved over,
+        # and the poms alone do not say what they resolve to.
+        - uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+          id: maven-cache
           with:
               path: ~/.m2/repository
-              key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
-              restore-keys: maven-${{ runner.os }}-
+              key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}-${{ github.run_id }}-${{ github.run_attempt }}
+              restore-keys: |
+                  maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}-
+                  maven-${{ runner.os }}-
+
+        # What changes status after this marker the job fetched itself, so maven-cache-save saves only a cache that grew.
+        - shell: bash
+          run: touch "$RUNNER_TEMP/maven-cache-restored"
 
         # The wrapper's Maven, fetched once per pin: without it every job fetches it with one unretried download.
         - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -50,8 +62,8 @@ runs:
               # The wrapper fetches its Maven once, checks it against distributionSha256Sum and installs it only
               # whole, so asking it again after a failed fetch is a retry; a cached one answers at once.
               pinned_retry "the wrapper's Maven" ./mvnw -B -q --version >/dev/null
-              # MAVEN_ARGS, where the workflow sets it, says -U or -P!standard,!forge,!upstream: the cache above is
-              # keyed on pom.xml alone. MAVEN_SNAPSHOTS_URL and MAVEN_UPSTREAM_SNAPSHOTS_URL from the workflow and
+              # MAVEN_ARGS, where the workflow sets it, says -U or -P!standard,!forge,!upstream.
+              # MAVEN_SNAPSHOTS_URL and MAVEN_UPSTREAM_SNAPSHOTS_URL from the workflow and
               # PORELO_PACKAGES_READ_TOKEN from this step say where snapshots come from.
               ./mvnw -B -q -Pci-tools -s settings.xml dependency:build-classpath -Dmdep.outputFile=target/jdk-cp.txt
               # A failure says so: set -e alone would end the step at this assignment without a word.

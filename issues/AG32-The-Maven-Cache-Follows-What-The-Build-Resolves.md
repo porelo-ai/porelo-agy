@@ -5,7 +5,7 @@
   "$schema": "issue-1.json",
   "id": "AG32",
   "title": "The Maven Cache Follows What The Build Resolves",
-  "state": "Backlog",
+  "state": "Implementing",
   "size": "S",
   "priority": "High",
   "rank": 1,

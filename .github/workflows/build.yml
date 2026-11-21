@@ -6,10 +6,10 @@ on:
     push:
         branches: [main]
         tags: ['v*']
-        paths-ignore: ['**/*.md', 'mkdocs.yml', 'doc/**', 'issues/**', '.github/**', 'porelo.yml']
+        paths-ignore: ['**/*.md', 'mkdocs.yml', 'doc/**', '.github/**', 'porelo.yml']
     pull_request:
         branches: ['**']
-        paths-ignore: ['**/*.md', 'mkdocs.yml', 'doc/**', 'issues/**', '.github/**', 'porelo.yml']
+        paths-ignore: ['**/*.md', 'mkdocs.yml', 'doc/**', '.github/**', 'porelo.yml']
     workflow_dispatch:
 
 env:

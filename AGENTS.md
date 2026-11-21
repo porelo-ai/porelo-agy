@@ -85,8 +85,9 @@ like the shared block, and so is the skill `adapter-building`; what is one adapt
 
 ## Work in this repository
 
-- **Issues here are `AGnn-Short-Title.md`, with the prefix `AG`.** `porelo-release check-citations`
-  refuses a citation that breaks once an issue is deleted.
+- **Issues here are in the repository's GitHub Issues**, each named by its reference there
+  (`porelo-ai/porelo-agy#<number>`); one carried over from the Markdown files keeps its old id (`AG`) as a
+  fixed alias.
 - **Whether Antigravity CLI can be brokered is measured before anything is built**: a real sign-in,
   what it stores and where, which hosts it contacts, and whether its model endpoint can be pointed at
   the broker. If it cannot, the answer is written in the issue and nothing is built.

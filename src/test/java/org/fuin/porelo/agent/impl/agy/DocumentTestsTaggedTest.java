@@ -12,8 +12,8 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 /**
- * Every test that reads a document carries the tag {@code documents}, so a change to documents or
- * issues runs exactly those tests with {@code -Pdocuments} and none is left out.
+ * Every test that reads a document carries the tag {@code documents}, so a change to documents runs
+ * exactly those tests with {@code -Pdocuments} and none is left out.
  */
 @Tag("documents")
 class DocumentTestsTaggedTest {
@@ -26,7 +26,7 @@ class DocumentTestsTaggedTest {
      * directories.
      */
     private static final Pattern READS_A_DOCUMENT =
-            Pattern.compile("\"[^\"\\n]*\\.md[#\"]|\"mkdocs\\.yml\"|\"(doc|issues)(/[^\"\\n]*)?\"");
+            Pattern.compile("\"[^\"\\n]*\\.md[#\"]|\"mkdocs\\.yml\"|\"doc(/[^\"\\n]*)?\"");
 
     private static final Path TESTS = Path.of("src", "test", "java");
 
@@ -54,7 +54,7 @@ class DocumentTestsTaggedTest {
     @Test
     void seesTheDocumentDirectoriesAndTheNavigation() {
 
-        assertThat(readsADocument("Files.list(root.resolve(\"issues\"))")).isTrue();
+        assertThat(readsADocument("Files.list(root.resolve(\"doc\"))")).isTrue();
         assertThat(readsADocument("Files.walk(root.resolve(\"doc/walks\"))")).isTrue();
         assertThat(readsADocument("root.resolve(\"mkdocs.yml\")")).isTrue();
         assertThat(readsADocument("\"documentation: \\\"https://example.org/doc\\\"\"")).isFalse();
@@ -63,8 +63,8 @@ class DocumentTestsTaggedTest {
     @Test
     void seesAMarkdownPathWithOrWithoutAnchor() {
 
-        assertThat(readsADocument("Path.of(\"issues\", \"README.md\")")).isTrue();
-        assertThat(readsADocument("\"See [x](issues/README.md#cc14).\"")).isTrue();
+        assertThat(readsADocument("Path.of(\"doc\", \"index.md\")")).isTrue();
+        assertThat(readsADocument("\"See [x](doc/index.md#limits).\"")).isTrue();
     }
 
     @Test

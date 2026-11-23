@@ -36,7 +36,6 @@ public final class AgyCredentialExtractor implements CredentialExtractor {
 
     private static final int MAX_CANDIDATES = 8;
     private static final int MAX_CANDIDATE_FILE_BYTES = 4096;
-    private static final long MAX_BINARY_BYTES = 512L * 1024 * 1024;
     private static final Pattern TOKEN = Pattern.compile("[A-Za-z0-9._~+/-]+=*");
     // The CLI's clients differ in the number of leading digits, so none may be cut.
     private static final Pattern BINARY_CLIENT_ID =
@@ -267,7 +266,7 @@ public final class AgyCredentialExtractor implements CredentialExtractor {
 
     private static Optional<byte[]> readSmallFile(Path file, int limit, String label) {
         try {
-            if (!regularFile(file, limit, label)) {
+            if (!regularFile(file, label)) {
                 return Optional.empty();
             }
             try (InputStream input = Files.newInputStream(file, LinkOption.NOFOLLOW_LINKS)) {
@@ -282,7 +281,7 @@ public final class AgyCredentialExtractor implements CredentialExtractor {
         }
     }
 
-    private static boolean regularFile(Path file, long limit, String label) throws IOException {
+    private static boolean regularFile(Path file, String label) throws IOException {
         final BasicFileAttributes attributes;
         try {
             attributes =
@@ -295,9 +294,6 @@ public final class AgyCredentialExtractor implements CredentialExtractor {
             throw new AgentException(label + " must be a regular file, not a link");
         }
         file.toRealPath(LinkOption.NOFOLLOW_LINKS);
-        if (attributes.size() > limit) {
-            throw new AgentException(label + " exceeds the collection size limit");
-        }
         return true;
     }
 
@@ -321,28 +317,14 @@ public final class AgyCredentialExtractor implements CredentialExtractor {
             Path file, Pattern pattern, int overlap, String missingMessage) {
         try {
             final SequencedSet<String> found = new LinkedHashSet<>();
-            if (!regularFile(file, MAX_BINARY_BYTES, "Antigravity CLI binary")) {
+            if (!regularFile(file, "Antigravity CLI binary")) {
                 return found;
             }
             try (InputStream input = Files.newInputStream(file, LinkOption.NOFOLLOW_LINKS)) {
                 final byte[] buffer = new byte[8192];
                 String tail = "";
-                long total = 0;
                 int count;
-                while ((count =
-                                input.read(
-                                        buffer,
-                                        0,
-                                        (int)
-                                                Math.min(
-                                                        buffer.length,
-                                                        MAX_BINARY_BYTES - total + 1)))
-                        != -1) {
-                    total += count;
-                    if (total > MAX_BINARY_BYTES) {
-                        throw new AgentException(
-                                "Antigravity CLI binary exceeds the collection size limit");
-                    }
+                while ((count = input.read(buffer)) != -1) {
                     final String chunk =
                             tail + new String(buffer, 0, count, StandardCharsets.ISO_8859_1);
                     final Matcher match = pattern.matcher(chunk);

@@ -4,6 +4,7 @@
 
 ### Changed
 
+- Collecting an agy sign-in scans the installed Antigravity CLI for its OAuth clients whatever its size, one buffer at a time, so a CLI that grows past 512 MiB no longer makes every sign-in fail.
 - The definition says how Antigravity CLI takes a reasoning effort - `--effort {effort}` with low, medium, high, xhigh, max - for a Porelo that offers it at a start; an older Porelo skips it.
 - agy is installed by root, the CLI at `/usr/local/lib/agy/antigravity` and its wrapper at `/usr/local/bin/agy`, so the agent in a task cannot replace what the next start runs, and a self-update fails to write over it.
 - The acceptance legs run on every forge, the host's lending each a machine of its kind from its pool through `PORELO_POOL_SSH`, and a leg takes the packages its run built from the Actions cache, keyed by the run; GitHub's artifact stays for the release job.

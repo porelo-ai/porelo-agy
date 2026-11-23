@@ -408,17 +408,20 @@ class AgyCredentialExtractorTest {
     }
 
     @Test
-    void anOversizedBinaryCannotCauseAnUnboundedScan() throws IOException {
+    void aBinaryOfAnySizeSuppliesItsClients() throws IOException {
+        // A CLI that grows past any fixed size must still sign in; the scan holds one buffer.
         writeLogin();
-        Files.writeString(directory.resolve(".client-ids"), CLIENT_ID);
         final Path binary = directory.resolve("antigravity");
         try (var channel =
                 Files.newByteChannel(
                         binary, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
-            channel.position(512L * 1024 * 1024);
-            channel.write(java.nio.ByteBuffer.wrap(new byte[] {0}));
+            channel.position(512L * 1024 * 1024 + 1);
+            channel.write(
+                    java.nio.ByteBuffer.wrap(
+                            (CLIENT_ID + "\0" + CLIENT_SECRET)
+                                    .getBytes(java.nio.charset.StandardCharsets.ISO_8859_1)));
         }
-        refuses(extractor());
+        assertCredential(extractor().extract(directory).orElseThrow(), EXPIRY);
     }
 
     @Test

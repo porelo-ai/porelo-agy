@@ -2,12 +2,14 @@ package org.fuin.porelo.agent.impl.agy;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
 import java.util.List;
 import java.util.regex.Pattern;
 import org.fuin.porelo.agent.api.AgentException;
 import org.fuin.porelo.agent.api.ContainerFile;
 import org.fuin.porelo.agent.api.ContainerSetup;
 import org.fuin.porelo.agent.api.SetupContext;
+import org.fuin.porelo.wire.LimitFactors;
 
 /**
  * Writes Antigravity CLI's container settings and onboarding state so brokered tasks start without
@@ -68,7 +70,7 @@ public final class AgyContainerSetup implements ContainerSetup {
                       {
                         "type": "command",
                         "command": "cat >/dev/null; printf '%s' '{\\"decision\\":\\"deny\\",\\"reason\\":\\"this task allows no subagents\\"}'",
-                        "timeout": 10
+                        "timeout": @TIMEOUT@
                       }
                     ]
                   }
@@ -77,13 +79,31 @@ public final class AgyContainerSetup implements ContainerSetup {
             }
             """;
 
-    /** Creates a stateless container setup. */
-    public AgyContainerSetup() {}
+    /** How long the deny hook may take on a machine of ordinary speed. */
+    private static final Duration HOOK_TIMEOUT = Duration.ofSeconds(10);
+
+    private final String noSubagents;
+
+    /** Creates a container setup with every time limit at its default. */
+    public AgyContainerSetup() {
+        this(LimitFactors.DEFAULT);
+    }
+
+    /**
+     * Creates a container setup whose time limits follow the factors Porelo gave.
+     *
+     * @param limits The factors; the deny hook's timeout follows {@code machines}.
+     */
+    public AgyContainerSetup(LimitFactors limits) {
+        // The hook file takes whole seconds; rounded up, so a factor never shortens the default.
+        final long millis = limits.machines(HOOK_TIMEOUT).toMillis();
+        noSubagents = NO_SUBAGENTS.replace("@TIMEOUT@", Long.toString(Math.ceilDiv(millis, 1000L)));
+    }
 
     /** {@inheritDoc} */
     @Override
     public List<ContainerFile> files(SetupContext context) {
-        final ContainerFile hooks = ContainerFile.of(HOOKS, NO_SUBAGENTS);
+        final ContainerFile hooks = ContainerFile.of(HOOKS, noSubagents);
         if (context.endpoint().isEmpty() && context.token().isEmpty()) {
             return List.of(hooks);
         }

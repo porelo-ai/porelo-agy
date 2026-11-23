@@ -4,6 +4,7 @@
 
 ### Changed
 
+- The hook that keeps a task's subagents from starting is given its 10 seconds times the `machines` factor of the limits Porelo passes with `--limits`, rounded up to whole seconds, so a slow machine does not cut it off.
 - Collecting an agy sign-in scans the installed Antigravity CLI for its OAuth clients whatever its size, one buffer at a time, so a CLI that grows past 512 MiB no longer makes every sign-in fail.
 - The definition says how Antigravity CLI takes a reasoning effort - `--effort {effort}` with low, medium, high, xhigh, max - for a Porelo that offers it at a start; an older Porelo skips it.
 - agy is installed by root, the CLI at `/usr/local/lib/agy/antigravity` and its wrapper at `/usr/local/bin/agy`, so the agent in a task cannot replace what the next start runs, and a self-update fails to write over it.

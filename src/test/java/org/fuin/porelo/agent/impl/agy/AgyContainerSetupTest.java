@@ -9,6 +9,7 @@ import org.fuin.porelo.agent.api.AgentException;
 import org.fuin.porelo.agent.api.ContainerFile;
 import org.fuin.porelo.agent.api.SetupContext;
 import org.fuin.porelo.wire.Json;
+import org.fuin.porelo.wire.LimitFactors;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -18,6 +19,36 @@ import org.junit.jupiter.api.Test;
 class AgyContainerSetupTest {
 
     private final AgyAgent agent = new AgyAgent();
+
+    @Test
+    void theDenyHookIsGivenItsTenSecondsTimesTheMachinesFactor() {
+        // On a slow machine a hook cut off before it answers must not let a subagent through.
+        assertThat(hookTimeout(agent)).as("all four factors 1.0").isEqualTo(10L);
+        assertThat(hookTimeout(agent.withLimits(LimitFactors.parse("machines=2.5"))))
+                .as("ten seconds times 2.5")
+                .isEqualTo(25L);
+        assertThat(hookTimeout(agent.withLimits(LimitFactors.parse("machines=0.15"))))
+                .as("1.5 seconds, rounded up to whole seconds as the hook file takes them")
+                .isEqualTo(2L);
+        assertThat(hookTimeout(agent.withLimits(LimitFactors.parse("services=9,polling=9"))))
+                .as("only the machines factor applies")
+                .isEqualTo(10L);
+    }
+
+    private static long hookTimeout(final org.fuin.porelo.agent.api.Agent given) {
+        final ContainerFile hooks =
+                given.containerSetup().files(new SetupContext("", "", "", "", "")).stream()
+                        .filter(file -> file.path().equals(AgyContainerSetup.HOOKS))
+                        .findFirst()
+                        .orElseThrow();
+        final Map<?, ?> root = (Map<?, ?>) Json.parse(hooks.content());
+        final Map<?, ?> entry =
+                (Map<?, ?>)
+                        ((List<?>) ((Map<?, ?>) root.get("no-subagents")).get("PreToolUse"))
+                                .getFirst();
+        final Map<?, ?> hook = (Map<?, ?>) ((List<?>) entry.get("hooks")).getFirst();
+        return ((Number) hook.get("timeout")).longValue();
+    }
 
     @Test
     void deniesEverySubagentToolWhicheverWayTheTaskIsSignedIn() {

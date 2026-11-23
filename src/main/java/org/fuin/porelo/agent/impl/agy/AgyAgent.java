@@ -9,20 +9,34 @@ import org.fuin.porelo.agent.api.Finder;
 import org.fuin.porelo.agent.api.LogFormatter;
 import org.fuin.porelo.agent.api.ToolEvent;
 import org.fuin.porelo.agent.api.YamlAgent;
+import org.fuin.porelo.wire.LimitFactors;
 import org.jspecify.annotations.Nullable;
 
 /** Antigravity CLI's definition and agent protocol entry point. */
 public final class AgyAgent extends YamlAgent {
 
-    /** Loads the packaged Antigravity CLI definition. */
+    private final LimitFactors limits;
+
+    /** Loads the packaged Antigravity CLI definition, every time limit at its default. */
     public AgyAgent() {
+        this(LimitFactors.DEFAULT);
+    }
+
+    private AgyAgent(LimitFactors limits) {
         super("agy");
+        this.limits = limits;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public AgyAgent withLimits(LimitFactors limits) {
+        return new AgyAgent(limits);
     }
 
     /** {@inheritDoc} */
     @Override
     public ContainerSetup containerSetup() {
-        return new AgyContainerSetup();
+        return new AgyContainerSetup(limits);
     }
 
     /** {@inheritDoc} */

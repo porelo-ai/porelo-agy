@@ -60,6 +60,14 @@
 
         <package.glibc.floor>2.34</package.glibc.floor>
         <package.zlib.floor>1.2.2</package.zlib.floor>
+
+        <!-- The Porelo this adapter works with: Porelo's package provides porelo-agent-protocol
+             at its lowest agent protocol, and this adapter takes any from the API's
+             AgentProtocol.LOWEST at its build up to the AgentProtocol.VERSION it speaks. Porelo
+             accepts every agent at or above its lowest, so one exact number would refuse pairings
+             that work. PackageProtocolCheck holds the built packages to the API. -->
+        <agent.protocol.lowest>6</agent.protocol.lowest>
+        <agent.protocol.version>6</agent.protocol.version>
     </properties>
 
     <dependencyManagement>
@@ -448,6 +456,9 @@
                             <packager>fuin.org</packager>
                             <requires>
                                 <require>porelo &gt;= ${porelo.minimum.version}</require>
+                                <!-- A Porelo whose lowest agent protocol this adapter speaks. -->
+                                <require>porelo-agent-protocol &gt;= ${agent.protocol.lowest}</require>
+                                <require>porelo-agent-protocol &lt;= ${agent.protocol.version}</require>
 
                                 <require>libc.so.6(GLIBC_${package.glibc.floor})(64bit)</require>
                                 <require>libz.so.1(ZLIB_${package.zlib.floor})(64bit)</require>
@@ -518,6 +529,7 @@
                                     <includes>
                                         <include>**/PackageVersionCheck.java</include>
                                         <include>**/PackageNoticesCheck.java</include>
+                                        <include>**/PackageProtocolCheck.java</include>
                                         <include>**/FetchedArtifactsCheck.java</include>
                                     </includes>
                                     <reportsDirectory>${project.build.directory}/surefire-reports-package-version</reportsDirectory>
